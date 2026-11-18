@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Midnight Obsidian-Sapphire Gradient -->
+    <radialGradient id="comb_bg" cx="50%" cy="36%" r="65%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="50%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </radialGradient>
+
+    <linearGradient id="comb_silver" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="35%" stop-color="#cbd5e1" />
+      <stop offset="70%" stop-color="#64748b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+
+    <linearGradient id="comb_ice" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e0f2fe" />
+      <stop offset="50%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+
+    <linearGradient id="comb_rule" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0" />
+      <stop offset="30%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#ffffff" />
+      <stop offset="70%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0" />
+    </linearGradient>
+
+    <filter id="comb_shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.8" />
+    </filter>
+  </defs>
+
+  <!-- Squircle Canvas Frame -->
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="url(#comb_bg)" stroke="#38bdf8" stroke-width="2" stroke-opacity="0.35" />
+
+  <!-- Outer Double Border Line -->
+  <rect x="42" y="42" width="428" height="428" rx="92" fill="none" stroke="#64748b" stroke-width="1.2" stroke-opacity="0.25" />
+
+  <!-- Top: Compact Version 13 12-Point Girih Star Emblem -->
+  <g transform="translate(256, 172)" filter="url(#comb_shadow)">
+    <!-- Square 1 (0 deg) -->
+    <rect x="-62" y="-62" width="124" height="124" rx="10" fill="none" stroke="url(#comb_silver)" stroke-width="3.5" stroke-linejoin="round" />
+    <!-- Square 2 (30 deg) -->
+    <rect x="-62" y="-62" width="124" height="124" rx="10" fill="none" stroke="url(#comb_ice)" stroke-width="3" stroke-linejoin="round" transform="rotate(30)" />
+    <!-- Square 3 (60 deg) -->
+    <rect x="-62" y="-62" width="124" height="124" rx="10" fill="none" stroke="url(#comb_silver)" stroke-width="3" stroke-linejoin="round" transform="rotate(60)" />
+
+    <!-- 12-Point Khatim Star Medallion Hub -->
+    <polygon points="
+      0,-32 8,-24 22,-22 24,-8 32,0 24,8 22,22 8,24 0,32 -8,24 -22,22 -24,8 -32,0 -24,-8 -22,-22 -8,-24
+    " fill="#0f172a" stroke="url(#comb_ice)" stroke-width="2" stroke-linejoin="round" />
+
+    <!-- Innermost Chiseled 12-Point Star Core -->
+    <polygon points="
+      0,-16 4,-12 11,-11 12,-4 16,0 12,4 11,11 4,12 0,16 -4,12 -11,11 -12,4 -16,0 -12,-4 -11,-11 -4,-12
+    " fill="url(#comb_silver)" stroke="#ffffff" stroke-width="1" stroke-linejoin="round" />
+  </g>
+
+  <!-- Bottom: Typography "Mosque Signage" -->
+  <g text-anchor="middle" filter="url(#comb_shadow)">
+    <!-- Primary Title "Mosque" -->
+    <text x="256" y="324"
+          font-family="system-ui, -apple-system, 'Cinzel', 'Trajan Pro', 'Georgia', serif"
+          font-size="52"
+          font-weight="800"
+          letter-spacing="0.06em"
+          fill="url(#comb_silver)">
+      MOSQUE
+    </text>
+
+    <!-- Sleek Ice-Blue Divider Rule -->
+    <line x1="120" y1="350" x2="392" y2="350" stroke="url(#comb_rule)" stroke-width="2" stroke-linecap="round" />
+
+    <!-- Subtitle "SIGNAGE" -->
+    <text x="256" y="394"
+          font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+          font-size="28"
+          font-weight="600"
+          letter-spacing="0.28em"
+          fill="#e0f2fe">
+      SIGNAGE
+    </text>
+  </g>
+</svg>
+

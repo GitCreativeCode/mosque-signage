@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="100%" height="100%">
+  <!-- Background -->
+  <rect width="960" height="540" fill="#0f172a" rx="16"/>
+  <rect width="958" height="538" x="1" y="1" fill="none" stroke="#334155" stroke-width="1.5" rx="15"/>
+
+  <!-- Technical Header -->
+  <g transform="translate(60, 45)">
+    <text x="0" y="0" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" letter-spacing="1.5">MEDIA DIMENSION SPECIFICATION</text>
+    <text x="0" y="30" fill="#f8fafc" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700">16:9 Poster Dimensions &amp; Safe Margins</text>
+    <text x="0" y="52" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="13">Native 1920x1080 canvas layout. Keep event details centered to avoid corner display cards.</text>
+  </g>
+
+  <!-- 16:9 Screen Simulation -->
+  <g transform="translate(140, 130)">
+    <!-- Main 16:9 Canvas (680 x 360) -->
+    <rect width="680" height="340" rx="10" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+
+    <!-- Top Broadcast Bar Zone -->
+    <rect x="0" y="0" width="680" height="32" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <text x="20" y="21" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Top Broadcast Bar (Clock, Date, Ticker Marquee)</text>
+
+    <!-- Safe Text Area (Dashed Box) -->
+    <rect x="35" y="45" width="610" height="275" rx="6" fill="#0f172a" stroke="#15803d" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="340" y="150" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="16" font-weight="700">SAFE CONTENT AREA</text>
+    <text x="340" y="175" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="12">Headlines, Event Dates, Speaker Names &amp; Primary Flyer Artwork</text>
+    <text x="340" y="198" text-anchor="middle" fill="#64748b" font-family="monospace" font-size="11">Recommended: 1920 x 1080 Native WebP / PNG / JPG</text>
+
+    <!-- Bottom-Left: Dynamic QR Card Exclusion Area -->
+    <rect x="15" y="235" width="130" height="95" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect x="25" y="245" width="30" height="30" fill="#f8fafc" rx="2"/>
+    <rect x="29" y="249" width="22" height="22" fill="#0f172a"/>
+    <text x="65" y="260" fill="#fbbf24" font-family="system-ui, sans-serif" font-size="10" font-weight="700">QR CODE CARD</text>
+    <text x="65" y="274" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9">Dynamic Popout</text>
+    <text x="25" y="315" fill="#f59e0b" font-family="system-ui, sans-serif" font-size="9" font-weight="600">Avoid critical text here</text>
+
+    <!-- Bottom-Right: Mini Prayer Countdown Pill Exclusion Area -->
+    <rect x="515" y="265" width="150" height="65" rx="8" fill="#1e293b" stroke="#15803d" stroke-width="1.5"/>
+    <rect x="525" y="278" width="130" height="38" rx="19" fill="#14532d" stroke="#15803d" stroke-width="1"/>
+    <text x="590" y="296" text-anchor="middle" fill="#4ade80" font-family="system-ui, sans-serif" font-size="10" font-weight="700">MINI PRAYER PILL</text>
+    <text x="590" y="308" text-anchor="middle" fill="#86efac" font-family="system-ui, sans-serif" font-size="8">Next: Asr in 24m</text>
+  </g>
+</svg>

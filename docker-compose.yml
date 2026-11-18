@@ -1,0 +1,27 @@
+services:
+  mosque-signage:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mosque-signage
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      - mosque_data:/app/data
+      - mosque_uploads:/app/public/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  mosque_data:
+    driver: local
+  mosque_uploads:
+    driver: local

@@ -1,0 +1,305 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Theme Tokens: Responsive Editorial Light vs Executive Dark Zinc
+   ============================================================ */
+
+/* Light Mode (Default for :root and .light) */
+:root,
+html.light,
+.light,
+.admin-theme-light {
+  --background: #f8fafc;
+  --foreground: #1e293b;
+  --admin-bg: #f8fafc;
+  --admin-surface: #ffffff;
+  --admin-card: #ffffff;
+  --admin-card-hover: #f1f5f9;
+  --admin-border: #e2e8f0;
+  --admin-border-subtle: #f1f5f9;
+  --admin-text-primary: #1e293b;
+  --admin-text-secondary: #475569;
+  --admin-text-muted: #64748b;
+  --admin-btn-primary-bg: #334155;
+  --admin-btn-primary-hover: #1e293b;
+  --admin-btn-primary-text: #ffffff;
+  --admin-btn-secondary-bg: #ffffff;
+  --admin-btn-secondary-hover: #f8fafc;
+  --admin-btn-secondary-text: #334155;
+  --admin-btn-secondary-border: #cbd5e1;
+  --admin-tab-active-border: #334155;
+  --admin-tab-active-bg: #ffffff;
+  --admin-accent: #334155;
+  --admin-accent-subtle: #f1f5f9;
+  --admin-success: #15803d;
+  --admin-success-subtle: #dcfce7;
+  --admin-warning: #b45309;
+  --admin-danger: #b91c1c;
+  --admin-menu-hover-bg: #f0fdf4;
+  --admin-menu-hover-text: #166534;
+  --admin-menu-active-bg: #dcfce7;
+  --admin-menu-active-border: #86efac;
+  --admin-menu-active-text: #15803d;
+}
+
+/* Dark Mode (When html has .dark or .admin-theme-dark) */
+html.dark,
+.dark,
+.admin-theme-dark {
+  --background: #09090b;
+  --foreground: #f4f4f5;
+  --admin-bg: #121214;
+  --admin-surface: #18181b;
+  --admin-card: #1c1c20;
+  --admin-card-hover: #24242a;
+  --admin-border: #2e2e34;
+  --admin-border-subtle: #222227;
+  --admin-text-primary: #f4f4f5;
+  --admin-text-secondary: #d4d4d8;
+  --admin-text-muted: #a1a1aa;
+  --admin-btn-primary-bg: #27272a;
+  --admin-btn-primary-hover: #323236;
+  --admin-btn-primary-text: #ffffff;
+  --admin-btn-secondary-bg: #18181b;
+  --admin-btn-secondary-hover: #222226;
+  --admin-btn-secondary-text: #f4f4f5;
+  --admin-btn-secondary-border: #333338;
+  --admin-tab-active-border: #e4e4e7;
+  --admin-tab-active-bg: #1c1c20;
+  --admin-accent: #ca8a04;
+  --admin-accent-subtle: #2a2215;
+  --admin-success: #16a34a;
+  --admin-success-subtle: #143322;
+  --admin-warning: #ca8a04;
+  --admin-danger: #dc2626;
+  --admin-menu-hover-bg: rgba(34, 197, 94, 0.12);
+  --admin-menu-hover-text: #86efac;
+  --admin-menu-active-bg: rgba(34, 197, 94, 0.20);
+  --admin-menu-active-border: rgba(34, 197, 94, 0.35);
+  --admin-menu-active-text: #4ade80;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular figures for digital clocks to prevent horizontal shaking */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom continuous marquee ticker animation */
+@keyframes continuous-marquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee-continuous {
+  display: flex;
+  width: max-content;
+  animation: continuous-marquee 35s linear infinite;
+  will-change: transform;
+}
+
+/* ============================================================
+   Poster Slide Transition Animations (Hardware-Accelerated 600ms)
+   ============================================================ */
+
+/* 1. Cross-Fade */
+@keyframes poster-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes poster-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* 2. Slide Left (In from right, out to left) */
+@keyframes poster-slide-in-right {
+  from {
+    transform: translate3d(100%, 0, 0);
+    opacity: 0.8;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes poster-slide-out-left {
+  from {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(-100%, 0, 0);
+    opacity: 0.6;
+  }
+}
+
+/* 3. Slide Right (In from left, out to right) */
+@keyframes poster-slide-in-left {
+  from {
+    transform: translate3d(-100%, 0, 0);
+    opacity: 0.8;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes poster-slide-out-right {
+  from {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(100%, 0, 0);
+    opacity: 0.6;
+  }
+}
+
+/* 4. Slide Up (In from bottom, out to top) */
+@keyframes poster-slide-in-up {
+  from {
+    transform: translate3d(0, 100%, 0);
+    opacity: 0.8;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes poster-slide-out-up {
+  from {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(0, -100%, 0);
+    opacity: 0.6;
+  }
+}
+
+/* 5. Scale Zoom */
+@keyframes poster-zoom-in {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes poster-zoom-out {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+
+.animate-poster-fade-in {
+  animation: poster-fade-in 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: opacity;
+}
+
+.animate-poster-fade-out {
+  animation: poster-fade-out 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: opacity;
+}
+
+.animate-poster-slide-in-right {
+  animation: poster-slide-in-right 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-poster-slide-out-left {
+  animation: poster-slide-out-left 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-poster-slide-in-left {
+  animation: poster-slide-in-left 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-poster-slide-out-right {
+  animation: poster-slide-out-right 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-poster-slide-in-up {
+  animation: poster-slide-in-up 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-poster-slide-out-up {
+  animation: poster-slide-out-up 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-poster-zoom-in {
+  animation: poster-zoom-in 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-poster-zoom-out {
+  animation: poster-zoom-out 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes top-loading-bar {
+  0% {
+    transform: translateX(-100%);
+    width: 25%;
+  }
+  50% {
+    transform: translateX(100%);
+    width: 50%;
+  }
+  100% {
+    transform: translateX(300%);
+    width: 25%;
+  }
+}
+
+.animate-top-loading-bar {
+  animation: top-loading-bar 1.2s ease-in-out infinite;
+}
+
+/* Suppress native Edge/Chromium password reveal/clear buttons to avoid duplicate eye icons */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+}
+

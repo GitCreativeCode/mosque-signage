@@ -1,0 +1,96 @@
+'use client';
+
+import { useEffect } from 'react';
+import { deleteLayerKeysFromScene } from '@/lib/posters/studio-layers';
+import type { SelectedEntity, StudioSceneState } from '@/lib/posters/studio-types';
+
+interface UseStudioKeyboardShortcutsParams {
+  readonly isOpen: boolean;
+  readonly showDiscardConfirm: boolean;
+  readonly scene: StudioSceneState;
+  readonly selectedSlotIndex: number | null;
+  readonly selectedEntity: SelectedEntity | null;
+  readonly selectedLayerKeys: readonly string[];
+  readonly setSelectedLayerKeys: (keys: string[]) => void;
+  readonly setSelectedSlotIndex: (idx: number | null) => void;
+  readonly commitScene: (next: StudioSceneState) => void;
+  readonly deselectAll: () => void;
+  readonly handleUndo: () => void;
+  readonly handleRedo: () => void;
+}
+
+function resolveKeysToDelete(
+  scene: StudioSceneState,
+  selectedLayerKeys: readonly string[],
+  selectedEntity: SelectedEntity | null,
+  selectedSlotIndex: number | null
+): string[] {
+  if (selectedLayerKeys.length > 0) {
+    return [...selectedLayerKeys];
+  }
+  if (selectedEntity) {
+    return [`${selectedEntity.type}:${selectedEntity.id}`];
+  }
+  if (selectedSlotIndex !== null && scene.slots[selectedSlotIndex]) {
+    return [`slot:${scene.slots[selectedSlotIndex]!.id}`];
+  }
+  return [];
+}
+
+/** Handles global Studio keyboard shortcuts (1-9 slot switch, Ctrl+Z/Y undo-redo, Delete/Backspace). */
+export function useStudioKeyboardShortcuts(params: UseStudioKeyboardShortcutsParams) {
+  const {
+    isOpen, showDiscardConfirm, scene, selectedSlotIndex, selectedEntity,
+    selectedLayerKeys, setSelectedLayerKeys, setSelectedSlotIndex, commitScene,
+    deselectAll, handleUndo, handleRedo,
+  } = params;
+
+  useEffect(() => {
+    if (!isOpen || showDiscardConfirm) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) return;
+
+      if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key >= '1' && e.key <= '9') {
+        const idx = parseInt(e.key, 10) - 1;
+        if (idx < scene.slots.length) setSelectedSlotIndex(idx);
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) handleRedo();
+        else handleUndo();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        handleRedo();
+        return;
+      }
+
+      if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+      e.preventDefault();
+
+      const keys = resolveKeysToDelete(scene, selectedLayerKeys, selectedEntity, selectedSlotIndex);
+      if (keys.length === 0) return;
+
+      const nextScene = deleteLayerKeysFromScene(scene, keys);
+      if (nextScene.slots.length === 0 && scene.slots.length > 0) return;
+
+      commitScene(nextScene);
+      setSelectedLayerKeys([]);
+      if (nextScene.slots.length < scene.slots.length && selectedSlotIndex !== null) {
+        setSelectedSlotIndex(Math.max(0, Math.min(selectedSlotIndex, nextScene.slots.length - 1)));
+      }
+      deselectAll();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    isOpen, showDiscardConfirm, scene, selectedSlotIndex, selectedEntity,
+    selectedLayerKeys, setSelectedLayerKeys, setSelectedSlotIndex, commitScene,
+    deselectAll, handleUndo, handleRedo,
+  ]);
+}

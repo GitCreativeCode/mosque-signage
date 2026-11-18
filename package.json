@@ -1,0 +1,43 @@
+{
+  "name": "mosque-signage",
+  "version": "0.1.0",
+  "license": "GPL-3.0-or-later",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --turbo",
+    "build": "next build",
+    "build:docker": "BUILD_STANDALONE=true next build",
+    "prestart": "node scripts/ensure-build.mjs",
+    "start": "node scripts/start-server.mjs",
+    "autostart": "node scripts/manage-autostart.mjs",
+    "migrate-data": "node scripts/migrate-data.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:security": "vitest run tests/security-dast-and-attacks.test.ts tests/security-dst-regression.test.ts tests/auth-guards.test.ts tests/auth-pin.test.ts tests/lan-exposure-security.test.ts tests/display-pairing.test.ts tests/display-power-security.test.ts",
+    "db:seed": "tsx src/lib/db/seed.ts",
+    "reset-auth": "tsx scripts/reset-auth.ts",
+    "reset-pin": "tsx scripts/reset-pin.ts"
+  },
+  "dependencies": {
+    "adhan": "^4.4.6",
+    "drizzle-orm": "^0.45.4",
+    "lucide-react": "^1.16.0",
+    "next": "^16.4.6",
+    "qrcode.react": "^4.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.2",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^5.1.0"
+  }
+}

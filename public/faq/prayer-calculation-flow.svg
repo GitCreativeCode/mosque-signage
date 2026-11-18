@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="100%" height="100%">
+  <!-- Background -->
+  <rect width="960" height="540" fill="#0f172a" rx="16"/>
+  <rect width="958" height="538" x="1" y="1" fill="none" stroke="#334155" stroke-width="1.5" rx="15"/>
+
+  <!-- Technical Header -->
+  <g transform="translate(60, 45)">
+    <text x="0" y="0" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" letter-spacing="1.5">LITURGICAL ENGINE SPECIFICATION</text>
+    <text x="0" y="30" fill="#f8fafc" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700">4-Tier Liturgical Calculation Precedence</text>
+    <text x="0" y="52" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="13">Hierarchy resolving astronomical solar angles, global buffers, annual CSV schedules, and Iqamah rules.</text>
+  </g>
+
+  <!-- Flowchart Columns (4 Tiers) -->
+  <g transform="translate(60, 135)">
+    <!-- Column 1: Tier 1 Astronomy -->
+    <g transform="translate(0, 0)">
+      <rect width="190" height="260" rx="10" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+      <rect width="190" height="34" rx="10" fill="#0f172a"/>
+      <text x="95" y="22" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="11" font-weight="700">1. SOLAR ASTRONOMY</text>
+
+      <text x="16" y="62" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="12" font-weight="700">Solar Zenith Angles</text>
+      <text x="16" y="82" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">Standard conventions:</text>
+      <text x="16" y="104" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• ISNA (15° / 15°)</text>
+      <text x="16" y="122" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• MWL (18° / 17°)</text>
+      <text x="16" y="140" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Umm Al-Qura (Makkah)</text>
+      <text x="16" y="158" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Hanafi / Shafi Asr</text>
+
+      <rect x="15" y="195" width="160" height="45" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+      <text x="95" y="215" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Base Adhan Timings</text>
+      <text x="95" y="230" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="9">Fajr, Dhuhr, Asr...</text>
+    </g>
+
+    <!-- Connector 1 -->
+    <text x="204" y="135" text-anchor="middle" fill="#64748b" font-family="system-ui, sans-serif" font-size="14">➔</text>
+
+    <!-- Column 2: Tier 2 Offsets -->
+    <g transform="translate(218, 0)">
+      <rect width="190" height="260" rx="10" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+      <rect width="190" height="34" rx="10" fill="#0f172a"/>
+      <text x="95" y="22" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="11" font-weight="700">2. GLOBAL BUFFERS</text>
+
+      <text x="16" y="62" fill="#2dd4bf" font-family="system-ui, sans-serif" font-size="12" font-weight="700">Minute Offsets</text>
+      <text x="16" y="82" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">Venue calibrations:</text>
+      <text x="16" y="104" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Fajr offset (±30m)</text>
+      <text x="16" y="122" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Dhuhr (+5m solar noon)</text>
+      <text x="16" y="140" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Maghrib (+3m sunset)</text>
+      <text x="16" y="158" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Hijri offset (±2 days)</text>
+
+      <rect x="15" y="195" width="160" height="45" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+      <text x="95" y="215" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Calibrated Times</text>
+      <text x="95" y="230" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="9">Local Timezone Clocks</text>
+    </g>
+
+    <!-- Connector 2 -->
+    <text x="422" y="135" text-anchor="middle" fill="#64748b" font-family="system-ui, sans-serif" font-size="14">➔</text>
+
+    <!-- Column 3: Tier 3 CSV Override -->
+    <g transform="translate(436, 0)">
+      <rect width="190" height="260" rx="10" fill="#1e293b" stroke="#15803d" stroke-width="1.5"/>
+      <rect width="190" height="34" rx="10" fill="#14532d"/>
+      <text x="95" y="22" text-anchor="middle" fill="#86efac" font-family="system-ui, sans-serif" font-size="11" font-weight="700">3. ANNUAL CSV OVERRIDE</text>
+
+      <text x="16" y="62" fill="#4ade80" font-family="system-ui, sans-serif" font-size="12" font-weight="700">Custom Timetable</text>
+      <text x="16" y="82" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">Direct database import:</text>
+      <text x="16" y="104" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• 365-day CSV spreadsheet</text>
+      <text x="16" y="122" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Dialect header detection</text>
+      <text x="16" y="140" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Fixed seasonal Iqamah</text>
+      <text x="16" y="158" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Overrides astronomy</text>
+
+      <rect x="15" y="195" width="160" height="45" rx="6" fill="#052e16" stroke="#15803d" stroke-width="1"/>
+      <text x="95" y="215" text-anchor="middle" fill="#86efac" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Official Mosque Times</text>
+      <text x="95" y="230" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="9">Stored in SQLite WAL</text>
+    </g>
+
+    <!-- Connector 3 -->
+    <text x="640" y="135" text-anchor="middle" fill="#64748b" font-family="system-ui, sans-serif" font-size="14">➔</text>
+
+    <!-- Column 4: Tier 4 Presentation -->
+    <g transform="translate(654, 0)">
+      <rect width="186" height="260" rx="10" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+      <rect width="186" height="34" rx="10" fill="#0f172a"/>
+      <text x="93" y="22" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="11" font-weight="700">4. IQAMAH &amp; DISPLAY</text>
+
+      <text x="16" y="62" fill="#f59e0b" font-family="system-ui, sans-serif" font-size="12" font-weight="700">Display Automation</text>
+      <text x="16" y="82" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">Countdown triggers:</text>
+      <text x="16" y="104" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Relative: +10m after Adhan</text>
+      <text x="16" y="122" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Fixed clock overrides</text>
+      <text x="16" y="140" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• Friday multi-Khutbahs</text>
+      <text x="16" y="158" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="10">• 15m Approaching alert</text>
+
+      <rect x="15" y="195" width="156" height="45" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+      <text x="93" y="215" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Broadcast Output</text>
+      <text x="93" y="230" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="9">Kiosk Screen &amp; TV</text>
+    </g>
+  </g>
+
+  <!-- Technical Summary Strip -->
+  <g transform="translate(60, 425)">
+    <rect width="840" height="65" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="25" y="26" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="12" font-weight="700">Autonomous Midnight Rollover Guarantee:</text>
+    <text x="25" y="46" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">At <tspan fill="#4ade80" font-weight="700">00:00:00 local venue time</tspan>, the state machine recalculates today's complete prayer schedule locally without browser reloads.</text>
+  </g>
+</svg>
