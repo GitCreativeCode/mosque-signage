@@ -57,6 +57,8 @@ interface StudioCanvasStageProps {
   readonly onStickerPointerDown: (e: React.PointerEvent, stk: StudioSceneState['stickers'][number], idx: number) => void;
   readonly onCompoundPointerDown: (e: React.PointerEvent, id: string) => void;
   readonly onTextPointerDown: (e: React.PointerEvent, id: string) => void;
+  readonly onStartEditingText?: ((textId: string) => void) | undefined;
+  readonly onCommitText?: ((textId: string, nextText: string) => void) | undefined;
   readonly onStartResizing: (e: React.PointerEvent, type: ResizeSession['type'], id: string, handle: ResizeHandle, p: { pos_x: number; pos_y: number; width_percent: number; height_percent: number }) => void;
   readonly onMultiDragStart: (e: React.PointerEvent) => void;
   readonly onStartMultiResizing: (e: React.PointerEvent, handle: ResizeHandle) => void;
@@ -152,6 +154,7 @@ export function StudioCanvasStage(props: StudioCanvasStageProps) {
               textOverlays={scene.textOverlays} selectedEntity={props.selectedEntity} selectedLayerKeys={props.selectedLayerKeys}
               draggingTextId={props.draggingTextId} isAspectLocked={props.isAspectLocked} isItemLocked={props.isItemLocked}
               onTextPointerDown={props.onTextPointerDown} onStartResizing={props.onStartResizing}
+              onStartEditingText={props.onStartEditingText} onCommitText={props.onCommitText}
             />
             <StudioUprightActionsBar
               scene={scene} archetype={archetype} selectedEntity={props.selectedEntity} selectedCount={props.selectedLayerKeys.length}

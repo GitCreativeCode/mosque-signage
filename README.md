@@ -3,7 +3,7 @@
 ![License: GPLv3](https://img.shields.io/badge/license-GPLv3-emerald.svg)
 ![Version: 0.1.0 Beta](https://img.shields.io/badge/version-v0.1.0--beta-blue.svg)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D22.0-blue.svg)
-![Tests](https://img.shields.io/badge/tests-473%2F473%20passing-brightgreen.svg)
+![Tests](https://img.shields.io/badge/tests-483%2F483%20passing-brightgreen.svg)
 
 **MosqueSignage** is an open-source, local-first digital signage appliance engineered for mosques, Islamic schools, community centers, and public venues. It turns any television or monitor into a clean, 24/7 informational display showing accurate prayer times, Friday Jummah schedules, announcements, event flyers, and videos.
 
@@ -262,7 +262,7 @@ docker compose up -d --build
 
 MosqueSignage includes a comprehensive automated verification suite:
 ```bash
-npm test                # Runs all 45 test suites (473 tests)
+npm test                # Runs all 46 test suites (483 tests)
 npx tsc --noEmit        # Strict TypeScript type safety verification
 npm run test:security   # Runs targeted security, auth, and penetration test checks
 ```

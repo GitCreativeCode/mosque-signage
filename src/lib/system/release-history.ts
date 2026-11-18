@@ -24,13 +24,43 @@ export interface ReleaseLogItem {
 
 export const OFFICIAL_RELEASE_HISTORY: readonly ReleaseLogItem[] = [
   {
+    version: '0.1.1',
+    date: 'November 18, 2026',
+    title: 'v0.1.1 - Poster Studio Enhancements & Locked Layer Safeguards',
+    summary:
+      'A focused maintenance and UX upgrade for the Multi-Asset Poster Layout Studio. Introduces inline double-click canvas text editing with real-time sidebar synchronization and robust keyboard deletion safeguards for locked layers.',
+    category: 'patch',
+    isCurrent: true,
+    highlights: [
+      'Inline Double-Click Canvas Text Editing: Double-click any unlocked text banner directly on the visual stage canvas to edit text in place with auto-focus, multiline support (Shift+Enter), and automatic sidebar inspector sync.',
+      'Locked Layer Deletion Safeguards: Delete and Backspace keyboard shortcuts now strictly respect layer locks, preventing accidental deletion of locked slots, stickers, text overlays, and compound layers.',
+    ],
+    sections: [
+      {
+        title: 'Poster Layout Studio UX Upgrades',
+        items: [
+          'Inline Stage Text Editing: Double-clicking an unlocked text banner opens a transparent, auto-resizing in-place editor matching font, size, weight, and color without requiring sidebar-only interaction.',
+          'Multiline & Escape Controls: Press Enter to commit, Shift+Enter to insert newlines, Escape to cancel edits without mutation, and auto-revert on empty/whitespace submission.',
+          'Auto-Focus Inspector Sidebar: Double-clicking an unlocked canvas text element automatically switches the tool drawer to the Text tab for immediate access to styling controls.',
+        ],
+      },
+      {
+        title: 'Safety, Locks & Keyboard Ergonomics',
+        items: [
+          'Locked Layer Delete Guard: Pressing Delete or Backspace when a layer is locked (directly or via parent folder) is a silent no-op, preventing unintended layout loss.',
+          'Multi-Selection Partial Delete: Deleting a selection containing both locked and unlocked items safely removes only the unlocked elements while preserving locked layers intact.',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.1.0',
-    date: 'November 16, 2026',
+    date: 'November 18, 2026',
     title: 'v0.1.0 - Official Public Beta Release',
     summary:
       'The initial public beta release of MosqueSignage - a 100% local-first, zero-subscription digital signage appliance engineered for mosques, Islamic schools, community centers, and public venues. Designed for unattended 24/7 autonomous display on prayer hall televisions or general venue screens, with local astronomical calculations, in-browser poster creation, TV hardware automation, and robust appliance security. We warmly invite community testing and feedback!',
     category: 'minor',
-    isCurrent: true,
+    isCurrent: false,
     highlights: [
       'Autonomous 1080p kiosk presentation with universal GPU auto-scaling across 720p, 1080p, 1440p, and 4K displays.',
       'Deterministic prayer & Jummah engine with astronomical solar calculations, CSV timetable imports, and Friday multi-shift manager.',

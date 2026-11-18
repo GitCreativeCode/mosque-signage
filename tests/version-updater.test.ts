@@ -41,7 +41,7 @@ describe('Version & SemVer Logic', () => {
     expect(current?.isCurrent).toBe(true);
     expect(current?.highlights.length).toBeGreaterThan(0);
     expect(current?.sections).toBeDefined();
-    expect(current?.sections?.length).toBeGreaterThanOrEqual(4);
+    expect(current?.sections?.length).toBeGreaterThanOrEqual(2);
   });
 });
 
@@ -78,20 +78,20 @@ describe('checkLatestRelease Remote Queries', () => {
         status: 200,
         json: async () => [
           {
-            tag_name: 'v0.1.1',
-            name: 'MosqueSignage v0.1.1 Pre-Release',
+            tag_name: 'v0.1.2',
+            name: 'MosqueSignage v0.1.2 Pre-Release',
             published_at: '2026-11-20T12:00:00Z',
             body: 'Pre-release patch.',
-            html_url: 'https://github.com/GitCreativeCode/mosque-signage/releases/tag/v0.1.1',
-            zipball_url: 'https://github.com/GitCreativeCode/mosque-signage/archive/refs/tags/v0.1.1.zip',
+            html_url: 'https://github.com/GitCreativeCode/mosque-signage/releases/tag/v0.1.2',
+            zipball_url: 'https://github.com/GitCreativeCode/mosque-signage/archive/refs/tags/v0.1.2.zip',
           },
         ],
       } as unknown as Response);
 
     const result = await checkLatestRelease('GitCreativeCode/mosque-signage', true);
     expect(result.hasUpdate).toBe(true);
-    expect(result.latestVersion).toBe('0.1.1');
-    expect(result.release?.title).toBe('MosqueSignage v0.1.1 Pre-Release');
+    expect(result.latestVersion).toBe('0.1.2');
+    expect(result.release?.title).toBe('MosqueSignage v0.1.2 Pre-Release');
   });
 
   it('detects a newer version from GitHub release payload', async () => {

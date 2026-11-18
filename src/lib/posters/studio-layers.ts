@@ -109,19 +109,30 @@ export function duplicateLayerInScene(
   return null;
 }
 
-/** Deletes a single layer or selected multi-layer set (including selected folders). */
+/** Deletes a single layer or selected multi-layer set (including selected folders), strictly preserving locked layers. */
 export function deleteLayerKeysFromScene(scene: StudioSceneState, keysToDelete: readonly string[]): StudioSceneState {
-  const folderIds = keysToDelete.filter((k) => k.startsWith('folder:')).map((k) => k.replace('folder:', ''));
+  const safeKeys = keysToDelete.filter((k) => !isLayerKeyLocked(k, scene));
+  if (safeKeys.length === 0) return scene;
+
+  const folderIds = safeKeys.filter((k) => k.startsWith('folder:')).map((k) => k.replace('folder:', ''));
   const folders = scene.folders
     .filter((f) => !folderIds.includes(f.id))
-    .map((f) => ({ ...f, child_keys: (f.child_keys ?? []).filter((k) => !keysToDelete.includes(k)) }));
+    .map((f) => ({ ...f, child_keys: (f.child_keys ?? []).filter((k) => !safeKeys.includes(k)) }));
   return normalizeSceneWithZ({
-    slots: scene.slots.filter((s) => !keysToDelete.includes(`slot:${s.id}`)),
-    stickers: scene.stickers.filter((stk) => !keysToDelete.includes(`sticker:${stk.id}`)),
-    textOverlays: scene.textOverlays.filter((t) => !keysToDelete.includes(`text:${t.id}`)),
-    compoundLayers: scene.compoundLayers.filter((c) => !keysToDelete.includes(`compound:${c.id}`)),
+    slots: scene.slots
+      .filter((s) => !safeKeys.includes(`slot:${s.id}`))
+      .map((s) => (folderIds.includes(s.layer_folder_id ?? '') ? { ...s, layer_folder_id: undefined } : s)),
+    stickers: scene.stickers
+      .filter((stk) => !safeKeys.includes(`sticker:${stk.id}`))
+      .map((stk) => (folderIds.includes(stk.layer_folder_id ?? '') ? { ...stk, layer_folder_id: undefined } : stk)),
+    textOverlays: scene.textOverlays
+      .filter((t) => !safeKeys.includes(`text:${t.id}`))
+      .map((t) => (folderIds.includes(t.layer_folder_id ?? '') ? { ...t, layer_folder_id: undefined } : t)),
+    compoundLayers: scene.compoundLayers
+      .filter((c) => !safeKeys.includes(`compound:${c.id}`))
+      .map((c) => (folderIds.includes(c.layer_folder_id ?? '') ? { ...c, layer_folder_id: undefined } : c)),
     folders,
-    rootOrder: scene.rootOrder.filter((k) => !keysToDelete.includes(k)),
+    rootOrder: scene.rootOrder.filter((k) => !safeKeys.includes(k)),
   });
 }
 

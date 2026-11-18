@@ -5,7 +5,7 @@
 
 export { OFFICIAL_RELEASE_HISTORY, type ReleaseLogItem, type ReleaseSection } from './release-history';
 
-export const APP_VERSION = '0.1.0';
+export const APP_VERSION = '0.1.1';
 export const DEFAULT_GITHUB_REPO = 'GitCreativeCode/mosque-signage';
 
 export interface ReleaseInfo {

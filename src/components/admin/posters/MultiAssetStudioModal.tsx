@@ -125,6 +125,16 @@ export function MultiAssetStudioModal(props: MultiAssetStudioModalProps) {
               onStickerPointerDown={pointer.handleStickerPointerDown}
               onCompoundPointerDown={pointer.handleCompoundPointerDown}
               onTextPointerDown={pointer.handleTextPointerDown}
+              onStartEditingText={(id) => {
+                const idx = historyState.scene.textOverlays.findIndex((t) => t.id === id);
+                if (idx !== -1) selection.selectText(idx);
+                lifecycle.setActiveTab('text');
+              }}
+              onCommitText={(id, nextText) => {
+                const s = historyState.scene;
+                const nextOverlays = s.textOverlays.map((t) => (t.id === id ? { ...t, text: nextText } : t));
+                historyState.commitScene({ ...s, textOverlays: nextOverlays });
+              }}
               onStartResizing={pointer.handleStartResizing}
               onMultiDragStart={pointer.handleMultiDragStart}
               onStartMultiResizing={pointer.handleStartMultiResizing}

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { deleteLayerKeysFromScene } from '@/lib/posters/studio-layers';
+import { isLayerKeyLocked } from '@/lib/posters/studio-zindex';
 import type { SelectedEntity, StudioSceneState } from '@/lib/posters/studio-types';
 
 interface UseStudioKeyboardShortcutsParams {
@@ -19,7 +20,7 @@ interface UseStudioKeyboardShortcutsParams {
   readonly handleRedo: () => void;
 }
 
-function resolveKeysToDelete(
+export function resolveKeysToDelete(
   scene: StudioSceneState,
   selectedLayerKeys: readonly string[],
   selectedEntity: SelectedEntity | null,
@@ -75,15 +76,23 @@ export function useStudioKeyboardShortcuts(params: UseStudioKeyboardShortcutsPar
       const keys = resolveKeysToDelete(scene, selectedLayerKeys, selectedEntity, selectedSlotIndex);
       if (keys.length === 0) return;
 
-      const nextScene = deleteLayerKeysFromScene(scene, keys);
-      if (nextScene.slots.length === 0 && scene.slots.length > 0) return;
+      const unlockedKeys = keys.filter((k) => !isLayerKeyLocked(k, scene));
+      if (unlockedKeys.length === 0) return;
+
+      const nextScene = deleteLayerKeysFromScene(scene, unlockedKeys);
+      if (nextScene === scene || (nextScene.slots.length === 0 && scene.slots.length > 0)) return;
 
       commitScene(nextScene);
-      setSelectedLayerKeys([]);
+      const remainingSelected = selectedLayerKeys.filter((k) => !unlockedKeys.includes(k));
+      if (remainingSelected.length > 0) {
+        setSelectedLayerKeys(remainingSelected);
+      } else {
+        setSelectedLayerKeys([]);
+        deselectAll();
+      }
       if (nextScene.slots.length < scene.slots.length && selectedSlotIndex !== null) {
         setSelectedSlotIndex(Math.max(0, Math.min(selectedSlotIndex, nextScene.slots.length - 1)));
       }
-      deselectAll();
     };
 
     window.addEventListener('keydown', handleKeyDown);

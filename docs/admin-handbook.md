@@ -16,7 +16,7 @@ This guide is a practical, quick reference for mosque administrators, IT volunte
 | **Reset Auth (Username/Password)** | `npm run reset-auth` | Terminal tool to change passwords or switch back to PIN mode. |
 | **Run Health Check** | `curl http://localhost:3000/api/health` | Checks if the server and database are healthy. |
 | **Docker Start** | `docker compose up -d` | Runs the appliance inside a Docker container. |
-| **Run Test Suite** | `npm test` | Runs all 473 automated tests across 45 suites to verify stability. |
+| **Run Test Suite** | `npm test` | Runs all 483 automated tests across 46 suites to verify stability. |
 
 > **Host vs Local Network (LAN) Access**:
 > - **On the Host PC**: Use `http://localhost:3000/display` and `http://localhost:3000/admin`.
