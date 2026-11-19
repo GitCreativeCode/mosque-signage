@@ -403,7 +403,7 @@ When a new version or security update is released, choose the instructions for y
      npm run migrate-data "C:\Path\To\Previous\MosqueSignage"
      npm start
      ```
-     `npm run migrate-data` automatically transfers your SQLite database (`signage.db`), WAL journals, session secrets, uploaded media, and safely merges custom frames.
+     `npm run migrate-data` automatically transfers your SQLite database (`mosque_signage.db`), WAL journals, session secrets, uploaded media, and safely merges custom frames.
   *(Alternatively, manually copy the `data\` and `public\uploads\` folders from the old directory to the new directory).*
 
 ### Updating on Linux & Raspberry Pi

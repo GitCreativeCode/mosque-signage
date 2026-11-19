@@ -90,51 +90,91 @@ async function getSourcePath() {
   return resolveOldPath(answer);
 }
 
-async function runMigration() {
-  const sourceRoot = await getSourcePath();
+/**
+ * Searches for MosqueSignage database files in the given directory or any immediate subfolder.
+ * Supports primary `mosque_signage.db` and legacy `signage.db`.
+ */
+function findDatabaseInRoot(dir) {
+  const candidates = ['mosque_signage.db', 'signage.db'];
+  for (const name of candidates) {
+    const full = path.join(dir, 'data', name);
+    if (fs.existsSync(full)) {
+      return { root: dir, dbPath: full, dbName: name };
+    }
+  }
+  return null;
+}
 
-  if (!sourceRoot || !fs.existsSync(sourceRoot)) {
-    log(`\n[ERROR] Source directory does not exist: "${sourceRoot}"`, '\x1b[31m');
+function resolveEffectiveSource(initialRoot) {
+  // 1. Direct check in provided root
+  const direct = findDatabaseInRoot(initialRoot);
+  if (direct) return direct;
+
+  // 2. Check immediate subdirectories (e.g. unzipped into a wrapper folder)
+  try {
+    const entries = fs.readdirSync(initialRoot, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const nested = findDatabaseInRoot(path.join(initialRoot, entry.name));
+        if (nested) return nested;
+      }
+    }
+  } catch {}
+
+  return null;
+}
+
+async function runMigration() {
+  const inputRoot = await getSourcePath();
+
+  if (!inputRoot || !fs.existsSync(inputRoot)) {
+    log(`\n[ERROR] Source directory does not exist: "${inputRoot}"`, '\x1b[31m');
     process.exit(1);
   }
+
+  const resolved = resolveEffectiveSource(inputRoot);
+
+  if (!resolved) {
+    log(`\n[ERROR] Could not find SQLite database in: "${inputRoot}"`, '\x1b[31m');
+    log('Looked for:', '\x1b[33m');
+    log(`  - ${path.join(inputRoot, 'data', 'mosque_signage.db')}`);
+    log(`  - ${path.join(inputRoot, 'data', 'signage.db')}`);
+    log(`  - Direct subfolders of "${inputRoot}"`);
+    log('\nPlease ensure you selected the folder containing your previous installation where "npm start" was run.', '\x1b[33m');
+    process.exit(1);
+  }
+
+  const { root: sourceRoot, dbPath: oldDbFile, dbName: sourceDbName } = resolved;
 
   if (path.resolve(sourceRoot) === path.resolve(targetRoot)) {
     log('\n[ERROR] Source directory is the same as the current target directory!', '\x1b[31m');
     process.exit(1);
   }
 
-  const oldDataDir = path.join(sourceRoot, 'data');
-  const oldDbFile = path.join(oldDataDir, 'signage.db');
-
-  if (!fs.existsSync(oldDbFile)) {
-    log(`\n[ERROR] Could not find SQLite database at: "${oldDbFile}"`, '\x1b[31m');
-    log('Please ensure you selected the root folder of your previous MosqueSignage installation.', '\x1b[33m');
-    process.exit(1);
-  }
-
   log(`\nMigrating user data:`, '\x1b[36m');
-  log(`  Source: ${sourceRoot}`);
+  log(`  Source: ${sourceRoot} (${sourceDbName})`);
   log(`  Target: ${targetRoot}\n`);
 
+  const oldDataDir = path.join(sourceRoot, 'data');
   const targetDataDir = path.join(targetRoot, 'data');
   fs.mkdirSync(targetDataDir, { recursive: true });
 
-  const targetDbFile = path.join(targetDataDir, 'signage.db');
+  const targetDbFile = path.join(targetDataDir, 'mosque_signage.db');
   if (fs.existsSync(targetDbFile)) {
-    const backupDbFile = path.join(targetDataDir, `signage.db.backup-${Date.now()}`);
+    const backupDbFile = path.join(targetDataDir, `mosque_signage.db.backup-${Date.now()}`);
     fs.copyFileSync(targetDbFile, backupDbFile);
     log(`  ✓ Backed up existing target database to: ${path.basename(backupDbFile)}`, '\x1b[33m');
   }
 
   fs.copyFileSync(oldDbFile, targetDbFile);
-  log(`  ✓ Migrated database: signage.db`, '\x1b[32m');
+  log(`  ✓ Migrated database: ${sourceDbName} -> mosque_signage.db`, '\x1b[32m');
 
   for (const ext of ['-wal', '-shm']) {
     const oldWal = `${oldDbFile}${ext}`;
     const targetWal = `${targetDbFile}${ext}`;
     if (fs.existsSync(oldWal)) {
       fs.copyFileSync(oldWal, targetWal);
-      log(`  ✓ Migrated SQLite journal: signage.db${ext}`, '\x1b[32m');
+      log(`  ✓ Migrated SQLite journal: ${path.basename(targetWal)}`, '\x1b[32m');
     } else if (fs.existsSync(targetWal)) {
       try {
         fs.unlinkSync(targetWal);
@@ -170,4 +210,3 @@ runMigration().catch((err) => {
   log(`\n[FATAL ERROR] Migration failed: ${err.message}`, '\x1b[31m');
   process.exit(1);
 });
-

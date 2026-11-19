@@ -4,6 +4,7 @@ import {
   compareSemVer,
   isNewerVersion,
   checkLatestRelease,
+  clearVersionCheckCache,
   APP_VERSION,
   OFFICIAL_RELEASE_HISTORY,
 } from '@/lib/system/version';
@@ -78,20 +79,20 @@ describe('checkLatestRelease Remote Queries', () => {
         status: 200,
         json: async () => [
           {
-            tag_name: 'v0.1.2',
-            name: 'MosqueSignage v0.1.2 Pre-Release',
+            tag_name: 'v0.1.3',
+            name: 'MosqueSignage v0.1.3 Pre-Release',
             published_at: '2026-11-20T12:00:00Z',
             body: 'Pre-release patch.',
-            html_url: 'https://github.com/GitCreativeCode/mosque-signage/releases/tag/v0.1.2',
-            zipball_url: 'https://github.com/GitCreativeCode/mosque-signage/archive/refs/tags/v0.1.2.zip',
+            html_url: 'https://github.com/GitCreativeCode/mosque-signage/releases/tag/v0.1.3',
+            zipball_url: 'https://github.com/GitCreativeCode/mosque-signage/archive/refs/tags/v0.1.3.zip',
           },
         ],
       } as unknown as Response);
 
     const result = await checkLatestRelease('GitCreativeCode/mosque-signage', true);
     expect(result.hasUpdate).toBe(true);
-    expect(result.latestVersion).toBe('0.1.2');
-    expect(result.release?.title).toBe('MosqueSignage v0.1.2 Pre-Release');
+    expect(result.latestVersion).toBe('0.1.3');
+    expect(result.release?.title).toBe('MosqueSignage v0.1.3 Pre-Release');
   });
 
   it('detects a newer version from GitHub release payload', async () => {
@@ -121,6 +122,32 @@ describe('checkLatestRelease Remote Queries', () => {
     const result = await checkLatestRelease('GitCreativeCode/mosque-signage', true);
     expect(result.hasUpdate).toBe(false);
     expect(result.error).toBe('Network offline');
+  });
+
+  it('clearVersionCheckCache clears in-memory cached release data', async () => {
+    clearVersionCheckCache();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        tag_name: 'v0.9.9',
+        name: 'Release 0.9.9',
+      }),
+    } as unknown as Response);
+
+    const r1 = await checkLatestRelease('GitCreativeCode/mosque-signage', false);
+    expect(r1.latestVersion).toBe('0.9.9');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    // Call without forceRefresh should hit cache
+    const r2 = await checkLatestRelease('GitCreativeCode/mosque-signage', false);
+    expect(r2.latestVersion).toBe('0.9.9');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    // After clearing cache, next call queries fetch again
+    clearVersionCheckCache();
+    await checkLatestRelease('GitCreativeCode/mosque-signage', false);
+    expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 });
 

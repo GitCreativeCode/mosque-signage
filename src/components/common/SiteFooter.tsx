@@ -28,7 +28,7 @@ function FooterVersionBadge({ version = APP_VERSION }: { readonly version?: stri
 
     async function checkVersion() {
       try {
-        const res = await fetch('/api/system/version');
+        const res = await fetch('/api/system/version', { cache: 'no-cache' });
         if (!res.ok) return;
         const data = (await res.json()) as {
           hasUpdate?: boolean;
@@ -48,8 +48,27 @@ function FooterVersionBadge({ version = APP_VERSION }: { readonly version?: stri
 
     checkVersion();
 
+    // Active polling every 2 minutes while tab is open
+    const pollInterval = setInterval(checkVersion, 2 * 60 * 1000);
+
+    // Re-check immediately whenever user refocuses tab or returns to window
+    const handleFocus = () => {
+      checkVersion();
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        checkVersion();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+
     return () => {
       isMounted = false;
+      clearInterval(pollInterval);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, []);
 

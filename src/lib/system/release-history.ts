@@ -24,13 +24,45 @@ export interface ReleaseLogItem {
 
 export const OFFICIAL_RELEASE_HISTORY: readonly ReleaseLogItem[] = [
   {
+    version: '0.1.2',
+    date: 'November 18, 2026',
+    title: 'v0.1.2 - Dynamic Media Serving, Resilient Data Migration & Instant Update Polling',
+    summary:
+      'Maintenance and stability patch resolving production media preview streaming in npm start, expanding SQLite migration tooling to detect mosque_signage.db across nested folders, and introducing 2-minute tab-focus update polling with styled release highlights.',
+    category: 'patch',
+    isCurrent: true,
+    highlights: [
+      'Production Dynamic Media Serving: Added dynamic Next.js App Router streaming at /uploads/* ensuring newly uploaded flyers, video clips, and vector SVG notices display immediately in production mode without 404s.',
+      'Resilient Data Migration: Upgraded migrate-data.mjs to automatically recognize mosque_signage.db (and legacy signage.db) and detect nested release folders created during zip extraction.',
+      'Active Update Detection: Added 2-minute interval polling and instant window/tab-focus re-checks so available GitHub updates appear in real-time without restarting the server.',
+      'Structured Release Highlights: Replaced raw monospace markdown in update dialogs with formatted cards, styled section badges, and clean bullet lists.',
+    ],
+    sections: [
+      {
+        title: 'Production Media & Kiosk Streaming',
+        items: [
+          'Dynamic /uploads/* Route: Intercepts runtime media requests in production next start with HTTP 200/206 partial range streaming for video loops and directory traversal security.',
+          'Instant Notice & Flyer Previews: Notice SVGs and flyer uploads render immediately on the admin dashboard and TV display without requiring server rebuilds.',
+        ],
+      },
+      {
+        title: 'Appliance Maintenance & Migration Tooling',
+        items: [
+          'Flexible SQLite Database Detection: migrate-data supports primary mosque_signage.db, legacy signage.db, and nested release directories with automated timestamped backups.',
+          'Real-Time Update Polling: Site footer polls GitHub releases every 2 minutes and immediately when switching back to the browser tab.',
+          'Sanitized Markdown Highlights: Strips technical offline checksum blocks and formats release notes into clean, readable cards.',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.1.1',
     date: 'November 18, 2026',
     title: 'v0.1.1 - Poster Studio Enhancements & Locked Layer Safeguards',
     summary:
       'A focused maintenance and UX upgrade for the Multi-Asset Poster Layout Studio. Introduces inline double-click canvas text editing with real-time sidebar synchronization and robust keyboard deletion safeguards for locked layers.',
     category: 'patch',
-    isCurrent: true,
+    isCurrent: false,
     highlights: [
       'Inline Double-Click Canvas Text Editing: Double-click any unlocked text banner directly on the visual stage canvas to edit text in place with auto-focus, multiline support (Shift+Enter), and automatic sidebar inspector sync.',
       'Locked Layer Deletion Safeguards: Delete and Backspace keyboard shortcuts now strictly respect layer locks, preventing accidental deletion of locked slots, stickers, text overlays, and compound layers.',

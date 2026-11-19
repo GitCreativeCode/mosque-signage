@@ -5,7 +5,7 @@
 
 export { OFFICIAL_RELEASE_HISTORY, type ReleaseLogItem, type ReleaseSection } from './release-history';
 
-export const APP_VERSION = '0.1.1';
+export const APP_VERSION = '0.1.2';
 export const DEFAULT_GITHUB_REPO = 'GitCreativeCode/mosque-signage';
 
 export interface ReleaseInfo {
@@ -40,7 +40,11 @@ interface CacheEntry {
 }
 
 let cachedCheck: CacheEntry | null = null;
-const CACHE_TTL_MS = 60 * 60 * 1000;
+const CACHE_TTL_MS = 60 * 1000;
+
+export function clearVersionCheckCache(): void {
+  cachedCheck = null;
+}
 
 export function cleanVersion(ver: string): string {
   return ver.trim().replace(/^v/i, '');
@@ -97,11 +101,18 @@ export async function checkLatestRelease(
     return cachedCheck.result;
   }
 
+  const fetchInit: RequestInit = forceRefresh
+    ? {
+        headers: { Accept: 'application/vnd.github.v3+json', 'User-Agent': 'MosqueSignage-Appliance' },
+        cache: 'no-store',
+      }
+    : {
+        headers: { Accept: 'application/vnd.github.v3+json', 'User-Agent': 'MosqueSignage-Appliance' },
+        next: { revalidate: 60 },
+      };
+
   try {
-    const response = await fetch(`https://api.github.com/repos/${repoSlug}/releases/latest`, {
-      headers: { Accept: 'application/vnd.github.v3+json', 'User-Agent': 'MosqueSignage-Appliance' },
-      next: { revalidate: 3600 },
-    });
+    const response = await fetch(`https://api.github.com/repos/${repoSlug}/releases/latest`, fetchInit);
 
     let data: GitHubLatestReleaseJson | null = null;
     if (response.ok) {
@@ -109,10 +120,7 @@ export async function checkLatestRelease(
     } else if (response.status === 404) {
       // Fallback: If releases/latest returned 404 (e.g. releases are tagged as pre-releases),
       // query /releases?per_page=1 so pre-releases are still detected cleanly.
-      const listRes = await fetch(`https://api.github.com/repos/${repoSlug}/releases?per_page=1`, {
-        headers: { Accept: 'application/vnd.github.v3+json', 'User-Agent': 'MosqueSignage-Appliance' },
-        next: { revalidate: 3600 },
-      });
+      const listRes = await fetch(`https://api.github.com/repos/${repoSlug}/releases?per_page=1`, fetchInit);
       if (listRes.ok) {
         const list = (await listRes.json()) as GitHubLatestReleaseJson[];
         if (Array.isArray(list) && list.length > 0) {

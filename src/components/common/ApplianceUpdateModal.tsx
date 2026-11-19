@@ -13,6 +13,7 @@ import {
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import type { ReleaseInfo } from '@/lib/system/version';
 import { ApplianceUpdateTerminalGuide } from './ApplianceUpdateTerminalGuide';
+import { ReleaseHighlightsView } from './ReleaseHighlightsView';
 
 export interface ApplianceUpdateModalProps {
   readonly isOpen: boolean;
@@ -95,15 +96,10 @@ export function ApplianceUpdateModal({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <h3 className="text-xs font-bold text-[var(--admin-text-muted)] uppercase tracking-wider">Release Highlights</h3>
-          <div className="p-4 rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)]/60 text-xs text-[var(--admin-text-secondary)] space-y-2 leading-relaxed max-h-48 overflow-y-auto">
-            <p className="font-semibold text-[var(--admin-text-primary)]">{releaseInfo?.title || `Release v${targetVersion}`}</p>
-            <div className="whitespace-pre-line text-[11px] text-[var(--admin-text-muted)] font-mono">
-              {releaseInfo?.body || 'Includes performance optimizations, security hardening, and liturgical calculation adjustments.'}
-            </div>
-          </div>
-        </div>
+        <ReleaseHighlightsView
+          title={releaseInfo?.title || `Release v${targetVersion}`}
+          body={releaseInfo?.body}
+        />
 
         {updateStatus && (
           <div role="alert" className={`p-4 rounded-2xl border text-xs flex items-start space-x-3 ${updateStatus.success ? 'border-green-600/30 bg-green-600/10 text-green-700 dark:text-green-300' : 'border-red-500/30 bg-red-500/10 text-red-300'}`}>
