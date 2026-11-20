@@ -86,7 +86,11 @@ export function KioskDisplayScreen({
   const isCoordinatesConfigured = Boolean(
     typeof settings.latitude === 'number' && typeof settings.longitude === 'number'
   );
-  const isDndActive = !isStandby && displayState.next_prayer?.status === 'STARTING_NOW' && isCoordinatesConfigured;
+  const hasPrayerTiming = Boolean(
+    isCoordinatesConfigured || (prayers && Object.keys(prayers).length > 0)
+  );
+  const isClockUnsynced = Boolean(displayState.header.is_clock_unsynchronized);
+  const isDndActive = Boolean(settings.show_prayer_silence_overlay) && !isStandby && displayState.next_prayer?.status === 'STARTING_NOW' && hasPrayerTiming && !isClockUnsynced;
 
   return (
     <>
@@ -103,6 +107,7 @@ export function KioskDisplayScreen({
           tickerText={displayState.header.ticker}
           mosqueName={settings.mosque_name}
           greeting={settings.header_greeting}
+          isClockUnsynchronized={isClockUnsynced}
         />
 
         {/* Main 16:9 Canvas Surface */}
@@ -114,17 +119,18 @@ export function KioskDisplayScreen({
           slideIndex={slideIndex}
           slideDuration={slideDuration}
           activePostersCount={activePostersCount}
-          isDrawerOpen={isDrawerOpen}
-          sidebarMode={settings.sidebar_mode ?? 'drawer'}
+          isDrawerOpen={!isDndActive && isDrawerOpen}
+          sidebarMode={isDndActive ? 'hidden' : (settings.sidebar_mode ?? 'drawer')}
           sidebarPosition={settings.sidebar_position ?? 'right'}
           sidebarAccentTheme={settings.sidebar_accent_theme ?? 'teal'}
           transition={settings.poster_transition ?? 'fade'}
           fitMode={settings.poster_fit ?? 'cover'}
           mosqueName={settings.mosque_name}
           showProgressBar={settings.show_progress_bar ?? true}
+          isSilenceActive={isDndActive}
         >
           {/* Contextual QR Card on poster (Active in periodic drawer mode; in always-open mode, QR docks cleanly inside sidebar under cards) */}
-          {settings.sidebar_mode !== 'always_open' && (
+          {settings.sidebar_mode !== 'always_open' && !isDndActive && (
             <QrCard
               qrUrl={currentPoster?.qr_url}
               qrLabel={currentPoster?.qr_label}
@@ -137,7 +143,7 @@ export function KioskDisplayScreen({
         </PosterStage>
 
         {/* Floating Mini Prayer Pill (Suppressed in permanent always_open mode or when disabled in settings or coordinates unset) */}
-        {settings.sidebar_mode !== 'always_open' && isCoordinatesConfigured && (
+        {settings.sidebar_mode !== 'always_open' && isCoordinatesConfigured && !isDndActive && (
           <MiniPrayerPill
             pillState={displayState.next_prayer ?? displayState.mini_pill}
             isVisible={isPillVisible}
@@ -148,7 +154,7 @@ export function KioskDisplayScreen({
 
         {/* Periodic Sliding Prayer Drawer or Permanent Always-Open Sidebar */}
         <PrayerDrawer
-          isOpen={isDrawerOpen}
+          isOpen={!isDndActive && isDrawerOpen}
           drawerType={displayState.drawer_type}
           prayers={prayers}
           jummahShifts={displayState.resolved_jummah_shifts ?? jummahShifts}
@@ -168,6 +174,7 @@ export function KioskDisplayScreen({
           isVisible={isDndActive}
           prayerName={displayState.next_prayer?.prayer_name}
           iqamahTime={displayState.next_prayer?.time_display}
+          transition={settings.poster_transition ?? 'fade'}
         />
 
         {/* Low-Power Pitch-Black Standby Overlay with Burn-In Guard */}

@@ -58,17 +58,37 @@ async function upsertAnnualRow(
 export async function importAnnualScheduleCsv(csvContent: string, targetYear?: number): Promise<CsvImportResult> {
   await requireAdminAuth();
   const lines = csvContent.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
-  if (lines.length === 0) return { importedCount: 0, formatDetected: 'legacy_iqamah' };
+  if (lines.length === 0) {
+    return { importedCount: 0, formatDetected: 'legacy_iqamah', skippedCount: 0, warnings: [] };
+  }
 
   const nowIso = new Date().toISOString();
   const defaultYear = targetYear ?? new Date().getFullYear();
+  const forceTargetYear = typeof targetYear === 'number';
   const { formatDetected, dataLines } = detectCsvDialect(lines);
+
+  const warnings: string[] = [];
+  let skippedCount = 0;
 
   const importedCount = await runSerializedTransaction(db, async (tx) => {
     let count = 0;
-    for (const line of dataLines) {
-      const payload = parseCsvLineToSchedulePayload(line, formatDetected, defaultYear, nowIso);
-      if (!payload) continue;
+    for (let i = 0; i < dataLines.length; i++) {
+      const line = dataLines[i]!;
+      if (line.startsWith('#') || line.trim().length === 0) continue;
+
+      if (line.includes('2,29') || line.includes('2, 29') || line.includes('02-29') || line.includes('02/29')) {
+        const isLeap = (defaultYear % 4 === 0 && defaultYear % 100 !== 0) || defaultYear % 400 === 0;
+        if (!isLeap) {
+          warnings.push(`Row ${i + 1}: Feb 29 skipped because ${defaultYear} is not a leap year.`);
+        }
+      }
+
+      const payload = parseCsvLineToSchedulePayload(line, formatDetected, defaultYear, nowIso, forceTargetYear);
+      if (!payload) {
+        skippedCount++;
+        warnings.push(`Row ${i + 1}: Skipped due to invalid format or out-of-order prayer times.`);
+        continue;
+      }
       await upsertAnnualRow(tx, payload.date, payload as unknown as Record<string, unknown>);
       count++;
     }
@@ -76,7 +96,7 @@ export async function importAnnualScheduleCsv(csvContent: string, targetYear?: n
   });
 
   if (importedCount > 0) eventBus.emitEvent('PRAYERS_UPDATED', { timestamp: nowIso });
-  return { importedCount, formatDetected };
+  return { importedCount, formatDetected, skippedCount, warnings };
 }
 
 export async function saveDayIqamahSchedule(date: string, timings: SaveDayIqamahTimings): Promise<void> {

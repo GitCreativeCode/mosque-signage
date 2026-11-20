@@ -12,6 +12,7 @@ export interface TopBarProps {
   readonly tickerText?: string | undefined;
   readonly mosqueName: string;
   readonly greeting?: string | undefined;
+  readonly isClockUnsynchronized?: boolean | undefined;
 }
 
 export function TopBar({
@@ -22,6 +23,7 @@ export function TopBar({
   tickerText,
   mosqueName,
   greeting,
+  isClockUnsynchronized,
 }: TopBarProps) {
   const fullMosqueTitle = greeting?.trim() ? `${greeting.trim()} ${mosqueName}` : mosqueName;
   const cleanTicker = tickerText?.trim() ?? '';
@@ -119,24 +121,36 @@ export function TopBar({
 
       <div className="w-px h-12 bg-white/15 shrink-0" aria-hidden="true" />
 
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={handleClockClick}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleClockClick();
-          }
-        }}
-        suppressHydrationWarning
-        className="flex items-center justify-center shrink-0 ml-5 px-2 py-1 cursor-pointer select-none active:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 rounded-lg"
-        title="Current Time (Triple-click to toggle scenario simulator)"
-        aria-label="Current Time. Triple-click or activate to toggle scenario simulator."
-      >
-        <span suppressHydrationWarning className="text-4xl font-extrabold tracking-tight text-white tabular-nums">
-          {clockTime}
-        </span>
+      <div className="flex items-center gap-3 shrink-0 ml-5">
+        {isClockUnsynchronized && (
+          <div
+            role="status"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/20 border border-amber-400/40 text-amber-300 rounded-lg text-xs font-bold tracking-wide uppercase animate-pulse select-none"
+            title="System clock is not synchronized. Prayer silence and automated audio muting are suspended."
+          >
+            <span aria-hidden="true">⚠️</span>
+            <span>Unsynced Clock</span>
+          </div>
+        )}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={handleClockClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleClockClick();
+            }
+          }}
+          suppressHydrationWarning
+          className="flex items-center justify-center px-2 py-1 cursor-pointer select-none active:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 rounded-lg"
+          title="Current Time (Triple-click to toggle scenario simulator)"
+          aria-label="Current Time. Triple-click or activate to toggle scenario simulator."
+        >
+          <span suppressHydrationWarning className="text-4xl font-extrabold tracking-tight text-white tabular-nums">
+            {clockTime}
+          </span>
+        </div>
       </div>
     </header>
   );

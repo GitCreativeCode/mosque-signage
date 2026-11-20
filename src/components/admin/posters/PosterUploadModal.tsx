@@ -16,12 +16,14 @@ export interface PosterUploadModalProps {
   readonly isOpen: boolean;
   readonly onClose: () => void;
   readonly onUploaded: () => void;
+  readonly venueTimezone?: string | undefined;
 }
 
 export function PosterUploadModal({
   isOpen,
   onClose,
   onUploaded,
+  venueTimezone,
 }: PosterUploadModalProps) {
   const modal = usePosterUploadModal(isOpen, onClose, onUploaded);
 
@@ -133,6 +135,9 @@ export function PosterUploadModal({
               onChangeStartAt={modal.setStartAt}
               endAt={modal.endAt}
               onChangeEndAt={modal.setEndAt}
+              recurringSchedule={modal.recurringSchedule}
+              onChangeRecurringSchedule={modal.setRecurringSchedule}
+              venueTimezone={venueTimezone}
             />
 
             <PosterQrConfigSection

@@ -62,6 +62,7 @@ export function AdminModalsPortal({
       <PosterUploadModal
         isOpen={isUploadModalOpen}
         onClose={onCloseUpload}
+        venueTimezone={settings.timezone}
         onUploaded={() => {
           onRefreshPosters();
           broadcastSignageEvent({ type: 'POSTERS_UPDATED', action: 'create' });
@@ -71,6 +72,7 @@ export function AdminModalsPortal({
       <AnnouncementSlideModal
         isOpen={isAnnouncementModalOpen}
         onClose={onCloseAnnouncement}
+        venueTimezone={settings.timezone}
         onCreated={() => {
           onRefreshPosters();
           broadcastSignageEvent({ type: 'POSTERS_UPDATED', action: 'create' });

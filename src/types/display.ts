@@ -30,6 +30,7 @@ export interface HeaderState {
   readonly date_format?: DateDisplayMode | undefined;
   readonly clock_time: string;
   readonly ticker: string;
+  readonly is_clock_unsynchronized?: boolean | undefined;
 }
 
 export interface DisplayState {

@@ -32,6 +32,8 @@ export interface KioskChoreographySectionProps {
   readonly setShowQrDuringDrawer: (val: boolean) => void;
   readonly showMiniPrayerPill: boolean;
   readonly setShowMiniPrayerPill: (val: boolean) => void;
+  readonly showPrayerSilenceOverlay: boolean;
+  readonly setShowPrayerSilenceOverlay: (val: boolean) => void;
   readonly miniPrayerPillPosition: MiniPrayerPillPosition;
   readonly setMiniPrayerPillPosition: (val: MiniPrayerPillPosition) => void;
   readonly displayResolution: DisplayResolution;
@@ -126,6 +128,8 @@ export function KioskChoreographySection(props: KioskChoreographySectionProps) {
         sidebarMode={props.sidebarMode}
         showMiniPrayerPill={props.showMiniPrayerPill}
         setShowMiniPrayerPill={handleToggleMiniPrayerPill}
+        showPrayerSilenceOverlay={props.showPrayerSilenceOverlay}
+        setShowPrayerSilenceOverlay={props.setShowPrayerSilenceOverlay}
         miniPrayerPillPosition={props.miniPrayerPillPosition}
         setMiniPrayerPillPosition={props.setMiniPrayerPillPosition}
         qrReadDelay={props.qrReadDelay}

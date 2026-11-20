@@ -69,11 +69,14 @@ export function useDisplayChoreography({
   }, []);
 
   useEffect(() => {
-    preloadUpcomingPosterImage(getActivePosters(initialPosters, getEffectiveNow()), slideIndex);
+    preloadUpcomingPosterImage(
+      getActivePosters(initialPosters, getEffectiveNow(), livePropsRef.current.settings.timezone),
+      slideIndex
+    );
   }, [slideIndex, initialPosters, getEffectiveNow]);
 
   useEffect(() => {
-    const activeList = getActivePosters(initialPosters, getEffectiveNow());
+    const activeList = getActivePosters(initialPosters, getEffectiveNow(), livePropsRef.current.settings.timezone);
     if (activeList.length > 0 && slideIndex >= activeList.length) {
       setSlideIndex(0);
       setSlideElapsedSeconds(0);
@@ -140,7 +143,22 @@ export function useDisplayChoreography({
   }, []);
 
   const stepPoster = useCallback((delta: number) => {
-    const activeList = getActivePosters(initialPosters, getEffectiveNow());
+    const curSettings = livePropsRef.current.settings;
+    if (Boolean(curSettings.show_prayer_silence_overlay)) {
+      const snap = computeDisplaySnapshot(
+        curSettings,
+        livePropsRef.current.initialPosters,
+        livePropsRef.current.prayers,
+        livePropsRef.current.jummahShifts,
+        stateRef.current.slideIndex,
+        stateRef.current.lastDrawerTrigger,
+        getEffectiveNow()
+      );
+      if (snap.next_prayer?.status === 'STARTING_NOW') {
+        return;
+      }
+    }
+    const activeList = getActivePosters(initialPosters, getEffectiveNow(), livePropsRef.current.settings.timezone);
     if (activeList.length === 0) return;
     setPreviousPoster(activeList[slideIndex % activeList.length] ?? null);
     setIsCrossFading(true);
@@ -153,7 +171,7 @@ export function useDisplayChoreography({
   const displayState: DisplayState = computeDisplaySnapshot(
     settings, initialPosters, prayers, jummahShifts, slideIndex, lastDrawerTrigger, effectiveNow, { forceDrawerOpen: isDrawerOpen }
   );
-  const activePosters = getActivePosters(initialPosters, effectiveNow);
+  const activePosters = getActivePosters(initialPosters, effectiveNow, settings.timezone);
   const currentPoster = activePosters.length > 0 ? activePosters[slideIndex % activePosters.length] ?? null : null;
   const activeDuration = currentPoster?.duration_seconds ?? 15;
 
@@ -161,7 +179,7 @@ export function useDisplayChoreography({
     displayState, currentPoster, previousPoster, isCrossFading,
     progressPercentage: (slideElapsedSeconds / activeDuration) * 100,
     isDrawerOpen, isStandby, isQrVisible,
-    isPillVisible: Boolean(settings.show_mini_prayer_pill ?? true) && !isAlwaysOpen && !isDrawerOpen,
+    isPillVisible: Boolean(settings.show_mini_prayer_pill) && !isAlwaysOpen && !isDrawerOpen,
     isFridayForced, timeOverrideMinutes, triggerDrawer, clearManualStandby,
     nextPoster: useCallback(() => stepPoster(1), [stepPoster]),
     prevPoster: useCallback(() => stepPoster(-1), [stepPoster]),

@@ -53,13 +53,22 @@ async function startAppliance() {
   const chosenPort = await resolvePort(3000);
   const lanIp = detectPrimaryLanIp();
 
+  const pkgPath = path.join(process.cwd(), 'package.json');
+  let appVersion = '';
+  try {
+    if (fs.existsSync(pkgPath)) {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      if (pkg.version) appVersion = ` (v${pkg.version})`;
+    }
+  } catch {}
+
   if (chosenPort !== 3000 && !process.env.PORT) {
     console.log(`\n[NOTICE] Port 3000 is currently occupied.`);
     console.log(`Appliance automatically assigned to next available port: ${chosenPort}`);
   }
 
   console.log('\n==========================================================');
-  console.log('   MosqueSignage Digital Signage Appliance');
+  console.log(`   MosqueSignage Digital Signage Appliance${appVersion}`);
   console.log('==========================================================');
   console.log('   Local Access (This Computer):');
   console.log(`     • TV Display:   http://localhost:${chosenPort}/display`);

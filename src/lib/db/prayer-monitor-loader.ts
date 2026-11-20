@@ -10,6 +10,7 @@ import { calculateDailySchedule } from '@/lib/prayer/prayer-schedule';
 import { resolveNextPrayer } from '@/lib/prayer/next-prayer';
 import { parseTimeToDate } from '@/lib/prayer/prayer-time-parser';
 import { isFriday, resolveJummahShifts } from '@/lib/engine/jummah-resolver';
+import { isSystemClockSynchronized } from '@/lib/utils/time';
 import type { PrayerSilenceSnapshot } from '@/lib/hardware/prayer-silence-monitor';
 
 interface MonitorSqliteDriver {
@@ -38,6 +39,25 @@ export function loadPrayerSilenceState(
   if (!rawSettings) return null;
 
   const settings = mapSettingsRowToDomain(rawSettings);
+  const durationMinutes = settings.prayer_starting_now_duration_minutes ?? 10;
+  const audioConfig = {
+    audio_mute_during_prayer: Boolean(settings.audio_mute_during_prayer),
+    audio_receiver_host: settings.audio_receiver_host ?? '',
+    audio_receiver_port: settings.audio_receiver_port ?? 23,
+    audio_receiver_protocol: (settings.audio_receiver_protocol as AudioReceiverProtocol) ?? 'denon_telnet',
+    audio_mute_delay_seconds: settings.audio_mute_delay_seconds ?? 0,
+  };
+
+  // Fail-safe protection: if clock is un-synchronized (e.g. 1970 RTC battery reset), never trigger prayer silence
+  if (!isSystemClockSynchronized(now)) {
+    return {
+      config: audioConfig,
+      isStartingNow: false,
+      prayerName: undefined,
+      durationMinutes,
+    };
+  }
+
   const todayIsoDate = resolveVenueIsoDate(now, settings.timezone);
   const overrides = sqlite
     .prepare('SELECT * FROM prayer_overrides WHERE date = ?')
@@ -68,7 +88,6 @@ export function loadPrayerSilenceState(
     }
   );
 
-  const durationMinutes = settings.prayer_starting_now_duration_minutes ?? 10;
   const resolved = resolveNextPrayer(daily, now, {
     timezone: settings.timezone,
     startingNowDurationMinutes: durationMinutes,
@@ -93,13 +112,7 @@ export function loadPrayerSilenceState(
   }
 
   return {
-    config: {
-      audio_mute_during_prayer: Boolean(settings.audio_mute_during_prayer),
-      audio_receiver_host: settings.audio_receiver_host ?? '',
-      audio_receiver_port: settings.audio_receiver_port ?? 23,
-      audio_receiver_protocol: (settings.audio_receiver_protocol as AudioReceiverProtocol) ?? 'denon_telnet',
-      audio_mute_delay_seconds: settings.audio_mute_delay_seconds ?? 0,
-    },
+    config: audioConfig,
     isStartingNow,
     prayerName,
     durationMinutes,

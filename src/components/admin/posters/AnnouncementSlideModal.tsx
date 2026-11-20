@@ -15,12 +15,14 @@ export interface AnnouncementSlideModalProps {
   readonly isOpen: boolean;
   readonly onClose: () => void;
   readonly onCreated: () => void;
+  readonly venueTimezone?: string | undefined;
 }
 
 export function AnnouncementSlideModal({
   isOpen,
   onClose,
   onCreated,
+  venueTimezone,
 }: AnnouncementSlideModalProps) {
   const modal = useAnnouncementSlideModal(isOpen, onClose, onCreated);
 
@@ -100,6 +102,9 @@ export function AnnouncementSlideModal({
               onChangeStartAt={modal.setStartAt}
               endAt={modal.endAt}
               onChangeEndAt={modal.setEndAt}
+              recurringSchedule={modal.recurringSchedule}
+              onChangeRecurringSchedule={modal.setRecurringSchedule}
+              venueTimezone={venueTimezone}
             />
 
             <PosterQrConfigSection

@@ -21,6 +21,7 @@ export const settingsTable = sqliteTable('settings', {
   qr_entrance_delay_seconds: integer('qr_entrance_delay_seconds').notNull().default(3), // 0 to 10
   show_qr_during_drawer: integer('show_qr_during_drawer', { mode: 'boolean' }).notNull().default(false),
   show_mini_prayer_pill: integer('show_mini_prayer_pill', { mode: 'boolean' }).notNull().default(false),
+  show_prayer_silence_overlay: integer('show_prayer_silence_overlay', { mode: 'boolean' }).notNull().default(false),
   mini_prayer_pill_position: text('mini_prayer_pill_position').notNull().default('bottom-right'), // 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
   show_progress_bar: integer('show_progress_bar', { mode: 'boolean' }).notNull().default(true),
   poster_view_mode: text('poster_view_mode').notNull().default('grid'), // 'grid' | 'table'
@@ -85,6 +86,7 @@ export const postersTable = sqliteTable(
     display_order: integer('display_order').notNull().default(0),
     is_active: integer('is_active', { mode: 'boolean' }).notNull().default(true),
     layout_config: text('layout_config'), // JSON serialized PosterLayoutConfig
+    recurring_schedule: text('recurring_schedule'), // JSON serialized RecurringSchedule
     created_at: text('created_at').notNull(),
   },
   (table) => [

@@ -18,6 +18,7 @@ export interface PosterListProps {
   readonly onRefresh: () => void;
   readonly onCreateNotice?: (() => void) | undefined;
   readonly onUploadPoster?: (() => void) | undefined;
+  readonly venueTimezone?: string | undefined;
 }
 
 export function PosterList({
@@ -26,6 +27,7 @@ export function PosterList({
   onRefresh,
   onCreateNotice,
   onUploadPoster,
+  venueTimezone,
 }: PosterListProps) {
   const list = usePosterListActions(posters, onRefresh);
 
@@ -70,6 +72,7 @@ export function PosterList({
       ) : list.viewMode === 'table' ? (
         <PosterSequenceTable
           posters={list.filteredPosters}
+          venueTimezone={venueTimezone}
           draggedIndex={list.draggedIndex}
           dragOverIndex={list.dragOverIndex}
           onDragStart={list.handleDragStart}
@@ -90,6 +93,7 @@ export function PosterList({
             <PosterGridCard
               key={poster.id}
               poster={poster}
+              venueTimezone={venueTimezone}
               index={index}
               totalCount={list.filteredPosters.length}
               archivingId={list.archivingId}
@@ -107,6 +111,7 @@ export function PosterList({
       <EditPosterModal
         poster={list.editingPoster}
         isOpen={list.editingPoster !== null}
+        venueTimezone={venueTimezone}
         onClose={() => list.setEditingPoster(null)}
         onUpdated={() => {
           onRefresh();
@@ -124,6 +129,7 @@ export function PosterList({
         <MultiAssetStudioModal
           isOpen={list.showStudioModal}
           initialPoster={list.studioPoster}
+          venueTimezone={venueTimezone}
           onClose={() => {
             list.setShowStudioModal(false);
             list.setStudioPoster(null);

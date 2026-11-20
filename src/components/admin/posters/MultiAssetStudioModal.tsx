@@ -80,7 +80,7 @@ export function MultiAssetStudioModal(props: MultiAssetStudioModalProps) {
               onSelectTab={lifecycle.setActiveTab}
               onShowShortcuts={() => lifecycle.setShowShortcutsModal(true)}
             />
-            <StudioInspectorDrawer studio={studio} />
+            <StudioInspectorDrawer studio={studio} venueTimezone={props.venueTimezone} />
             <StudioCanvasStage
               canvasRef={lifecycle.canvasRef}
               scene={historyState.scene}

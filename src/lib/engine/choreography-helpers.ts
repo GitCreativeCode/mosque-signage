@@ -29,6 +29,7 @@ export function resolveSimulatedDate(
     const m = timeOverrideMinutes % 60;
     const timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
     date = parseTimeToDate(timeStr, date, timezone);
+    date = new Date(date.getTime() + baseDate.getSeconds() * 1000);
   }
   if (isFridayForced) {
     const diff = 5 - date.getDay();

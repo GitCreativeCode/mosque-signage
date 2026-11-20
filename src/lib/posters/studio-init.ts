@@ -33,6 +33,7 @@ export interface ParsedInitialStudioConfig {
   readonly startAt: string;
   readonly endAt: string;
   readonly isIndefinite: boolean;
+  readonly recurringSchedule: string | null;
   readonly archetype: PosterLayoutArchetype;
   readonly splitRatio: number;
   readonly gridGap: LayoutGridGap;
@@ -57,6 +58,7 @@ export function buildInitialStateFromPoster(poster: Poster): ParsedInitialStudio
     startAt: poster.start_at ? toLocalDatetimeString(new Date(poster.start_at)) : toLocalDatetimeString(new Date()),
     endAt: poster.end_at ? toLocalDatetimeString(new Date(poster.end_at)) : '',
     isIndefinite: !poster.end_at,
+    recurringSchedule: poster.recurring_schedule ?? null,
   };
 
   if (poster.layout_config) {

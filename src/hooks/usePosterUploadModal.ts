@@ -56,6 +56,7 @@ export function usePosterUploadModal(
   const [qrLabel, setQrLabel] = useState<string>('Scan to Register');
   const [qrPosition, setQrPosition] = useState<QrPosition>('bottom-left');
   const [isIndefinite, setIsIndefinite] = useState<boolean>(true);
+  const [recurringSchedule, setRecurringSchedule] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
@@ -71,6 +72,7 @@ export function usePosterUploadModal(
     setVideoLoopCount(1); setAllowAudio(false); setDuration(15);
     setHasQr(false); setQrUrl(''); setQrLabel('Scan to Register');
     setQrPosition('bottom-left'); setIsIndefinite(true);
+    setRecurringSchedule(null);
     setStartAt(toLocalDatetimeString(new Date())); setEndAt(getDefaultEndAt());
     setError(null); setIsSubmitting(false); setShowDiscardConfirm(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -164,6 +166,7 @@ export function usePosterUploadModal(
           title, startAt, endAt, isIndefinite, activeTotalDwell, isVideo,
           videoLoopCount, videoDuration, thumbnailBuffer, allowAudio,
           hasQr, isEligibleForQr, qrUrl, qrLabel, qrPosition,
+          recurringSchedule,
         }),
       });
       broadcastSignageEvent({ type: 'POSTERS_UPDATED', action: 'create' });
@@ -180,7 +183,8 @@ export function usePosterUploadModal(
     title, setTitle, file, previewUrl, thumbnailPreviewUrl, duration, setDuration,
     isVideo, videoDuration, videoLoopCount, allowAudio, setAllowAudio,
     hasQr, setHasQr, qrUrl, setQrUrl, qrLabel, setQrLabel, qrPosition, setQrPosition,
-    isIndefinite, setIsIndefinite, isSubmitting, error, showDiscardConfirm, setShowDiscardConfirm,
+    isIndefinite, setIsIndefinite, recurringSchedule, setRecurringSchedule,
+    isSubmitting, error, showDiscardConfirm, setShowDiscardConfirm,
     showStudioModal, setShowStudioModal, studioFiles, setStudioFiles,
     startAt, setStartAt, endAt, setEndAt, fileInputRef,
     activeTotalDwell, isEligibleForQr, minLoopsRequiredForQr, maxLoops,

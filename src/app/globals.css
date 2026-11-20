@@ -278,6 +278,51 @@ body {
   will-change: transform, opacity;
 }
 
+/* Solid Opaque Silence Overlay Transitions (100% opacity, no see-through) */
+@keyframes silence-slide-in-right {
+  from { transform: translate3d(100%, 0, 0); opacity: 1; }
+  to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+@keyframes silence-slide-out-left {
+  from { transform: translate3d(0, 0, 0); opacity: 1; }
+  to { transform: translate3d(-100%, 0, 0); opacity: 1; }
+}
+@keyframes silence-slide-in-left {
+  from { transform: translate3d(-100%, 0, 0); opacity: 1; }
+  to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+@keyframes silence-slide-out-right {
+  from { transform: translate3d(0, 0, 0); opacity: 1; }
+  to { transform: translate3d(100%, 0, 0); opacity: 1; }
+}
+@keyframes silence-slide-in-up {
+  from { transform: translate3d(0, 100%, 0); opacity: 1; }
+  to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+@keyframes silence-slide-out-up {
+  from { transform: translate3d(0, 0, 0); opacity: 1; }
+  to { transform: translate3d(0, -100%, 0); opacity: 1; }
+}
+@keyframes silence-zoom-in {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes silence-zoom-out {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(0.9); opacity: 0; }
+}
+
+.animate-silence-in-fade { animation: poster-fade-in 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards; will-change: opacity; }
+.animate-silence-out-fade { animation: poster-fade-out 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards; will-change: opacity; }
+.animate-silence-in-slide-left { animation: silence-slide-in-right 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards; will-change: transform; }
+.animate-silence-out-slide-left { animation: silence-slide-out-left 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards; will-change: transform; }
+.animate-silence-in-slide-right { animation: silence-slide-in-left 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards; will-change: transform; }
+.animate-silence-out-slide-right { animation: silence-slide-out-right 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards; will-change: transform; }
+.animate-silence-in-slide-up { animation: silence-slide-in-up 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards; will-change: transform; }
+.animate-silence-out-slide-up { animation: silence-slide-out-up 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards; will-change: transform; }
+.animate-silence-in-zoom { animation: silence-zoom-in 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards; will-change: transform, opacity; }
+.animate-silence-out-zoom { animation: silence-zoom-out 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards; will-change: transform, opacity; }
+
 @keyframes top-loading-bar {
   0% {
     transform: translateX(-100%);

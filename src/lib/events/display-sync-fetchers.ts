@@ -5,12 +5,20 @@
 
 import type { JummahShift, Poster, PrayerTimesToday, PublicDisplaySettings } from '@/types/index';
 
-export async function fetchPostersLive(): Promise<readonly Poster[] | null> {
+export interface FetchPostersLiveResult {
+  readonly posters: readonly Poster[];
+  readonly nextTransitionAt: string | null;
+}
+
+export async function fetchPostersLive(): Promise<FetchPostersLiveResult | null> {
   try {
     const res = await fetch('/api/posters', { cache: 'no-store' });
     if (res.ok) {
       const data: unknown = await res.json();
-      if (Array.isArray(data)) return data as Poster[];
+      if (Array.isArray(data)) {
+        const nextTransitionAt = res.headers.get('X-Next-Transition-At');
+        return { posters: data as Poster[], nextTransitionAt };
+      }
     }
   } catch {
     // Fallback to Server Action below
@@ -18,8 +26,8 @@ export async function fetchPostersLive(): Promise<readonly Poster[] | null> {
 
   try {
     const { getPublicActivePosters } = await import('@/lib/actions/posters');
-    const { posters } = await getPublicActivePosters();
-    return posters;
+    const { posters, nextTransitionAt } = await getPublicActivePosters();
+    return { posters, nextTransitionAt: nextTransitionAt ?? null };
   } catch (err) {
     console.warn('[useDisplaySync] Failed to refresh posters:', err);
     return null;

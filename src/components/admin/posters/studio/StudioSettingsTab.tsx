@@ -1,6 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { RecurringScheduleBuilder } from '../RecurringScheduleBuilder';
+import { parseRecurringSchedule, formatRecurringSummary } from '@/lib/posters/recurring-schedule';
 
 interface StudioSettingsTabProps {
   readonly title: string;
@@ -8,11 +11,14 @@ interface StudioSettingsTabProps {
   readonly startAt: string;
   readonly endAt: string;
   readonly isIndefinite: boolean;
+  readonly recurringSchedule?: string | null | undefined;
   readonly onChangeTitle: (val: string) => void;
   readonly onChangeDuration: (sec: number) => void;
   readonly onChangeStartAt: (val: string) => void;
   readonly onChangeEndAt: (val: string) => void;
   readonly onChangeIndefinite: (val: boolean) => void;
+  readonly onChangeRecurringSchedule?: ((val: string | null) => void) | undefined;
+  readonly venueTimezone?: string | undefined;
 }
 
 /** Inspector tab for slide title, dwell duration slider, and start/expiration scheduling. */
@@ -22,12 +28,27 @@ export function StudioSettingsTab({
   startAt,
   endAt,
   isIndefinite,
+  recurringSchedule,
   onChangeTitle,
   onChangeDuration,
   onChangeStartAt,
   onChangeEndAt,
   onChangeIndefinite,
+  onChangeRecurringSchedule,
+  venueTimezone,
 }: StudioSettingsTabProps) {
+  const hasRecurring = useMemo(() => {
+    const rules = parseRecurringSchedule(recurringSchedule);
+    return Boolean(rules && rules.length > 0);
+  }, [recurringSchedule]);
+
+  const [isRecurringOpen, setIsRecurringOpen] = useState<boolean>(hasRecurring);
+
+  const summaryText = useMemo(() => {
+    if (!hasRecurring) return 'Continuous (24/7)';
+    const rules = parseRecurringSchedule(recurringSchedule);
+    return formatRecurringSummary(rules);
+  }, [hasRecurring, recurringSchedule]);
   return (
     <div className="space-y-4">
       <div>
@@ -97,6 +118,41 @@ export function StudioSettingsTab({
                 onChange={(e) => onChangeEndAt(e.target.value)}
                 className="w-full px-3 py-1.5 rounded-xl bg-[var(--admin-card)] border border-[var(--admin-border)] text-[var(--admin-text-primary)] text-xs"
               />
+            </div>
+          )}
+
+          {onChangeRecurringSchedule && (
+            <div className="pt-2 border-t border-[var(--admin-border)] space-y-2">
+              <button
+                type="button"
+                onClick={() => setIsRecurringOpen((prev) => !prev)}
+                className="w-full flex items-center justify-between py-1 text-xs text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] transition select-none cursor-pointer group"
+              >
+                <div className="flex items-center space-x-1.5">
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 text-[var(--admin-text-muted)] group-hover:text-[var(--admin-text-primary)] transition-transform duration-200 ${
+                      isRecurringOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                  <span className="font-semibold text-xs text-[var(--admin-text-primary)]">
+                    Recurring Days &amp; Windows
+                  </span>
+                </div>
+                <span className="px-1.5 py-0.5 rounded bg-[var(--admin-card)] border border-[var(--admin-border)] text-[9px] font-mono text-[var(--admin-text-secondary)] truncate max-w-[120px]">
+                  {summaryText}
+                </span>
+              </button>
+
+              {isRecurringOpen && (
+                <div className="pt-2 border-t border-[var(--admin-border)]/50 animate-fadeIn">
+                  <RecurringScheduleBuilder
+                    value={recurringSchedule}
+                    onChange={onChangeRecurringSchedule}
+                    venueTimezone={venueTimezone}
+                    embedded
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

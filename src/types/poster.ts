@@ -28,6 +28,15 @@ export type QrPosition =
 
 export type MediaType = 'image' | 'video' | 'composite';
 
+export interface RecurringScheduleRule {
+  readonly id?: string | undefined;
+  readonly days: readonly number[]; // 0 = Sun, 1 = Mon, ..., 5 = Fri, 6 = Sat
+  readonly startTime: string; // "HH:MM" (24-hour format)
+  readonly endTime: string;   // "HH:MM" (24-hour format)
+}
+
+export type RecurringSchedule = readonly RecurringScheduleRule[];
+
 export interface PosterLayoutConfig {
   readonly version: 1;
   readonly archetype: PosterLayoutArchetype;
@@ -62,6 +71,7 @@ export interface Poster {
   readonly display_order?: number | undefined;
   readonly is_active?: boolean | undefined;
   readonly layout_config?: string | null | undefined;
+  readonly recurring_schedule?: string | null | undefined;
   readonly created_at: string;
 }
 

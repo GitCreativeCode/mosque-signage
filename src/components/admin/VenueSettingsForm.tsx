@@ -131,6 +131,7 @@ export function VenueSettingsForm(props: VenueSettingsFormProps) {
                 drawerDuration={draft.drawerDuration} setDrawerDuration={(v) => updateField('drawerDuration', v)}
                 showQrDuringDrawer={draft.showQrDuringDrawer} setShowQrDuringDrawer={(v) => updateField('showQrDuringDrawer', v)}
                 showMiniPrayerPill={draft.showMiniPrayerPill} setShowMiniPrayerPill={(v) => updateField('showMiniPrayerPill', v)}
+                showPrayerSilenceOverlay={draft.showPrayerSilenceOverlay} setShowPrayerSilenceOverlay={(v) => updateField('showPrayerSilenceOverlay', v)}
                 miniPrayerPillPosition={draft.miniPrayerPillPosition} setMiniPrayerPillPosition={(v) => updateField('miniPrayerPillPosition', v)}
                 displayResolution={draft.displayResolution} setDisplayResolution={(v) => updateField('displayResolution', v)}
                 overscanMarginPercent={draft.overscanMarginPercent} setOverscanMarginPercent={(v) => updateField('overscanMarginPercent', v)}

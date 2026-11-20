@@ -12,6 +12,7 @@ export interface SlotPresenterProps {
   readonly globalMute: boolean;
   readonly posterAllowAudio: boolean;
   readonly slideIndex?: number | undefined;
+  readonly isPaused?: boolean | undefined;
 }
 
 function BadgeSlotView({ text, variant = 'emerald' }: { text: string; variant?: BadgeVariant | undefined }) {
@@ -25,7 +26,17 @@ function BadgeSlotView({ text, variant = 'emerald' }: { text: string; variant?: 
   );
 }
 
-function VideoSlotView({ slot, isMuted, slideIndex }: { slot: PosterSlotMedia; isMuted: boolean; slideIndex?: number | undefined }) {
+function VideoSlotView({
+  slot,
+  isMuted,
+  slideIndex,
+  isPaused = false,
+}: {
+  slot: PosterSlotMedia;
+  isMuted: boolean;
+  slideIndex?: number | undefined;
+  isPaused?: boolean;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const loopCountRef = useRef(1);
   const targetLoops = slot.video_loop_count ?? 1;
@@ -36,14 +47,26 @@ function VideoSlotView({ slot, isMuted, slideIndex }: { slot: PosterSlotMedia; i
     el.muted = isMuted;
     el.currentTime = 0;
     loopCountRef.current = 1;
-    el.play()?.catch(() => {
-      el.muted = true;
-      el.play().catch(() => {});
-    });
+    if (!isPaused) {
+      el.play()?.catch(() => {
+        el.muted = true;
+        el.play().catch(() => {});
+      });
+    }
     return () => {
       try { el.pause(); } catch { /* safe disposal */ }
     };
   }, [slot.asset_path, isMuted, slideIndex]);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    if (isPaused) {
+      try { el.pause(); } catch { /* ignore */ }
+    } else {
+      try { el.play()?.catch(() => {}); } catch { /* ignore */ }
+    }
+  }, [isPaused]);
 
   const handleEnded = () => {
     if (loopCountRef.current >= targetLoops || !videoRef.current) return;
@@ -81,7 +104,14 @@ function VideoSlotView({ slot, isMuted, slideIndex }: { slot: PosterSlotMedia; i
   );
 }
 
-export function SlotPresenter({ slot, isDrawerOpen, globalMute, posterAllowAudio, slideIndex }: SlotPresenterProps) {
+export function SlotPresenter({
+  slot,
+  isDrawerOpen,
+  globalMute,
+  posterAllowAudio,
+  slideIndex,
+  isPaused = false,
+}: SlotPresenterProps) {
   const frameMeta = FRAME_STYLES_REGISTRY[slot.frame_style] ?? FRAME_STYLES_REGISTRY.none;
   const ribbonStyle = slot.badge_variant ? RIBBON_BADGE_STYLES[slot.badge_variant] : RIBBON_BADGE_STYLES.emerald;
 
@@ -99,7 +129,7 @@ export function SlotPresenter({ slot, isDrawerOpen, globalMute, posterAllowAudio
             align={slot.notice_align}
           />
         ) : slot.type === 'video' ? (
-          <VideoSlotView slot={slot} isMuted={globalMute || !posterAllowAudio || isDrawerOpen} slideIndex={slideIndex} />
+          <VideoSlotView slot={slot} isMuted={globalMute || !posterAllowAudio || isDrawerOpen} slideIndex={slideIndex} isPaused={isPaused} />
         ) : (
           <div className="relative w-full h-full flex items-center justify-center bg-black overflow-hidden">
             {slot.fit_mode === 'contain_blur' && slot.asset_path && (

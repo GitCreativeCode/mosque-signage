@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { PosterWithStatus } from '@/types/index';
 import {
   Clock,
@@ -16,6 +16,8 @@ import { MiniCompositeThumbnail } from './MiniCompositeThumbnail';
 import { PosterGridCardActions } from './PosterGridCardActions';
 import { getPosterTypeInfo } from '@/lib/posters/poster-type-info';
 import { sanitizeExternalUrl } from '@/lib/utils/url-safety';
+import { getPosterRecurringSubStatus } from '@/lib/engine/poster-status';
+import { parseRecurringSchedule, formatNextActiveTelemetry } from '@/lib/posters/recurring-schedule';
 
 interface PosterGridCardProps {
   readonly poster: PosterWithStatus;
@@ -23,6 +25,7 @@ interface PosterGridCardProps {
   readonly totalCount: number;
   readonly archivingId: string | null;
   readonly duplicatingId: string | null;
+  readonly venueTimezone?: string | undefined;
   readonly onMove: (index: number, direction: -1 | 1) => void;
   readonly onEdit: (poster: PosterWithStatus) => void;
   readonly onToggleArchive: (id: string) => void;
@@ -57,6 +60,7 @@ export function PosterGridCard({
   totalCount,
   archivingId,
   duplicatingId,
+  venueTimezone = 'UTC',
   onMove,
   onEdit,
   onToggleArchive,
@@ -65,6 +69,24 @@ export function PosterGridCard({
 }: PosterGridCardProps) {
   const isArchived = poster.status === 'ARCHIVED';
   const typeInfo = getPosterTypeInfo(poster);
+
+  const recurringRules = useMemo(() => parseRecurringSchedule(poster.recurring_schedule), [poster.recurring_schedule]);
+  const isRecurring = Boolean(recurringRules && recurringRules.length > 0);
+  const recurringSubStatus = isRecurring && poster.status === 'ACTIVE'
+    ? getPosterRecurringSubStatus(poster, new Date(), venueTimezone)
+    : null;
+
+  let statusDot = getStatusDotClass(poster.status);
+  let statusText: string = (poster.status || 'ACTIVE').toLowerCase();
+
+  if (recurringSubStatus === 'ACTIVE_NOW') {
+    statusDot = 'bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.9)]';
+    statusText = 'Active (Recurring)';
+  } else if (recurringSubStatus === 'STANDBY') {
+    statusDot = 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]';
+    const nextTelemetry = formatNextActiveTelemetry(recurringRules, new Date(), venueTimezone);
+    statusText = `Standby (${nextTelemetry})`;
+  }
 
   return (
     <div
@@ -94,8 +116,8 @@ export function PosterGridCard({
         )}
 
         <div className="absolute top-2.5 left-2.5 z-20 bg-black/80 backdrop-blur-md border border-white/20 px-2.5 py-1 rounded-lg text-xs font-medium text-white flex items-center space-x-1.5 shadow-lg">
-          <span className={`w-2 h-2 rounded-full ${getStatusDotClass(poster.status)}`} />
-          <span className="capitalize font-semibold">{(poster.status || 'ACTIVE').toLowerCase()}</span>
+          <span className={`w-2 h-2 rounded-full ${statusDot}`} />
+          <span className="capitalize font-semibold">{statusText}</span>
         </div>
 
         <div className="absolute bottom-2.5 left-2.5 z-20 flex items-center bg-black/80 backdrop-blur-md border border-white/20 rounded-lg px-2.5 py-1 space-x-2 shadow-lg text-white">

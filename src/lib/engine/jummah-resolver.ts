@@ -12,6 +12,10 @@ export function shouldTriggerDrawer(
   intervalMinutes: number = 3
 ): boolean {
   const elapsedMs = now.getTime() - lastDrawerOpenTime.getTime();
+  // Handle clock adjustments (DST Fall Back negative deltas or day jumps)
+  if (elapsedMs < 0 || elapsedMs > 86_400_000) {
+    return true;
+  }
   return elapsedMs >= intervalMinutes * 60 * 1000;
 }
 

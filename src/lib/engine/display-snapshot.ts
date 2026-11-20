@@ -19,6 +19,7 @@ import { formatHijriDate } from '@/lib/prayer/hijri';
 import { parseTimeToDate, resolveNextPrayer } from '@/lib/prayer/prayer-engine';
 import { getActivePosters } from './poster-status';
 import { formatClockTime, isFriday, resolveJummahShifts } from './jummah-resolver';
+import { isSystemClockSynchronized } from '@/lib/utils/time';
 
 export interface DisplaySnapshotOptions {
   readonly forceDrawerOpen?: boolean | undefined;
@@ -103,6 +104,7 @@ function resolveQrCardState(
 }
 
 function buildHeaderState(settings: Settings, now: Date): HeaderState {
+  const isClockUnsynced = !isSystemClockSynchronized(now);
   const gregorian = new Intl.DateTimeFormat('en-US', {
     timeZone: settings.timezone,
     weekday: 'short',
@@ -117,6 +119,7 @@ function buildHeaderState(settings: Settings, now: Date): HeaderState {
     date_format: settings.date_format ?? 'both',
     clock_time: formatClockTime(now, settings.timezone),
     ticker: settings.ticker_text,
+    is_clock_unsynchronized: isClockUnsynced,
   };
 }
 
@@ -131,7 +134,7 @@ export function computeDisplaySnapshot(
   options?: DisplaySnapshotOptions
 ): DisplayState {
   const timezone = settings.timezone;
-  const activePosters = getActivePosters(posters, now);
+  const activePosters = getActivePosters(posters, now, timezone);
   const activePoster =
     activePosters.length > 0 ? activePosters[currentSlideIndex % activePosters.length] ?? null : null;
 
@@ -155,9 +158,17 @@ export function computeDisplaySnapshot(
       ? resolvedShifts.find((s) => s.status === 'STARTING_NOW' || s.status === 'UPCOMING')
       : undefined;
 
-  const nextPrayerInfo = fridayTarget
+  const rawNextPrayer = fridayTarget
     ? buildFridayTargetTelemetry(fridayTarget, now, timezone)
     : buildDailyPrayerTelemetry(settings, prayers, isFri && resolvedShifts.length > 0 && isFajrFinished, now);
+
+  const isClockUnsynced = !isSystemClockSynchronized(now);
+  const nextPrayerInfo: MiniPillState | null = rawNextPrayer
+    ? {
+        ...rawNextPrayer,
+        status: isClockUnsynced && rawNextPrayer.status === 'STARTING_NOW' ? 'COUNTDOWN' : rawNextPrayer.status,
+      }
+    : null;
 
   return {
     active_poster: activePoster,

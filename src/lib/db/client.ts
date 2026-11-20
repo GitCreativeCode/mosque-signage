@@ -29,15 +29,58 @@ export interface SqliteDriver {
     get(...params: unknown[]): unknown;
     run(...params: unknown[]): void;
   };
+  close?: () => void;
 }
 
 type SqliteParam = string | number | bigint | null | Uint8Array;
 
+export function quarantineCorruptedDb(dbPath: string): boolean {
+  try {
+    if (dbPath === ':memory:' || !fs.existsSync(dbPath)) return false;
+    const timestamp = Date.now();
+    const backupPath = `${dbPath}.corrupt.${timestamp}`;
+    fs.renameSync(dbPath, backupPath);
+    if (fs.existsSync(`${dbPath}-wal`)) {
+      try { fs.renameSync(`${dbPath}-wal`, `${backupPath}-wal`); } catch {}
+    }
+    if (fs.existsSync(`${dbPath}-shm`)) {
+      try { fs.renameSync(`${dbPath}-shm`, `${backupPath}-shm`); } catch {}
+    }
+    console.warn(`[db] Corrupted database quarantined to: ${backupPath}`);
+    return true;
+  } catch (quarantineErr) {
+    console.error('[db] Failed to quarantine corrupted database:', quarantineErr);
+    return false;
+  }
+}
+
 export function createDatabaseConnection(dbPath: string = DB_PATH): SqliteDriver {
-  const syncDb = new DatabaseSync(dbPath);
-  syncDb.exec('PRAGMA busy_timeout = 15000;');
-  syncDb.exec('PRAGMA journal_mode = WAL;');
-  syncDb.exec('PRAGMA synchronous = NORMAL;');
+  let syncDb: DatabaseSync;
+  try {
+    syncDb = new DatabaseSync(dbPath);
+    syncDb.exec('PRAGMA busy_timeout = 15000;');
+    syncDb.exec('PRAGMA journal_mode = WAL;');
+    syncDb.exec('PRAGMA synchronous = NORMAL;');
+    try {
+      syncDb.exec('PRAGMA wal_checkpoint(TRUNCATE);');
+    } catch {
+      // Non-fatal if checkpoint is unavailable in memory mode
+    }
+    const checkStmt = syncDb.prepare('PRAGMA quick_check;');
+    const checkRow = checkStmt.get() as Record<string, unknown> | undefined;
+    const checkStatus = checkRow ? Object.values(checkRow)[0] : 'ok';
+    if (checkStatus !== 'ok') {
+      throw new Error(`SQLite quick_check failed: ${checkStatus}`);
+    }
+  } catch (err) {
+    console.error('[db] SQLite connection or integrity check failed on boot:', err);
+    quarantineCorruptedDb(dbPath);
+    syncDb = new DatabaseSync(dbPath);
+    syncDb.exec('PRAGMA busy_timeout = 15000;');
+    syncDb.exec('PRAGMA journal_mode = WAL;');
+    syncDb.exec('PRAGMA synchronous = NORMAL;');
+  }
+
   return {
     exec: (sql: string) => syncDb.exec(sql),
     prepare: (sql: string) => {
@@ -49,6 +92,11 @@ export function createDatabaseConnection(dbPath: string = DB_PATH): SqliteDriver
           stmt.run(...(params as SqliteParam[]));
         },
       };
+    },
+    close: () => {
+      try {
+        syncDb.close();
+      } catch {}
     },
   };
 }

@@ -79,20 +79,20 @@ describe('checkLatestRelease Remote Queries', () => {
         status: 200,
         json: async () => [
           {
-            tag_name: 'v0.1.3',
-            name: 'MosqueSignage v0.1.3 Pre-Release',
+            tag_name: 'v0.1.4',
+            name: 'MosqueSignage v0.1.4 Pre-Release',
             published_at: '2026-11-20T12:00:00Z',
             body: 'Pre-release patch.',
-            html_url: 'https://github.com/GitCreativeCode/mosque-signage/releases/tag/v0.1.3',
-            zipball_url: 'https://github.com/GitCreativeCode/mosque-signage/archive/refs/tags/v0.1.3.zip',
+            html_url: 'https://github.com/GitCreativeCode/mosque-signage/releases/tag/v0.1.4',
+            zipball_url: 'https://github.com/GitCreativeCode/mosque-signage/archive/refs/tags/v0.1.4.zip',
           },
         ],
       } as unknown as Response);
 
     const result = await checkLatestRelease('GitCreativeCode/mosque-signage', true);
     expect(result.hasUpdate).toBe(true);
-    expect(result.latestVersion).toBe('0.1.3');
-    expect(result.release?.title).toBe('MosqueSignage v0.1.3 Pre-Release');
+    expect(result.latestVersion).toBe('0.1.4');
+    expect(result.release?.title).toBe('MosqueSignage v0.1.4 Pre-Release');
   });
 
   it('detects a newer version from GitHub release payload', async () => {

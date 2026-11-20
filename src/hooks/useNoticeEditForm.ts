@@ -16,6 +16,7 @@ interface NoticeSnapshot {
   readonly isIndefinite: boolean;
   readonly startAt: string;
   readonly endAt: string;
+  readonly recurringSchedule: string | null;
 }
 
 interface UseNoticeEditFormParams {
@@ -38,7 +39,8 @@ function isNoticeSnapshotDirty(snap: NoticeSnapshot | null, current: NoticeSnaps
     current.duration !== snap.duration ||
     current.isIndefinite !== snap.isIndefinite ||
     current.startAt !== snap.startAt ||
-    (!current.isIndefinite && current.endAt !== snap.endAt)
+    (!current.isIndefinite && current.endAt !== snap.endAt) ||
+    current.recurringSchedule !== snap.recurringSchedule
   );
 }
 
@@ -63,6 +65,7 @@ export function useNoticeEditForm({ poster, onClose, onUpdated, onDirtyChange }:
   const [duration, setDuration] = useState<number>(poster.duration_seconds || 15);
 
   const [isIndefinite, setIsIndefinite] = useState<boolean>(poster.end_at === null || poster.end_at === undefined);
+  const [recurringSchedule, setRecurringSchedule] = useState<string | null>(poster.recurring_schedule ?? null);
   const [startAt, setStartAt] = useState<string>(() => toLocalDatetimeString(poster.start_at));
   const [endAt, setEndAt] = useState<string>(() =>
     toLocalDatetimeString(poster.end_at ?? Date.now() + 14 * 86400000),
@@ -87,6 +90,7 @@ export function useNoticeEditForm({ poster, onClose, onUpdated, onDirtyChange }:
         initialSnapshotRef.current = {
           headline: loadedHeadline, description: loadedDescription, theme: loadedTheme,
           hasQr, qrUrl, qrLabel, qrPosition, duration, isIndefinite, startAt, endAt,
+          recurringSchedule: poster.recurring_schedule ?? null,
         };
       } catch (err) {
         console.warn('Could not read existing announcement details:', err);
@@ -94,6 +98,7 @@ export function useNoticeEditForm({ poster, onClose, onUpdated, onDirtyChange }:
           initialSnapshotRef.current = {
             headline, description, theme: selectedTheme,
             hasQr, qrUrl, qrLabel, qrPosition, duration, isIndefinite, startAt, endAt,
+            recurringSchedule: poster.recurring_schedule ?? null,
           };
         }
       } finally {
@@ -108,6 +113,7 @@ export function useNoticeEditForm({ poster, onClose, onUpdated, onDirtyChange }:
   const isDirty = isNoticeSnapshotDirty(initialSnapshotRef.current, {
     headline, description, theme: selectedTheme,
     hasQr, qrUrl, qrLabel, qrPosition, duration, isIndefinite, startAt, endAt,
+    recurringSchedule,
   });
 
   useEffect(() => {
@@ -137,6 +143,7 @@ export function useNoticeEditForm({ poster, onClose, onUpdated, onDirtyChange }:
         qr_url: hasQr && qrUrl.trim() ? qrUrl.trim() : undefined,
         qr_label: hasQr && qrLabel.trim() ? qrLabel.trim() : undefined,
         qr_position: hasQr ? qrPosition : undefined,
+        recurring_schedule: recurringSchedule,
       });
       onDirtyChange?.(false);
       onUpdated();
@@ -152,6 +159,7 @@ export function useNoticeEditForm({ poster, onClose, onUpdated, onDirtyChange }:
     headline, setHeadline, description, setDescription, selectedTheme, setSelectedTheme,
     isLoadingDetails, hasQr, setHasQr, qrUrl, setQrUrl, qrLabel, setQrLabel,
     qrPosition, setQrPosition, duration, setDuration, isIndefinite, setIsIndefinite,
+    recurringSchedule, setRecurringSchedule,
     startAt, setStartAt, endAt, setEndAt, isSubmitting, error, handleSubmit,
   };
 }

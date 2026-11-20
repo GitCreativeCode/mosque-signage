@@ -117,14 +117,28 @@ export function buildSingleMonthDay(
   };
 }
 
+/**
+ * Sanitizes a CSV cell to prevent CSV Formula Injection (DDE).
+ * Prepends a single quote if the string begins with =, +, -, @, tab, or carriage return.
+ */
+export function sanitizeCsvCell(value: string | null | undefined): string {
+  if (!value) return '';
+  const trimmed = value.trim();
+  if (/^[=+@\-\t\r]/.test(trimmed)) {
+    return `'${trimmed}`;
+  }
+  return trimmed;
+}
+
 export function formatCsvDayRow(d: MonthPrayerDay, format: 'legacy' | 'full' | 'adhan_only'): string {
+  const c = sanitizeCsvCell;
   if (format === 'full') {
-    return `${d.date},${d.fajr.adhan},${d.fajr.iqamah},${d.sunrise.adhan},${d.dhuhr.adhan},${d.dhuhr.iqamah},${d.asr.adhan},${d.asr.iqamah},${d.maghrib.adhan},${d.maghrib.iqamah},${d.isha.adhan},${d.isha.iqamah}`;
+    return `${c(d.date)},${c(d.fajr.adhan)},${c(d.fajr.iqamah)},${c(d.sunrise.adhan)},${c(d.dhuhr.adhan)},${c(d.dhuhr.iqamah)},${c(d.asr.adhan)},${c(d.asr.iqamah)},${c(d.maghrib.adhan)},${c(d.maghrib.iqamah)},${c(d.isha.adhan)},${c(d.isha.iqamah)}`;
   }
   if (format === 'adhan_only') {
-    return `${d.date},${d.fajr.adhan},${d.sunrise.adhan},${d.dhuhr.adhan},${d.asr.adhan},${d.maghrib.adhan},${d.isha.adhan}`;
+    return `${c(d.date)},${c(d.fajr.adhan)},${c(d.sunrise.adhan)},${c(d.dhuhr.adhan)},${c(d.asr.adhan)},${c(d.maghrib.adhan)},${c(d.isha.adhan)}`;
   }
-  return `${d.date},${d.fajr.iqamah},${d.dhuhr.iqamah},${d.asr.iqamah},${d.maghrib.iqamah},${d.isha.iqamah}`;
+  return `${c(d.date)},${c(d.fajr.iqamah)},${c(d.dhuhr.iqamah)},${c(d.asr.iqamah)},${c(d.maghrib.iqamah)},${c(d.isha.iqamah)}`;
 }
 
 export function computeOffsetIqamahTime(

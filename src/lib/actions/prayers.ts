@@ -6,6 +6,8 @@ import { db } from '@/lib/db/client';
 import { annualSchedulesTable, prayerOverridesTable, prayerRulesTable } from '@/lib/db/schema';
 import { eventBus } from '@/lib/events/event-bus';
 import { getVenueSettings, updateVenueSettings } from '@/lib/actions/settings';
+import { normalizeTimeTo24h } from '@/lib/prayer/csv-parser';
+import { timeToMinutes } from '@/lib/utils/time';
 import type { AnnualScheduleRecord, PrayerName, PrayerOverride, PrayerRule } from '@/types/index';
 import { requireAdminAuth } from './auth';
 
@@ -25,6 +27,22 @@ export interface SavePrayerRuleInput {
 
 export async function upsertPrayerOverride(input: UpsertPrayerOverrideInput): Promise<void> {
   await requireAdminAuth();
+  const safeIqamah = normalizeTimeTo24h(input.iqamah_time);
+  if (!safeIqamah) {
+    throw new Error('Invalid Iqamah time format. Expected HH:mm (e.g. 05:30 or 5:30 PM).');
+  }
+
+  const safeAdhan = input.adhan_override?.trim()
+    ? normalizeTimeTo24h(input.adhan_override)
+    : null;
+  if (input.adhan_override?.trim() && !safeAdhan) {
+    throw new Error('Invalid Adhan override format. Expected HH:mm.');
+  }
+
+  if (safeAdhan && timeToMinutes(safeIqamah) < timeToMinutes(safeAdhan)) {
+    throw new Error(`Iqamah time (${safeIqamah}) cannot be earlier than Adhan time (${safeAdhan}).`);
+  }
+
   const existing = await db
     .select()
     .from(prayerOverridesTable)
@@ -37,8 +55,8 @@ export async function upsertPrayerOverride(input: UpsertPrayerOverrideInput): Pr
       .update(prayerOverridesTable)
       .set({
         date: input.date,
-        adhan_override: input.adhan_override?.trim() || null,
-        iqamah_time: input.iqamah_time.trim(),
+        adhan_override: safeAdhan,
+        iqamah_time: safeIqamah,
         updated_at: nowIso,
       })
       .where(eq(prayerOverridesTable.id, target.id));
@@ -47,8 +65,8 @@ export async function upsertPrayerOverride(input: UpsertPrayerOverrideInput): Pr
       id: crypto.randomUUID(),
       date: input.date,
       prayer: input.prayer,
-      adhan_override: input.adhan_override?.trim() || null,
-      iqamah_time: input.iqamah_time.trim(),
+      adhan_override: safeAdhan,
+      iqamah_time: safeIqamah,
       updated_at: nowIso,
     });
   }
@@ -56,7 +74,7 @@ export async function upsertPrayerOverride(input: UpsertPrayerOverrideInput): Pr
   eventBus.emitEvent('PRAYERS_UPDATED', {
     timestamp: nowIso,
     prayer: input.prayer,
-    iqamahTime: input.iqamah_time,
+    iqamahTime: safeIqamah,
   });
 }
 
@@ -74,6 +92,17 @@ export async function getPrayerRules(): Promise<PrayerRule[]> {
 
 export async function savePrayerRule(input: SavePrayerRuleInput): Promise<void> {
   await requireAdminAuth();
+  let normalizedFixedTime: string | null = null;
+  if (input.rule_type === 'FIXED') {
+    if (!input.fixed_time?.trim()) {
+      throw new Error('Fixed time is required when rule type is FIXED.');
+    }
+    normalizedFixedTime = normalizeTimeTo24h(input.fixed_time);
+    if (!normalizedFixedTime) {
+      throw new Error('Invalid fixed time format. Expected HH:mm.');
+    }
+  }
+
   const existing = await db.select().from(prayerRulesTable).where(eq(prayerRulesTable.prayer, input.prayer));
   const nowIso = new Date().toISOString();
   const target = existing[0];
@@ -84,7 +113,7 @@ export async function savePrayerRule(input: SavePrayerRuleInput): Promise<void> 
       .set({
         rule_type: input.rule_type,
         offset_minutes: input.offset_minutes ?? null,
-        fixed_time: input.fixed_time?.trim() || null,
+        fixed_time: normalizedFixedTime,
         updated_at: nowIso,
       })
       .where(eq(prayerRulesTable.id, target.id));
@@ -94,7 +123,7 @@ export async function savePrayerRule(input: SavePrayerRuleInput): Promise<void> 
       prayer: input.prayer,
       rule_type: input.rule_type,
       offset_minutes: input.offset_minutes ?? null,
-      fixed_time: input.fixed_time?.trim() || null,
+      fixed_time: normalizedFixedTime,
       updated_at: nowIso,
     });
   }

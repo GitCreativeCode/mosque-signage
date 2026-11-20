@@ -14,6 +14,7 @@ export interface SlideLayerProps {
   readonly mosqueName?: string | undefined;
   readonly isDrawerOpen?: boolean;
   readonly slideIndex?: number | undefined;
+  readonly isPaused?: boolean;
 }
 
 function EmptyStageFallback({ mosqueName }: { mosqueName?: string | undefined }) {
@@ -42,6 +43,7 @@ export function SlideLayer({
   mosqueName,
   isDrawerOpen = false,
   slideIndex,
+  isPaused = false,
 }: SlideLayerProps) {
   const [hasPlaybackError, setHasPlaybackError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -66,14 +68,31 @@ export function SlideLayer({
     videoEl.muted = !poster?.allow_audio || isDrawerOpen;
     videoEl.currentTime = 0;
     loopIterationRef.current = 1;
-    videoEl.play()?.catch(() => {
-      videoEl.muted = true;
-      videoEl.play().catch(() => setHasPlaybackError(true));
-    });
+    if (!isPaused) {
+      videoEl.play()?.catch(() => {
+        videoEl.muted = true;
+        videoEl.play().catch(() => setHasPlaybackError(true));
+      });
+    }
     return () => {
       try { videoEl.pause(); } catch { /* safe disposal */ }
     };
   }, [poster?.id, isVideo, role === 'outgoing', slideIndex]);
+
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (!videoEl || !isVideo || role === 'outgoing') return;
+    if (isPaused) {
+      try { videoEl.pause(); } catch { /* ignore */ }
+    } else {
+      try {
+        videoEl.play()?.catch(() => {
+          videoEl.muted = true;
+          videoEl.play().catch(() => {});
+        });
+      } catch { /* ignore */ }
+    }
+  }, [isPaused, isVideo, role]);
 
   useEffect(() => {
     if (videoRef.current && isVideo) videoRef.current.muted = !poster?.allow_audio || isDrawerOpen;
@@ -113,7 +132,15 @@ export function SlideLayer({
       />
 
       {parsedLayout ? (
-        <MultiAssetStageCanvas poster={poster} layout={parsedLayout} isDrawerOpen={isDrawerOpen} fitMode={fitMode} mosqueName={mosqueName} slideIndex={slideIndex} />
+        <MultiAssetStageCanvas
+          poster={poster}
+          layout={parsedLayout}
+          isDrawerOpen={isDrawerOpen}
+          fitMode={fitMode}
+          mosqueName={mosqueName}
+          slideIndex={slideIndex}
+          isPaused={isPaused}
+        />
       ) : (
         <div className="relative w-full h-[calc(100%-4px)] flex items-center justify-center overflow-hidden">
           {isVideo && !hasPlaybackError ? (

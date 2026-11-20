@@ -17,6 +17,7 @@ export interface MediaPosterMetadataInput {
   readonly qrUrl: string;
   readonly qrLabel: string;
   readonly qrPosition: QrPosition;
+  readonly recurringSchedule?: string | null | undefined;
 }
 
 /** Formats shared scheduling, video looping, thumbnail, and QR metadata fields for upload/update actions. */
@@ -34,6 +35,7 @@ export function buildMediaPosterMetadata(input: MediaPosterMetadataInput) {
     qr_url: qrEnabled && input.qrUrl.trim() ? input.qrUrl.trim() : undefined,
     qr_label: qrEnabled && input.qrLabel.trim() ? input.qrLabel.trim() : undefined,
     qr_position: qrEnabled ? input.qrPosition : undefined,
+    recurring_schedule: input.recurringSchedule ?? null,
   };
 }
 

@@ -3,11 +3,12 @@
 import crypto from 'node:crypto';
 import { asc, desc, eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db/client';
-import { postersTable } from '@/lib/db/schema';
+import { postersTable, settingsTable } from '@/lib/db/schema';
 import { runSerializedTransaction } from '@/lib/db/tx';
 import { calculatePosterStatus } from '@/lib/engine/index';
 import { calculateTotalDwell, isVideoMedia, validateVideoDuration } from '@/lib/engine/video-engine';
 import { eventBus } from '@/lib/events/event-bus';
+import { parseRecurringSchedule } from '@/lib/posters/recurring-schedule';
 import {
   assertValidPosterId,
   processAndWriteMediaAsset,
@@ -44,6 +45,7 @@ export async function uploadPoster(input: UploadPosterInput): Promise<Poster> {
 
   const nowIso = new Date().toISOString();
   const resolvedEndAt = input.end_at || null;
+  const safeRec = input.recurring_schedule ? JSON.stringify(parseRecurringSchedule(input.recurring_schedule) ?? null) : null;
   let nextOrder = 0;
 
   try {
@@ -62,7 +64,7 @@ export async function uploadPoster(input: UploadPosterInput): Promise<Poster> {
         qr_url: safeQrUrl, qr_label: input.qr_label?.trim() || null,
         qr_position: input.qr_position ?? 'bottom-left', start_at: input.start_at,
         end_at: resolvedEndAt, duration_seconds: effectiveDuration, display_order: order,
-        is_active: true, created_at: nowIso,
+        is_active: true, recurring_schedule: safeRec || null, created_at: nowIso,
       });
       return order;
     });
@@ -83,7 +85,8 @@ export async function uploadPoster(input: UploadPosterInput): Promise<Poster> {
     qr_url: safeQrUrl ?? undefined, qr_label: input.qr_label?.trim() || undefined,
     qr_position: input.qr_position ?? 'bottom-left',
     start_at: input.start_at, end_at: resolvedEndAt,
-    duration_seconds: effectiveDuration, display_order: nextOrder, created_at: nowIso,
+    duration_seconds: effectiveDuration, display_order: nextOrder,
+    recurring_schedule: safeRec || undefined, created_at: nowIso,
   };
 }
 
@@ -102,6 +105,10 @@ export async function updatePoster(input: UpdatePosterInput): Promise<void> {
     );
   }
 
+  const recVal = input.recurring_schedule !== undefined
+    ? (input.recurring_schedule ? JSON.stringify(parseRecurringSchedule(input.recurring_schedule) ?? null) : null)
+    : undefined;
+
   try {
     await db.update(postersTable).set({
       title: input.title.trim(), start_at: input.start_at, end_at: input.end_at || null,
@@ -114,6 +121,7 @@ export async function updatePoster(input: UpdatePosterInput): Promise<void> {
       ...(input.video_duration_seconds !== undefined ? { video_duration_seconds: input.video_duration_seconds } : {}),
       ...(input.allow_audio !== undefined ? { allow_audio: input.allow_audio } : {}),
       ...(input.is_active !== undefined ? { is_active: input.is_active } : {}),
+      ...(recVal !== undefined ? { recurring_schedule: recVal } : {}),
     }).where(eq(postersTable.id, safeId));
   } catch (updateErr) {
     if (replacement) {
@@ -171,6 +179,8 @@ export async function getPostersWithStatus(now: Date = new Date()): Promise<Post
 export async function getPublicActivePosters(
   now: Date = new Date()
 ): Promise<{ posters: Poster[]; nextTransitionAt: string | null }> {
+  const [settingsRow] = await db.select({ timezone: settingsTable.timezone }).from(settingsTable).limit(1);
+  const timezone = settingsRow?.timezone || 'America/Toronto';
   const rows = await db
     .select()
     .from(postersTable)
@@ -178,7 +188,7 @@ export async function getPublicActivePosters(
     .orderBy(asc(postersTable.display_order), desc(postersTable.created_at));
 
   const domainPosters = rows.map((r) => mapPosterRowToDomain(r));
-  const { activePosters, nextTransitionAt } = filterPublicActivePosters(domainPosters, now);
+  const { activePosters, nextTransitionAt } = filterPublicActivePosters(domainPosters, now, timezone);
   return { posters: activePosters, nextTransitionAt };
 }
 

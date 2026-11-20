@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { PosterWithStatus } from '@/types/index';
 import {
   Archive,
@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { getPosterTypeInfo } from '@/lib/posters/poster-type-info';
 import { MiniCompositeThumbnail } from './MiniCompositeThumbnail';
+import { getPosterRecurringSubStatus } from '@/lib/engine/poster-status';
+import { parseRecurringSchedule, formatNextActiveTelemetry } from '@/lib/posters/recurring-schedule';
 
 export interface PosterSequenceRowProps {
   readonly poster: PosterWithStatus;
@@ -31,6 +33,7 @@ export interface PosterSequenceRowProps {
   readonly isOver: boolean;
   readonly archivingId: string | null;
   readonly duplicatingId?: string | null | undefined;
+  readonly venueTimezone?: string | undefined;
   readonly onDragStart: (e: React.DragEvent, index: number) => void;
   readonly onDragOver: (e: React.DragEvent, index: number) => void;
   readonly onDrop: (e: React.DragEvent, targetIndex: number) => void;
@@ -57,17 +60,35 @@ function formatShortDate(iso: string): string {
 
 export function PosterSequenceRow({
   poster, index, totalCount, isDragging, isOver, archivingId, duplicatingId,
+  venueTimezone = 'UTC',
   onDragStart, onDragOver, onDrop, onDragEnd, onMovePoster, onEditPoster,
   onToggleArchive, onDeletePoster, onDuplicatePoster,
 }: PosterSequenceRowProps) {
   const isArchived = poster.status === 'ARCHIVED';
-  const dotClass = poster.status === 'ACTIVE'
+  const recurringRules = useMemo(() => parseRecurringSchedule(poster.recurring_schedule), [poster.recurring_schedule]);
+  const isRecurring = Boolean(recurringRules && recurringRules.length > 0);
+  const recurringSubStatus = isRecurring && poster.status === 'ACTIVE'
+    ? getPosterRecurringSubStatus(poster, new Date(), venueTimezone)
+    : null;
+
+  let dotClass = poster.status === 'ACTIVE'
     ? 'bg-emerald-500'
     : poster.status === 'UPCOMING'
     ? 'bg-sky-500'
     : isArchived
     ? 'bg-amber-500'
     : 'bg-neutral-400';
+
+  let statusText: string = (poster.status || 'ACTIVE').toLowerCase();
+  if (recurringSubStatus === 'ACTIVE_NOW') {
+    dotClass = 'bg-emerald-500 animate-pulse';
+    statusText = 'active (recurring)';
+  } else if (recurringSubStatus === 'STANDBY') {
+    dotClass = 'bg-amber-500';
+    const nextTelemetry = formatNextActiveTelemetry(recurringRules, new Date(), venueTimezone);
+    statusText = `standby (${nextTelemetry})`;
+  }
+
   const typeInfo = getPosterTypeInfo(poster);
 
   return (
@@ -129,7 +150,7 @@ export function PosterSequenceRow({
       <td className="py-3 px-4">
         <span className="inline-flex items-center space-x-1.5 text-xs font-medium">
           <span className={`w-2 h-2 rounded-full ${dotClass}`} />
-          <span className="text-[var(--admin-text-secondary)] capitalize">{(poster.status || 'ACTIVE').toLowerCase()}</span>
+          <span className="text-[var(--admin-text-secondary)] capitalize">{statusText}</span>
         </span>
       </td>
 

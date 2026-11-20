@@ -28,6 +28,7 @@ export interface CreateAnnouncementInput {
   readonly start_at: string;
   readonly end_at?: string | null | undefined;
   readonly duration_seconds?: number | undefined;
+  readonly recurring_schedule?: string | null | undefined;
 }
 
 export interface AnnouncementDetails {
@@ -47,6 +48,7 @@ export interface UpdateAnnouncementInput {
   readonly qr_url?: string | undefined;
   readonly qr_label?: string | undefined;
   readonly qr_position?: QrPosition | undefined;
+  readonly recurring_schedule?: string | null | undefined;
 }
 
 export async function createAnnouncementSlide(input: CreateAnnouncementInput): Promise<Poster> {
@@ -88,6 +90,7 @@ export async function createAnnouncementSlide(input: CreateAnnouncementInput): P
         start_at: input.start_at,
         end_at: resolvedEndAt,
         duration_seconds: input.duration_seconds ?? 15,
+        recurring_schedule: input.recurring_schedule ?? null,
         display_order: order,
         is_active: true,
         created_at: nowIso,
@@ -111,6 +114,7 @@ export async function createAnnouncementSlide(input: CreateAnnouncementInput): P
     start_at: input.start_at,
     end_at: resolvedEndAt,
     duration_seconds: input.duration_seconds ?? 15,
+    recurring_schedule: input.recurring_schedule ?? null,
     display_order: nextOrder,
     created_at: nowIso,
   };
@@ -168,6 +172,7 @@ export async function updateAnnouncementSlide(input: UpdateAnnouncementInput): P
         qr_url: input.qr_url?.trim() || null,
         qr_label: input.qr_label?.trim() || null,
         ...(input.qr_position !== undefined ? { qr_position: input.qr_position } : {}),
+        ...(input.recurring_schedule !== undefined ? { recurring_schedule: input.recurring_schedule } : {}),
       })
       .where(eq(postersTable.id, safeId));
   } catch (updateErr) {

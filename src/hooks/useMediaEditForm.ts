@@ -25,6 +25,7 @@ interface MediaEditSnapshot {
   readonly isIndefinite: boolean;
   readonly startAt: string;
   readonly endAt: string;
+  readonly recurringSchedule: string | null;
 }
 
 interface UseMediaEditFormParams {
@@ -51,7 +52,8 @@ function isMediaDirty(
       (curr.hasQr && curr.qrPosition !== snap.qrPosition) ||
       curr.isIndefinite !== snap.isIndefinite ||
       curr.startAt !== snap.startAt ||
-      (!curr.isIndefinite && curr.endAt !== snap.endAt),
+      (!curr.isIndefinite && curr.endAt !== snap.endAt) ||
+      curr.recurringSchedule !== snap.recurringSchedule,
   );
 }
 
@@ -89,6 +91,7 @@ export function useMediaEditForm({
 
   const isCurrentlyIndefinite = poster.end_at === null || poster.end_at === undefined;
   const [isIndefinite, setIsIndefinite] = useState<boolean>(isCurrentlyIndefinite);
+  const [recurringSchedule, setRecurringSchedule] = useState<string | null>(poster.recurring_schedule ?? null);
   const startIsoStr = toLocalDatetimeString(poster.start_at);
   const endIsoStr = toLocalDatetimeString(poster.end_at ?? Date.now() + 14 * 86400000);
   const [startAt, setStartAt] = useState<string>(startIsoStr);
@@ -104,12 +107,12 @@ export function useMediaEditForm({
     hasQr: Boolean(poster.qr_url && poster.qr_url.trim().length > 0),
     qrUrl: poster.qr_url ?? '', qrLabel: poster.qr_label ?? 'Scan to Register',
     qrPosition: poster.qr_position ?? 'bottom-left', isIndefinite: isCurrentlyIndefinite,
-    startAt: startIsoStr, endAt: endIsoStr,
+    startAt: startIsoStr, endAt: endIsoStr, recurringSchedule: poster.recurring_schedule ?? null,
   });
 
   const isDirty = isMediaDirty(
     initialRef.current,
-    { title, duration, videoLoopCount, allowAudio, hasQr, qrUrl, qrLabel, qrPosition, isIndefinite, startAt, endAt },
+    { title, duration, videoLoopCount, allowAudio, hasQr, qrUrl, qrLabel, qrPosition, isIndefinite, startAt, endAt, recurringSchedule },
     newFile !== null,
   );
 
@@ -169,6 +172,7 @@ export function useMediaEditForm({
           title, startAt, endAt, isIndefinite, activeTotalDwell, isVideo,
           videoLoopCount, videoDuration, thumbnailBuffer, allowAudio,
           hasQr, isEligibleForQr, qrUrl, qrLabel, qrPosition,
+          recurringSchedule,
         }),
         video_loop_count: isVideo ? videoLoopCount : 1,
         ...(newFile && fileBuffer ? { fileBuffer, fileName: newFile.name, mimeType: newFile.type } : {}),
@@ -187,7 +191,8 @@ export function useMediaEditForm({
     title, setTitle, previewUrl, thumbnailPreviewUrl, isVideo, videoDuration,
     videoLoopCount, allowAudio, setAllowAudio, duration, setDuration, hasQr, setHasQr,
     qrUrl, setQrUrl, qrLabel, setQrLabel, qrPosition, setQrPosition, isIndefinite,
-    setIsIndefinite, startAt, setStartAt, endAt, setEndAt, isSubmitting, error,
+    setIsIndefinite, recurringSchedule, setRecurringSchedule,
+    startAt, setStartAt, endAt, setEndAt, isSubmitting, error,
     fileInputRef, activeTotalDwell, isEligibleForQr, minLoopsRequiredForQr, maxLoops,
     handleFileChange, handleLoopCountChange, handleSubmit,
   };

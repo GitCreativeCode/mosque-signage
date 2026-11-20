@@ -15,6 +15,8 @@ export interface KioskAdvancedOverlaysCardProps {
   readonly sidebarMode: SidebarMode;
   readonly showMiniPrayerPill: boolean;
   readonly setShowMiniPrayerPill: (val: boolean) => void;
+  readonly showPrayerSilenceOverlay: boolean;
+  readonly setShowPrayerSilenceOverlay: (val: boolean) => void;
   readonly miniPrayerPillPosition: MiniPrayerPillPosition;
   readonly setMiniPrayerPillPosition: (val: MiniPrayerPillPosition) => void;
   readonly qrReadDelay: number;
@@ -75,6 +77,29 @@ export function KioskAdvancedOverlaysCard(props: KioskAdvancedOverlaysCardProps)
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="p-4 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)]/60 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5 pr-4">
+                <span className="text-xs font-bold text-[var(--admin-text-primary)] block">Congregation Silence Screen</span>
+                <p className="text-[11px] text-[var(--admin-text-muted)]">
+                  Displays a full-screen reverence reminder (&quot;Please switch mobile phones to silent&quot;) and pauses poster slides during congregational prayer. When disabled (default), slides rotate continuously without interruption.
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                <input
+                  type="checkbox"
+                  checked={props.showPrayerSilenceOverlay}
+                  onChange={(e) => {
+                    props.setShowPrayerSilenceOverlay(e.target.checked);
+                    props.markDirty();
+                  }}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-neutral-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--admin-btn-primary-bg)]" />
+              </label>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

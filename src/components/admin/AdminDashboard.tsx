@@ -135,6 +135,7 @@ export function AdminDashboard({
           <div id="panel-posters" role="tabpanel" aria-labelledby="tab-posters">
             <PosterList
               posters={sync.posters}
+              venueTimezone={sync.settings.timezone}
               isLoading={sync.isHydrating}
               onRefresh={sync.refreshPosters}
               onCreateNotice={() => setIsAnnouncementModalOpen(true)}

@@ -129,7 +129,8 @@ function formatValidCalendarDate(year: number, month: number, day: number): stri
 export function parseCsvRowDate(
   col0: string | undefined,
   col1: string | undefined,
-  defaultYear: number
+  defaultYear: number,
+  forceTargetYear: boolean = false
 ): ParsedCsvDate | null {
   if (!col0) return null;
   const c0 = col0.trim();
@@ -145,8 +146,9 @@ export function parseCsvRowDate(
   // 2. ISO or ISO-like format: YYYY-MM-DD or YYYY/MM/DD
   const isoMatch = c0.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
   if (isoMatch) {
+    const yr = forceTargetYear ? defaultYear : parseInt(isoMatch[1]!, 10);
     const dateStr = formatValidCalendarDate(
-      parseInt(isoMatch[1]!, 10),
+      yr,
       parseInt(isoMatch[2]!, 10),
       parseInt(isoMatch[3]!, 10)
     );
@@ -156,8 +158,9 @@ export function parseCsvRowDate(
   // 3. North American format: MM/DD/YYYY or M/D/YYYY
   const naMatch = c0.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
   if (naMatch) {
+    const yr = forceTargetYear ? defaultYear : parseInt(naMatch[3]!, 10);
     const dateStr = formatValidCalendarDate(
-      parseInt(naMatch[3]!, 10),
+      yr,
       parseInt(naMatch[1]!, 10),
       parseInt(naMatch[2]!, 10)
     );
@@ -165,6 +168,19 @@ export function parseCsvRowDate(
   }
 
   return null;
+}
+
+/**
+ * Verifies that the system clock is synchronized to a realistic calendar date.
+ * Embedded appliances (e.g. Raspberry Pi) whose coin-cell RTC battery has died
+ * reset to Jan 1, 1970. Returns false if the clock is un-synchronized (< 2025).
+ */
+export function isSystemClockSynchronized(date: Date = new Date()): boolean {
+  if (!date || !(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return false;
+  }
+  const year = date.getFullYear();
+  return year >= 2025 && year <= 2099;
 }
 
 

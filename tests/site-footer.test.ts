@@ -4,7 +4,7 @@ import packageJson from '../package.json';
 
 describe('SiteFooter Component & Release Metadata', () => {
   it('exports APP_VERSION matching package.json release version', () => {
-    expect(APP_VERSION).toBe('0.1.2');
+    expect(APP_VERSION).toBe('0.1.3');
     expect(APP_VERSION).toBe(packageJson.version);
   });
 

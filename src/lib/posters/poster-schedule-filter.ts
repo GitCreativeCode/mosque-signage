@@ -5,6 +5,11 @@
 
 import { calculatePosterStatus } from '@/lib/engine/index';
 import type { Poster } from '@/types/index';
+import {
+  getNextRecurringTransition,
+  isTimeInRecurringWindow,
+  parseRecurringSchedule,
+} from './recurring-schedule';
 
 export interface PublicActivePostersFilterResult {
   readonly activePosters: Poster[];
@@ -13,17 +18,38 @@ export interface PublicActivePostersFilterResult {
 
 export function filterPublicActivePosters(
   posters: readonly Poster[],
-  now: Date = new Date()
+  now: Date = new Date(),
+  timezone: string = 'UTC'
 ): PublicActivePostersFilterResult {
   const activePosters: Poster[] = [];
-  let earliestFutureTransitionMs = Infinity;
+  let earliestFutureTransitionMs = Number.POSITIVE_INFINITY;
   const nowMs = now.getTime();
 
   for (const poster of posters) {
     if (!poster.is_active) continue;
     const status = calculatePosterStatus(poster, now);
+
     if (status === 'ACTIVE') {
-      activePosters.push(poster);
+      let isWindowActive = true;
+      if (poster.recurring_schedule) {
+        const rules = parseRecurringSchedule(poster.recurring_schedule);
+        if (rules && rules.length > 0) {
+          isWindowActive = isTimeInRecurringWindow(rules, now, timezone);
+
+          const nextRecTrans = getNextRecurringTransition(rules, now, timezone);
+          if (nextRecTrans) {
+            const nextRecMs = nextRecTrans.getTime();
+            if (nextRecMs > nowMs && nextRecMs < earliestFutureTransitionMs) {
+              earliestFutureTransitionMs = nextRecMs;
+            }
+          }
+        }
+      }
+
+      if (isWindowActive) {
+        activePosters.push(poster);
+      }
+
       if (poster.end_at) {
         const endMs = new Date(poster.end_at).getTime();
         if (endMs > nowMs && endMs < earliestFutureTransitionMs) {
@@ -44,4 +70,3 @@ export function filterPublicActivePosters(
 
   return { activePosters, nextTransitionAt };
 }
-

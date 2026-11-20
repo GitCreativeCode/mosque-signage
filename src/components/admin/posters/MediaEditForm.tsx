@@ -16,6 +16,7 @@ export interface MediaEditFormProps {
   readonly onDirtyChange?: ((isDirty: boolean) => void) | undefined;
   readonly onRequestClose?: (() => void) | undefined;
   readonly onOpenStudio?: ((poster: PosterWithStatus) => void) | undefined;
+  readonly venueTimezone?: string | undefined;
 }
 
 export function MediaEditForm({
@@ -25,6 +26,7 @@ export function MediaEditForm({
   onDirtyChange,
   onRequestClose,
   onOpenStudio,
+  venueTimezone,
 }: MediaEditFormProps) {
   const form = useMediaEditForm({ poster, onClose, onUpdated, onDirtyChange });
 
@@ -116,6 +118,9 @@ export function MediaEditForm({
         onChangeStartAt={form.setStartAt}
         endAt={form.endAt}
         onChangeEndAt={form.setEndAt}
+        recurringSchedule={form.recurringSchedule}
+        onChangeRecurringSchedule={form.setRecurringSchedule}
+        venueTimezone={venueTimezone}
       />
 
       <PosterQrConfigSection

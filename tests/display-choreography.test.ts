@@ -7,7 +7,14 @@ import {
 import {
   evaluateQrVisibilityOnTick,
   posterContainsVideo,
+  resolveSimulatedDate,
 } from '@/lib/engine/choreography-helpers';
+import {
+  processChoreographyTick,
+  type ChoreographyMutableState,
+  type ChoreographyLiveProps,
+  type ChoreographyTickSetters,
+} from '@/hooks/choreography-side-effects';
 import { formatRemainingTime } from '@/components/display/MiniPrayerPill';
 import { getPositionCoordinates } from '@/components/display/QrCard';
 import type {
@@ -688,6 +695,106 @@ describe('Display Choreography & Mutual Exclusion Engine', () => {
         }),
       };
       expect(posterContainsVideo(multiAssetWithoutVideo)).toBe(false);
+    });
+
+    it('preserves seconds when calculating simulated date with timeOverrideMinutes', () => {
+      const baseWithSeconds = new Date('2026-10-17T16:00:35.000Z');
+      const simulated = resolveSimulatedDate(baseWithSeconds, 'America/Toronto', 13 * 60 + 25, false);
+      expect(simulated.getSeconds()).toBe(baseWithSeconds.getSeconds());
+    });
+  });
+
+  describe('Congregation Silence Setting & Continuous Dwell', () => {
+    it('defaults show_prayer_silence_overlay to false and suppresses overlay', () => {
+      const settingsWithoutOverlay: Settings = {
+        ...mockSettings,
+        show_prayer_silence_overlay: false,
+      };
+      // At 13:25:00 Dhuhr is starting now
+      const dhuhrIqamahTime = new Date('2026-10-17T17:25:00.000Z');
+      const drawerTrigger = new Date('2026-10-17T16:00:00.000Z');
+      const snapshot = computeDisplaySnapshot(
+        settingsWithoutOverlay,
+        mockPosters,
+        mockPrayers,
+        mockJummahShifts,
+        0,
+        drawerTrigger,
+        dhuhrIqamahTime
+      );
+
+      expect(snapshot.next_prayer?.status).toBe('STARTING_NOW');
+      // When show_prayer_silence_overlay is false, isDndActive is false
+      const isDndActive = Boolean(settingsWithoutOverlay.show_prayer_silence_overlay) && snapshot.next_prayer?.status === 'STARTING_NOW';
+      expect(isDndActive).toBe(false);
+
+      // When explicitly enabled, isDndActive becomes true
+      const settingsWithOverlay: Settings = {
+        ...mockSettings,
+        show_prayer_silence_overlay: true,
+      };
+      const isDndActiveEnabled = Boolean(settingsWithOverlay.show_prayer_silence_overlay) && snapshot.next_prayer?.status === 'STARTING_NOW';
+      expect(isDndActiveEnabled).toBe(true);
+    });
+
+    it('pauses slide dwell and closes open drawer during congregation silence, then resumes smoothly', () => {
+      const state: ChoreographyMutableState = {
+        slideIndex: 0,
+        slideElapsedSeconds: 5,
+        isDrawerOpen: true,
+        drawerElapsedSeconds: 2,
+        drawerDurationOverrideSeconds: null,
+        lastDrawerTrigger: new Date('2026-10-17T16:00:00.000Z'),
+        timeOverrideMinutes: null,
+        isFridayForced: false,
+        isQrVisible: false,
+        manualPowerOverride: null,
+      };
+
+      const setters: ChoreographyTickSetters = {
+        setNow: () => {},
+        setIsStandby: () => {},
+        setIsDrawerOpen: (v) => { state.isDrawerOpen = v; },
+        setDrawerElapsedSeconds: (v) => { state.drawerElapsedSeconds = v; },
+        setDrawerDurationOverrideSeconds: (v) => { state.drawerDurationOverrideSeconds = v; },
+        setLastDrawerTrigger: (d) => { state.lastDrawerTrigger = d; },
+        setSlideElapsedSeconds: (v) => { state.slideElapsedSeconds = v; },
+        setIsQrVisible: (v) => { state.isQrVisible = v; },
+        setPreviousPoster: () => {},
+        setIsCrossFading: () => {},
+        setSlideIndex: (v) => { state.slideIndex = v; },
+      };
+
+      const liveProps: ChoreographyLiveProps = {
+        settings: {
+          ...mockSettings,
+          show_prayer_silence_overlay: true,
+        },
+        initialPosters: mockPosters,
+        prayers: mockPrayers,
+        jummahShifts: mockJummahShifts,
+      };
+
+      const stateRef = { current: state };
+      const livePropsRef = { current: liveProps };
+
+      // At 13:25:00 Dhuhr is starting now
+      const dhuhrIqamahTime = new Date('2026-10-17T17:25:00.000Z');
+
+      // Tick during silence mode
+      processChoreographyTick(() => dhuhrIqamahTime, stateRef, livePropsRef, setters);
+
+      // Drawer must be closed immediately
+      expect(state.isDrawerOpen).toBe(false);
+      // Slide elapsed seconds must NOT advance (paused at 5)
+      expect(state.slideElapsedSeconds).toBe(5);
+
+      // When silence overlay is off (or after prayer finishes)
+      liveProps.settings = { ...mockSettings, show_prayer_silence_overlay: false };
+      processChoreographyTick(() => dhuhrIqamahTime, stateRef, livePropsRef, setters);
+
+      // Slide elapsed seconds advances smoothly from 5 to 6
+      expect(state.slideElapsedSeconds).toBe(6);
     });
   });
 });

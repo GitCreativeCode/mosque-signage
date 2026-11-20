@@ -9,11 +9,12 @@
 import type { AudioReceiverConfig } from '@/types/index';
 import { dispatchAudioReceiverCommand } from './audio-driver';
 import { clearFailSafeWatchdog, scheduleFailSafeUnmute } from './audio-coordinator';
+import { isSystemClockSynchronized } from '@/lib/utils/time';
 
 export interface PrayerSilenceSnapshot {
   readonly config: AudioReceiverConfig;
   readonly isStartingNow: boolean;
-  readonly prayerName?: string;
+  readonly prayerName?: string | undefined;
   readonly durationMinutes: number;
 }
 
@@ -27,12 +28,30 @@ export interface SilenceMonitorState {
  */
 export async function evaluatePrayerSilenceTransition(
   snapshot: PrayerSilenceSnapshot | null,
-  state: SilenceMonitorState
+  state: SilenceMonitorState,
+  now: Date = new Date()
 ): Promise<void> {
   if (!snapshot) return;
 
   const { config, isStartingNow, prayerName, durationMinutes } = snapshot;
   const isEnabled = Boolean(config.audio_mute_during_prayer) && Boolean(config.audio_receiver_host?.trim());
+
+  // Fail-safe protection against unsynchronized clocks (RTC battery death or offline 1970 reset)
+  if (!isSystemClockSynchronized(now)) {
+    if (state.wasMutedForPrayer) {
+      state.wasMutedForPrayer = false;
+      state.lastPrayerName = undefined;
+      clearFailSafeWatchdog();
+      if (config.audio_receiver_host?.trim()) {
+        await dispatchAudioReceiverCommand(
+          { ...config, audio_mute_during_prayer: true },
+          'UNMUTE',
+          'Clock-Skew-Recovery'
+        );
+      }
+    }
+    return;
+  }
 
   if (isStartingNow && isEnabled && !state.wasMutedForPrayer) {
     state.wasMutedForPrayer = true;

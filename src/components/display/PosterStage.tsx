@@ -22,6 +22,7 @@ export interface PosterStageProps {
   readonly mosqueName?: string | undefined;
   readonly sidebarAccentTheme?: SidebarAccentTheme | undefined;
   readonly showProgressBar?: boolean | undefined;
+  readonly isSilenceActive?: boolean | undefined;
   readonly children?: React.ReactNode | undefined;
 }
 
@@ -29,6 +30,7 @@ export function PosterStage({
   currentPoster,
   previousPoster,
   isCrossFading,
+  progressPercentage,
   isDrawerOpen,
   sidebarMode = 'drawer',
   sidebarPosition = 'right',
@@ -40,12 +42,12 @@ export function PosterStage({
   mosqueName,
   sidebarAccentTheme = 'teal',
   showProgressBar = true,
+  isSilenceActive = false,
   children,
 }: PosterStageProps) {
-  const activeSec = slideDuration ?? currentPoster?.duration_seconds ?? 15;
   const theme = getAccentTheme(sidebarAccentTheme);
   const isPermanentSplit = sidebarMode === 'always_open';
-  const shouldShift = isPermanentSplit || isDrawerOpen;
+  const shouldShift = !isSilenceActive && (isPermanentSplit || isDrawerOpen);
   const isSingleStatic = (activePostersCount ?? 1) <= 1 && !posterContainsVideo(currentPoster);
   const marginClass = !shouldShift
     ? 'ml-0 mr-0'
@@ -57,7 +59,7 @@ export function PosterStage({
     <main
       className={`relative flex-1 overflow-hidden bg-neutral-950 transition-all duration-500 ease-in-out ${marginClass}`}
     >
-      {previousPoster && isCrossFading && (
+      {previousPoster && isCrossFading && !isSilenceActive && (
         <SlideLayer
           key={`out-${previousPoster.id}`}
           poster={previousPoster}
@@ -67,34 +69,34 @@ export function PosterStage({
           mosqueName={mosqueName}
           isDrawerOpen={isDrawerOpen}
           slideIndex={slideIndex}
+          isPaused={isSilenceActive}
         />
       )}
 
       <SlideLayer
         key={`in-${currentPoster?.id ?? 'empty'}`}
         poster={currentPoster}
-        role={isCrossFading ? 'incoming' : 'static'}
+        role={isCrossFading && !isSilenceActive ? 'incoming' : 'static'}
         transition={transition}
         fitMode={fitMode}
         mosqueName={mosqueName}
         isDrawerOpen={isDrawerOpen}
         slideIndex={slideIndex}
+        isPaused={isSilenceActive}
       />
 
       {children}
 
-      <style>{`
-        @keyframes smoothDwellSlide {
-          from { transform: scaleX(0); }
-          to { transform: scaleX(1); }
-        }
-      `}</style>
-      {currentPoster && showProgressBar && !isSingleStatic && (
+      {currentPoster && showProgressBar && !isSingleStatic && !isSilenceActive && (
         <div className="absolute bottom-0 inset-x-0 h-[4px] bg-white/10 z-20 overflow-hidden pointer-events-none">
           <div
             key={`dwell-bar-${currentPoster.id}-${slideIndex}`}
-            className={`h-full w-full ${theme.barBg} origin-left`}
-            style={{ animation: `smoothDwellSlide ${activeSec}s linear forwards`, willChange: 'transform' }}
+            className={`h-full ${theme.barBg} origin-left`}
+            style={{
+              width: `${Math.min(100, Math.max(0, progressPercentage))}%`,
+              transition: isSilenceActive ? 'none' : 'width 1s linear',
+              willChange: 'width',
+            }}
           />
         </div>
       )}

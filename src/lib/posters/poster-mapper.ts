@@ -23,6 +23,7 @@ export interface PosterDbRow {
   readonly display_order: number;
   readonly is_active: boolean;
   readonly layout_config: string | null;
+  readonly recurring_schedule: string | null;
   readonly created_at: string;
 }
 
@@ -41,6 +42,7 @@ export interface UploadPosterInput {
   readonly qr_url?: string | undefined;
   readonly qr_label?: string | undefined;
   readonly qr_position?: QrPosition | undefined;
+  readonly recurring_schedule?: string | null | undefined;
 }
 
 export interface UpdatePosterInput {
@@ -57,6 +59,7 @@ export interface UpdatePosterInput {
   readonly qr_label?: string | undefined;
   readonly qr_position?: QrPosition | undefined;
   readonly is_active?: boolean | undefined;
+  readonly recurring_schedule?: string | null | undefined;
   readonly fileBuffer?: (Buffer | Uint8Array | ArrayBuffer) | undefined;
   readonly fileName?: string | undefined;
   readonly mimeType?: string | undefined;
@@ -81,6 +84,7 @@ export function mapPosterRowToDomain(row: PosterDbRow): Poster {
     display_order: row.display_order,
     is_active: row.is_active,
     layout_config: row.layout_config ?? undefined,
+    recurring_schedule: row.recurring_schedule ?? undefined,
     created_at: row.created_at,
   };
 }

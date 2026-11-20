@@ -1,9 +1,9 @@
 # MosqueSignage
 
 ![License: GPLv3](https://img.shields.io/badge/license-GPLv3-emerald.svg)
-![Version: 0.1.0 Beta](https://img.shields.io/badge/version-v0.1.0--beta-blue.svg)
+![Version: 0.1.3](https://img.shields.io/badge/version-v0.1.3-blue.svg)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D22.0-blue.svg)
-![Tests](https://img.shields.io/badge/tests-499%2F499%20passing-brightgreen.svg)
+![Tests](https://img.shields.io/badge/tests-557%2F557%20passing-brightgreen.svg)
 
 **MosqueSignage** is an open-source, local-first digital signage appliance engineered for mosques, Islamic schools, community centers, and public venues. It turns any television or monitor into a clean, 24/7 informational display showing accurate prayer times, Friday Jummah schedules, announcements, event flyers, and videos.
 
@@ -262,7 +262,7 @@ docker compose up -d --build
 
 MosqueSignage includes a comprehensive automated verification suite:
 ```bash
-npm test                # Runs all 49 test suites (499 tests)
+npm test                # Runs all 51 test suites (516 tests)
 npx tsc --noEmit        # Strict TypeScript type safety verification
 npm run test:security   # Runs targeted security, auth, and penetration test checks
 ```
@@ -278,4 +278,7 @@ npm run test:security   # Runs targeted security, auth, and penetration test che
 
 ## License
 
-MosqueSignage is open-source software licensed under the **GNU General Public License v3.0 (GPLv3)**. See [LICENSE](LICENSE) for full details.
+MosqueSignage is dual-licensed:
+
+1. **Open Source (GNU GPLv3):** Free to use, modify, and distribute under the terms of the **GNU General Public License v3.0 (GPLv3)**. Under GPLv3, any modified or distributed versions of this software must also remain open-source under GPLv3. See [LICENSE](LICENSE) for full details.
+2. **Commercial / Proprietary License:** If you are a vendor, integrator, or organization that wishes to white-label, modify, or distribute MosqueSignage as part of a **closed-source or proprietary commercial product** without the copyleft obligations of GPLv3, please contact `helpdesk.guidance@gmail.com` to obtain a private commercial license.

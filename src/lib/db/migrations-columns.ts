@@ -25,6 +25,7 @@ const COLUMN_MIGRATION_STATEMENTS: readonly string[] = [
   'ALTER TABLE posters ADD COLUMN thumbnail_path TEXT;',
   'ALTER TABLE posters ADD COLUMN allow_audio INTEGER NOT NULL DEFAULT 0;',
   'ALTER TABLE posters ADD COLUMN layout_config TEXT;',
+  'ALTER TABLE posters ADD COLUMN recurring_schedule TEXT;',
   "UPDATE settings SET poster_fit = 'cover' WHERE poster_fit = 'contain' OR poster_fit IS NULL;",
   'ALTER TABLE settings ADD COLUMN admin_pin_hash TEXT;',
   'ALTER TABLE settings ADD COLUMN admin_pin_salt TEXT;',
@@ -74,6 +75,7 @@ const COLUMN_MIGRATION_STATEMENTS: readonly string[] = [
   'ALTER TABLE settings ADD COLUMN terms_accepted_at TEXT;',
   "ALTER TABLE settings ADD COLUMN standby_appearance TEXT NOT NULL DEFAULT 'dim_clock';",
   'ALTER TABLE settings ADD COLUMN standby_show_attribution INTEGER NOT NULL DEFAULT 0;',
+  'ALTER TABLE settings ADD COLUMN show_prayer_silence_overlay INTEGER NOT NULL DEFAULT 0;',
 ];
 
 export function applyColumnMigrations(driver: SqliteDriver): void {

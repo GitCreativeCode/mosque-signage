@@ -25,36 +25,30 @@ import {
 } from './display-tokens';
 
 export async function resolveClientIp(): Promise<string> {
+  const isTrustedProxy = process.env.TRUST_PROXY_HEADERS === 'true';
+  if (!isTrustedProxy) {
+    // When direct (no trusted reverse proxy), client-controlled headers cannot be trusted.
+    // Default safely to a remote LAN client identifier so pairing is strictly enforced.
+    return 'lan-client';
+  }
+
   try {
     const headerStore = await headers();
-    const isTrustedProxy = process.env.TRUST_PROXY_HEADERS === 'true';
+    const cfIp = headerStore.get('cf-connecting-ip')?.trim();
+    if (cfIp) return cfIp;
 
-    if (isTrustedProxy) {
-      const cfIp = headerStore.get('cf-connecting-ip')?.trim();
-      if (cfIp) return cfIp;
-
-      const forwarded = headerStore.get('x-forwarded-for');
-      if (forwarded) {
-        const first = forwarded.split(',')[0]?.trim();
-        if (first) return first;
-      }
-      const realIp = headerStore.get('x-real-ip');
-      if (realIp) return realIp.trim();
+    const forwarded = headerStore.get('x-forwarded-for');
+    if (forwarded) {
+      const first = forwarded.split(',')[0]?.trim();
+      if (first) return first;
     }
-
-    // When direct (no trusted proxy), inspect Host header to distinguish local PC vs LAN clients
-    const hostHeader = headerStore.get('host')?.toLowerCase().split(':')[0]?.trim();
-    if (hostHeader === 'localhost' || hostHeader === '127.0.0.1' || hostHeader === '[::1]') {
-      return '127.0.0.1';
-    }
-    if (hostHeader) {
-      return hostHeader;
-    }
+    const realIp = headerStore.get('x-real-ip');
+    if (realIp) return realIp.trim();
   } catch {
     // headers() throws in non-request test contexts
     return '127.0.0.1';
   }
-  return '127.0.0.1';
+  return 'lan-client';
 }
 
 export async function isLocalhostRequest(): Promise<boolean> {

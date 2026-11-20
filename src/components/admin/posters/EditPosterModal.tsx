@@ -14,6 +14,7 @@ export interface EditPosterModalProps {
   readonly onClose: () => void;
   readonly onUpdated: () => void;
   readonly onOpenStudio?: ((poster: PosterWithStatus) => void) | undefined;
+  readonly venueTimezone?: string | undefined;
 }
 
 export function EditPosterModal({
@@ -22,6 +23,7 @@ export function EditPosterModal({
   onClose,
   onUpdated,
   onOpenStudio,
+  venueTimezone,
 }: EditPosterModalProps) {
   const [isDirty, setIsDirty] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
@@ -96,6 +98,7 @@ export function EditPosterModal({
               onUpdated={onUpdated}
               onDirtyChange={setIsDirty}
               onRequestClose={handleRequestClose}
+              venueTimezone={venueTimezone}
             />
           ) : (
             <MediaEditForm
@@ -105,6 +108,7 @@ export function EditPosterModal({
               onDirtyChange={setIsDirty}
               onRequestClose={handleRequestClose}
               onOpenStudio={onOpenStudio}
+              venueTimezone={venueTimezone}
             />
           )}
         </div>

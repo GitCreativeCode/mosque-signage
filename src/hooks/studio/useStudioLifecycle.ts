@@ -65,6 +65,7 @@ export function useStudioLifecycle(params: UseStudioLifecycleParams) {
   const [startAt, setStartAt] = useState<string>(() => toLocalDatetimeString(new Date()));
   const [endAt, setEndAt] = useState<string>('');
   const [isIndefinite, setIsIndefinite] = useState(true);
+  const [recurringSchedule, setRecurringSchedule] = useState<string | null>(null);
   const [showSafeZone, setShowSafeZone] = useState(false);
   const [showPreviewQr, setShowPreviewQr] = useState(true);
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
@@ -109,6 +110,7 @@ export function useStudioLifecycle(params: UseStudioLifecycleParams) {
       if (p) {
         setTitle(p.title); setDuration(p.duration); setQrUrl(p.qrUrl); setHasQr(p.hasQr); setQrLabel(p.qrLabel);
         setQrPosition(p.qrPosition); setStartAt(p.startAt); setEndAt(p.endAt); setIsIndefinite(p.isIndefinite);
+        setRecurringSchedule(p.recurringSchedule);
         setArchetype(p.archetype); setSplitRatio(p.splitRatio); setGridGap(p.gridGap);
         setCanvasBackground(p.canvasBackground); setCanvasBackgroundCustom(p.canvasBackgroundCustom);
         resetHistoryWithSnapshot(p.snapshot); setSelectedSlotIndex(0);
@@ -116,7 +118,7 @@ export function useStudioLifecycle(params: UseStudioLifecycleParams) {
       }
     }
 
-    setTitle('Community Multi-Program Slide'); setDuration(20); setIsIndefinite(true);
+    setTitle('Community Multi-Program Slide'); setDuration(20); setIsIndefinite(true); setRecurringSchedule(null);
     if (initialFiles && initialFiles.length > 0) {
       setIsUploading(true);
       uploadInitialFilesToSlots(initialFiles, uploadLayoutAsset)
@@ -178,6 +180,7 @@ export function useStudioLifecycle(params: UseStudioLifecycleParams) {
         qr_label: hasQr && qrLabel.trim() ? qrLabel.trim() : undefined,
         qr_position: hasQr ? qrPosition : undefined,
         allow_audio: false,
+        recurring_schedule: recurringSchedule,
       });
       isDirtyRef.current = false;
       onSaved();
@@ -197,6 +200,7 @@ export function useStudioLifecycle(params: UseStudioLifecycleParams) {
     isAspectLocked, setIsAspectLocked, frameApplyScope, setFrameApplyScope,
     hasQr, setHasQr, qrUrl, setQrUrl, qrLabel, setQrLabel, qrPosition, setQrPosition,
     startAt, setStartAt, endAt, setEndAt, isIndefinite, setIsIndefinite,
+    recurringSchedule, setRecurringSchedule,
     showSafeZone, setShowSafeZone, showPreviewQr, setShowPreviewQr,
     showShortcutsModal, setShowShortcutsModal, isUploading, setIsUploading,
     isSubmitting, error, setError, showDiscardConfirm, setShowDiscardConfirm,

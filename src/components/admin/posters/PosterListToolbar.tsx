@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Columns, FileText, LayoutGrid, ListOrdered, Plus } from 'lucide-react';
+import { LayoutGrid, ListOrdered } from 'lucide-react';
 import type { PosterStatus, PosterWithStatus } from '@/types/index';
+import { AddContentDropdown } from './AddContentDropdown';
 
 export interface PosterListToolbarProps {
   readonly posters: readonly PosterWithStatus[];
@@ -34,8 +35,9 @@ export function PosterListToolbar({
   onOpenStudio,
 }: PosterListToolbarProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[var(--admin-border)] pb-4 gap-4">
-      <div className="flex items-center space-x-2 overflow-x-auto">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[var(--admin-border)] pb-4 gap-3 sm:gap-4">
+      {/* Row 1 on mobile / Left column on desktop */}
+      <div className="flex items-center space-x-2 overflow-x-auto scrollbar-none pb-1 sm:pb-0">
         {STATUS_TABS.map((tab) => {
           const count = tab.key === 'ALL' ? posters.length : posters.filter((p) => p.status === tab.key).length;
           const isSelected = filter === tab.key;
@@ -59,8 +61,9 @@ export function PosterListToolbar({
         })}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 shrink-0 self-start sm:self-auto">
-        <div className="flex items-center space-x-1.5 bg-[var(--admin-surface)] p-1 rounded-lg border border-[var(--admin-border)]">
+      {/* Row 2 on mobile / Right column on desktop */}
+      <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0">
+        <div className="flex items-center space-x-1 bg-[var(--admin-surface)] p-1 rounded-lg border border-[var(--admin-border)]">
           <button
             type="button"
             onClick={() => onChangeViewMode('grid')}
@@ -70,8 +73,10 @@ export function PosterListToolbar({
                 : 'text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)]'
             }`}
             title="Card Grid View"
+            aria-label="Card Grid View"
           >
-            <LayoutGrid className="w-3.5 h-3.5" /><span>Cards</span>
+            <LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" />
+            <span className="hidden sm:inline">Cards</span>
           </button>
           <button
             type="button"
@@ -82,43 +87,19 @@ export function PosterListToolbar({
                 : 'text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)]'
             }`}
             title="Order Table View"
+            aria-label="Order Table View"
           >
-            <ListOrdered className="w-3.5 h-3.5" /><span>Order Table</span>
+            <ListOrdered className="w-3.5 h-3.5" aria-hidden="true" />
+            <span className="hidden sm:inline">Order Table</span>
           </button>
         </div>
 
-        {onCreateNotice && (
-          <button
-            type="button"
-            onClick={onCreateNotice}
-            aria-label="Create Notice Slide"
-            className="px-3 py-1.5 rounded-lg border border-[var(--admin-btn-secondary-border)] bg-[var(--admin-btn-secondary-bg)] hover:bg-[var(--admin-btn-secondary-hover)] text-[var(--admin-btn-secondary-text)] text-xs font-medium flex items-center space-x-1.5 transition active:scale-95 cursor-pointer shadow-sm whitespace-nowrap"
-          >
-            <FileText className="w-3.5 h-3.5 opacity-70" aria-hidden="true" /><span>Create Notice</span>
-          </button>
-        )}
-
-        {onUploadPoster && (
-          <button
-            type="button"
-            onClick={onUploadPoster}
-            aria-label="Upload Poster Slide"
-            className="px-3.5 py-1.5 rounded-lg bg-[var(--admin-btn-primary-bg)] hover:bg-[var(--admin-btn-primary-hover)] text-[var(--admin-btn-primary-text)] text-xs font-semibold flex items-center space-x-1.5 transition active:scale-95 cursor-pointer shadow-sm whitespace-nowrap"
-          >
-            <Plus className="w-3.5 h-3.5" aria-hidden="true" /><span>Upload Poster</span>
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={onOpenStudio}
-          aria-label="Open Multi-Asset Layout Studio"
-          className="px-3 py-1.5 rounded-lg border border-[var(--admin-btn-secondary-border)] bg-[var(--admin-btn-secondary-bg)] hover:bg-[var(--admin-btn-secondary-hover)] text-[var(--admin-btn-secondary-text)] text-xs font-medium flex items-center space-x-1.5 transition active:scale-95 cursor-pointer shadow-sm whitespace-nowrap"
-        >
-          <Columns className="w-3.5 h-3.5 opacity-70" aria-hidden="true" /><span>Multi-Asset Studio</span>
-        </button>
+        <AddContentDropdown
+          onCreateNotice={onCreateNotice}
+          onUploadPoster={onUploadPoster}
+          onOpenStudio={onOpenStudio}
+        />
       </div>
     </div>
   );
 }
-

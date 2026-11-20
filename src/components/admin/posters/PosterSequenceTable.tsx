@@ -8,6 +8,7 @@ export interface PosterSequenceTableProps {
   readonly posters: readonly PosterWithStatus[];
   readonly draggedIndex: number | null;
   readonly dragOverIndex: number | null;
+  readonly venueTimezone?: string | undefined;
   readonly onDragStart: (e: React.DragEvent, index: number) => void;
   readonly onDragOver: (e: React.DragEvent, index: number) => void;
   readonly onDrop: (e: React.DragEvent, targetIndex: number) => void;
@@ -25,6 +26,7 @@ export function PosterSequenceTable({
   posters,
   draggedIndex,
   dragOverIndex,
+  venueTimezone,
   onDragStart,
   onDragOver,
   onDrop,
@@ -58,6 +60,7 @@ export function PosterSequenceTable({
             <PosterSequenceRow
               key={poster.id}
               poster={poster}
+              venueTimezone={venueTimezone}
               index={index}
               totalCount={posters.length}
               isDragging={draggedIndex === index}

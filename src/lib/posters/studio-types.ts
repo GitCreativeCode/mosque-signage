@@ -22,6 +22,7 @@ export interface MultiAssetStudioModalProps {
         readonly theme?: NoticeTheme | undefined;
       }
     | undefined;
+  readonly venueTimezone?: string | undefined;
 }
 
 export interface StudioHistorySnapshot {

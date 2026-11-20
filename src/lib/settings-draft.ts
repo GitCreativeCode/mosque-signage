@@ -37,6 +37,7 @@ export interface VenueSettingsDraft {
   sidebarMode: SidebarMode;
   showProgressBar: boolean;
   showMiniPrayerPill: boolean;
+  showPrayerSilenceOverlay: boolean;
   miniPrayerPillPosition: MiniPrayerPillPosition;
   sidebarPosition: SidebarPosition;
   sidebarAccentTheme: SidebarAccentTheme;
@@ -89,7 +90,8 @@ export function buildDraftFromSettings(s: Settings): VenueSettingsDraft {
     longitude: typeof s.longitude === 'number' ? s.longitude : null,
     sidebarMode: s.sidebar_mode ?? 'drawer',
     showProgressBar: s.show_progress_bar ?? true,
-    showMiniPrayerPill: s.show_mini_prayer_pill ?? true,
+    showMiniPrayerPill: Boolean(s.show_mini_prayer_pill),
+    showPrayerSilenceOverlay: Boolean(s.show_prayer_silence_overlay),
     miniPrayerPillPosition: s.mini_prayer_pill_position ?? 'bottom-right',
     sidebarPosition: s.sidebar_position ?? 'right',
     sidebarAccentTheme: s.sidebar_accent_theme ?? 'teal',
@@ -132,6 +134,7 @@ export function buildUpdatePayloadFromDraft(draft: VenueSettingsDraft): UpdateVe
     sidebar_mode: draft.sidebarMode,
     show_progress_bar: draft.showProgressBar,
     show_mini_prayer_pill: draft.showMiniPrayerPill,
+    show_prayer_silence_overlay: draft.showPrayerSilenceOverlay,
     mini_prayer_pill_position: draft.miniPrayerPillPosition,
     sidebar_position: draft.sidebarPosition,
     sidebar_accent_theme: draft.sidebarAccentTheme,

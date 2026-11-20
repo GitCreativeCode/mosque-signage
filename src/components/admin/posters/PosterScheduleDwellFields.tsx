@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
-import { Calendar, Clock, Infinity } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Calendar, Clock, ChevronDown, Infinity } from 'lucide-react';
+import { RecurringScheduleBuilder } from './RecurringScheduleBuilder';
+import { parseRecurringSchedule, formatRecurringSummary } from '@/lib/posters/recurring-schedule';
 
 export interface PosterScheduleDwellFieldsProps {
   readonly showDurationSlider?: boolean | undefined;
@@ -13,6 +15,9 @@ export interface PosterScheduleDwellFieldsProps {
   readonly onChangeStartAt: (val: string) => void;
   readonly endAt: string;
   readonly onChangeEndAt: (val: string) => void;
+  readonly recurringSchedule?: string | null | undefined;
+  readonly onChangeRecurringSchedule?: ((val: string | null) => void) | undefined;
+  readonly venueTimezone?: string | undefined;
 }
 
 export function PosterScheduleDwellFields({
@@ -25,7 +30,23 @@ export function PosterScheduleDwellFields({
   onChangeStartAt,
   endAt,
   onChangeEndAt,
+  recurringSchedule,
+  onChangeRecurringSchedule,
+  venueTimezone,
 }: PosterScheduleDwellFieldsProps) {
+  const hasRecurring = useMemo(() => {
+    const rules = parseRecurringSchedule(recurringSchedule);
+    return Boolean(rules && rules.length > 0);
+  }, [recurringSchedule]);
+
+  const [isRecurringOpen, setIsRecurringOpen] = useState<boolean>(hasRecurring);
+
+  const summaryText = useMemo(() => {
+    if (!hasRecurring) return 'Continuous (24/7)';
+    const rules = parseRecurringSchedule(recurringSchedule);
+    return formatRecurringSummary(rules);
+  }, [hasRecurring, recurringSchedule]);
+
   return (
     <>
       {showDurationSlider && (
@@ -58,7 +79,7 @@ export function PosterScheduleDwellFields({
         </div>
       )}
 
-      <div className="p-4 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] space-y-3">
+      <div className="p-4 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] space-y-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Calendar className="w-4 h-4 text-[var(--admin-text-muted)]" />
@@ -88,8 +109,42 @@ export function PosterScheduleDwellFields({
             )}
           </div>
         </div>
+
+        {onChangeRecurringSchedule && (
+          <div className="pt-2 border-t border-[var(--admin-border)] space-y-2.5">
+            <button
+              type="button"
+              onClick={() => setIsRecurringOpen((prev) => !prev)}
+              className="w-full flex items-center justify-between py-1 text-xs text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] transition select-none cursor-pointer group"
+            >
+              <div className="flex items-center space-x-2">
+                <ChevronDown
+                  className={`w-4 h-4 text-[var(--admin-text-muted)] group-hover:text-[var(--admin-text-primary)] transition-transform duration-200 ${
+                    isRecurringOpen ? 'rotate-180' : ''
+                  }`}
+                />
+                <span className="font-semibold text-xs text-[var(--admin-text-primary)]">
+                  Advanced: Recurring Day &amp; Time Windows
+                </span>
+              </div>
+              <span className="px-2 py-0.5 rounded-md bg-[var(--admin-card)] border border-[var(--admin-border)] text-[10px] font-mono text-[var(--admin-text-secondary)]">
+                {summaryText}
+              </span>
+            </button>
+
+            {isRecurringOpen && (
+              <div className="pt-2 border-t border-[var(--admin-border)]/50 animate-fadeIn">
+                <RecurringScheduleBuilder
+                  value={recurringSchedule}
+                  onChange={onChangeRecurringSchedule}
+                  venueTimezone={venueTimezone}
+                  embedded
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </>
   );
 }
-

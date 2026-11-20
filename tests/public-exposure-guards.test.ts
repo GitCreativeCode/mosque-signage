@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import robots from '@/app/robots';
 import nextConfig from '../next.config';
+import { GET as sseHandler } from '@/app/api/sse/display/route';
 import {
-  GET as sseHandler,
   getActiveSseConnectionCount,
   resetActiveSseConnectionCount,
-} from '@/app/api/sse/display/route';
+} from '@/lib/events/sse-connections';
 
 vi.mock('@/lib/auth/display-pairing', () => ({
   verifyCurrentDisplaySession: async () => true,

@@ -12,10 +12,11 @@ import { StudioSettingsTab } from './StudioSettingsTab';
 
 interface StudioInspectorDrawerProps {
   readonly studio: ReturnType<typeof useMultiAssetStudio>;
+  readonly venueTimezone?: string | undefined;
 }
 
 /** Zone 2 sidebar inspector router displaying controls for the active Studio tool tab. */
-export function StudioInspectorDrawer({ studio }: StudioInspectorDrawerProps) {
+export function StudioInspectorDrawer({ studio, venueTimezone }: StudioInspectorDrawerProps) {
   const { historyState, selection, lifecycle, layerActions, assetActions } = studio;
   const activeSlot = selection.selectedSlotIndex !== null ? historyState.slots[selection.selectedSlotIndex] : undefined;
 
@@ -146,11 +147,14 @@ export function StudioInspectorDrawer({ studio }: StudioInspectorDrawerProps) {
           startAt={lifecycle.startAt}
           endAt={lifecycle.endAt}
           isIndefinite={lifecycle.isIndefinite}
+          recurringSchedule={lifecycle.recurringSchedule}
           onChangeTitle={(v) => { lifecycle.setTitle(v); historyState.isDirtyRef.current = true; }}
           onChangeDuration={(d) => { lifecycle.setDuration(d); historyState.isDirtyRef.current = true; }}
           onChangeStartAt={(s) => { lifecycle.setStartAt(s); historyState.isDirtyRef.current = true; }}
           onChangeEndAt={(e) => { lifecycle.setEndAt(e); historyState.isDirtyRef.current = true; }}
           onChangeIndefinite={(i) => { lifecycle.setIsIndefinite(i); historyState.isDirtyRef.current = true; }}
+          onChangeRecurringSchedule={(r) => { lifecycle.setRecurringSchedule(r); historyState.isDirtyRef.current = true; }}
+          venueTimezone={venueTimezone}
         />
       )}
     </div>

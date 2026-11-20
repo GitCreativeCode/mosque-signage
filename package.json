@@ -1,13 +1,14 @@
 {
   "name": "mosque-signage",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "GPL-3.0-or-later",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "next build",
-    "build:docker": "BUILD_STANDALONE=true next build",
+    "build": "next build --webpack",
+    "postbuild": "node scripts/record-build-info.mjs",
+    "build:docker": "BUILD_STANDALONE=true next build --webpack",
     "prestart": "node scripts/ensure-build.mjs",
     "start": "node scripts/start-server.mjs",
     "autostart": "node scripts/manage-autostart.mjs",

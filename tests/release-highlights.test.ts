@@ -67,3 +67,40 @@ ___
   });
 });
 
+describe('Canonical Release Notes Formatter Script (release-notes-builder.ts)', () => {
+  it('resolves release item for a specific version or defaults to latest', async () => {
+    const { resolveReleaseItem } = await import('@/lib/system/release-notes-builder');
+    const rel013 = resolveReleaseItem('0.1.3');
+    expect(rel013.version).toBe('0.1.3');
+
+    const latest = resolveReleaseItem();
+    expect(latest.version).toBe('0.1.3');
+
+    const fallback = resolveReleaseItem('999.0.0');
+    expect(fallback.version).toBe('0.1.3');
+  });
+
+  it('builds canonical title prefixed with MosqueSignage', async () => {
+    const { resolveReleaseItem, buildReleaseTitle } = await import('@/lib/system/release-notes-builder');
+    const rel = resolveReleaseItem('0.1.3');
+    const title = buildReleaseTitle(rel);
+    expect(title).toBe('MosqueSignage v0.1.3 - Recurring Poster Schedules, Appliance Resiliency & Security Hardening');
+  });
+
+  it('generates full structured markdown layout matching on-site sections', async () => {
+    const { resolveReleaseItem, buildReleaseNotesMarkdown } = await import('@/lib/system/release-notes-builder');
+    const rel = resolveReleaseItem('0.1.3');
+    const md = buildReleaseNotesMarkdown(rel, true);
+
+    expect(md).toContain(rel.summary);
+    expect(md).toContain('### Key Highlights');
+    expect(md).toContain('Power-Loss WAL Recovery');
+    expect(md).toContain('### Appliance Resiliency & Security Hardening');
+    expect(md).toContain('### New Features');
+    expect(md).toContain('### Improvements & Bug Fixes');
+    expect(md).toContain('<details>');
+    expect(md).toContain('How to Download, Run &amp; Configure Autostart');
+    expect(md).toContain('How to Update from an Existing Installation');
+  });
+});
+

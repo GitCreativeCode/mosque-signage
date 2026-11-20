@@ -38,6 +38,7 @@ export function useAnnouncementSlideModal(
   const [qrPosition, setQrPosition] = useState<QrPosition>('bottom-left');
   const [duration, setDuration] = useState(15);
   const [isIndefinite, setIsIndefinite] = useState(true);
+  const [recurringSchedule, setRecurringSchedule] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
@@ -56,6 +57,7 @@ export function useAnnouncementSlideModal(
     setQrPosition('bottom-left');
     setDuration(15);
     setIsIndefinite(true);
+    setRecurringSchedule(null);
     setStartAt(toLocalDatetimeString(new Date()));
     setEndAt(getDefaultEndLocalString());
     setError(null);
@@ -107,6 +109,7 @@ export function useAnnouncementSlideModal(
         start_at: fromLocalDatetimeString(startAt),
         end_at: isIndefinite ? null : fromLocalDatetimeString(endAt),
         duration_seconds: duration,
+        recurring_schedule: recurringSchedule,
       });
       broadcastSignageEvent({ type: 'POSTERS_UPDATED', action: 'create' });
       onCreated();
@@ -121,8 +124,8 @@ export function useAnnouncementSlideModal(
   return {
     headline, setHeadline, description, setDescription, selectedTheme, setSelectedTheme,
     hasQr, setHasQr, qrUrl, setQrUrl, qrLabel, setQrLabel, qrPosition, setQrPosition,
-    duration, setDuration, isIndefinite, setIsIndefinite, startAt, setStartAt,
-    endAt, setEndAt, isSubmitting, error, showDiscardConfirm, setShowDiscardConfirm,
+    duration, setDuration, isIndefinite, setIsIndefinite, recurringSchedule, setRecurringSchedule,
+    startAt, setStartAt, endAt, setEndAt, isSubmitting, error, showDiscardConfirm, setShowDiscardConfirm,
     showStudioModal, setShowStudioModal, handleRequestClose, handleForceClose, handleSubmit,
   };
 }

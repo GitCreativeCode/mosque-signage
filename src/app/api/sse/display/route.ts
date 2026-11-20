@@ -1,19 +1,14 @@
 import { eventBus, type SignageEventEnvelope } from '@/lib/events/event-bus';
 import { verifyCurrentDisplaySession } from '@/lib/auth/display-pairing';
+import {
+  getActiveSseConnectionCount,
+  incrementActiveSseConnections,
+  decrementActiveSseConnections,
+} from '@/lib/events/sse-connections';
 
 export const dynamic = 'force-dynamic';
 
 const DEFAULT_MAX_SSE_CONNECTIONS = 25;
-
-let activeConnections = 0;
-
-export function getActiveSseConnectionCount(): number {
-  return activeConnections;
-}
-
-export function resetActiveSseConnectionCount(): void {
-  activeConnections = 0;
-}
 
 function getMaxSseConnections(): number {
   const parsed = parseInt(process.env.MAX_SSE_CONNECTIONS || '', 10);
@@ -30,7 +25,7 @@ export async function GET(): Promise<Response> {
     return new Response('Unauthorized: Display session required.', { status: 401 });
   }
 
-  if (activeConnections >= getMaxSseConnections()) {
+  if (getActiveSseConnectionCount() >= getMaxSseConnections()) {
     return new Response('Service Unavailable: Maximum SSE display connections reached.', {
       status: 503,
       headers: {
@@ -40,12 +35,12 @@ export async function GET(): Promise<Response> {
     });
   }
 
-  activeConnections++;
+  incrementActiveSseConnections();
   let hasDecremented = false;
   const decrement = () => {
     if (!hasDecremented) {
       hasDecremented = true;
-      activeConnections = Math.max(0, activeConnections - 1);
+      decrementActiveSseConnections();
     }
   };
 

@@ -152,11 +152,15 @@ export function processChoreographyTick(
   const snap = computeDisplaySnapshot(
     curSet, curPosters, curPrayers, curShifts, state.slideIndex, state.lastDrawerTrigger, currentNow
   );
-  const isDndActive = !isStandby && snap.next_prayer?.status === 'STARTING_NOW';
-  const activeList = getActivePosters(curPosters, currentNow);
+  const isDndActive = Boolean(curSet.show_prayer_silence_overlay) && !isStandby && snap.next_prayer?.status === 'STARTING_NOW';
+  const activeList = getActivePosters(curPosters, currentNow, curSet.timezone);
   const activePoster = activeList.length > 0 ? activeList[state.slideIndex % activeList.length] ?? null : null;
   const dwell = activePoster?.duration_seconds ?? 15;
 
+  if (isDndActive && state.isDrawerOpen) {
+    setters.setIsDrawerOpen(false);
+    setters.setDrawerElapsedSeconds(0);
+  }
   advanceDrawerCountdown(curSet, state, setters);
   if (isStandby || isDndActive) return;
 

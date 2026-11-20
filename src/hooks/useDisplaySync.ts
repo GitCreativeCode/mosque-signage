@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Settings, PublicDisplaySettings, Poster, PrayerTimesToday, JummahShift } from '@/types/index';
 import { subscribeSignageBroadcast } from '@/lib/events/broadcast-channel';
 import {
@@ -37,11 +37,27 @@ export function useDisplaySync({
   const [prayers, setPrayers] = useState<PrayerTimesToday>(initialPrayers);
   const [jummahShifts, setJummahShifts] = useState<readonly JummahShift[]>(initialJummahShifts);
   const [isConnected, setIsConnected] = useState<boolean>(false);
+  const transitionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const refreshPostersLive = useCallback(async (): Promise<boolean> => {
     const updated = await fetchPostersLive();
     if (!updated) return false;
-    setPosters(updated);
+    setPosters(updated.posters);
+
+    if (transitionTimerRef.current) {
+      clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = null;
+    }
+
+    if (updated.nextTransitionAt) {
+      const delayMs = Math.max(1000, new Date(updated.nextTransitionAt).getTime() - Date.now() + 500);
+      if (delayMs < 86400000 * 2) {
+        transitionTimerRef.current = setTimeout(() => {
+          refreshPostersLive();
+        }, delayMs);
+      }
+    }
+
     return true;
   }, []);
 
@@ -125,6 +141,15 @@ export function useDisplaySync({
       }
     });
   }, [refreshPostersLive, refreshSettingsLive, refreshPrayersLive]);
+
+  useEffect(() => {
+    return () => {
+      if (transitionTimerRef.current) {
+        clearTimeout(transitionTimerRef.current);
+        transitionTimerRef.current = null;
+      }
+    };
+  }, []);
 
   useDisplaySseStream({
     onPostersUpdated: refreshPostersLive,

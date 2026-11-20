@@ -88,6 +88,7 @@ export interface Settings {
   readonly audio_receiver_protocol?: AudioReceiverProtocol | undefined;
   readonly audio_mute_delay_seconds?: number | undefined;
   readonly show_mini_prayer_pill?: boolean | undefined;
+  readonly show_prayer_silence_overlay?: boolean | undefined;
   readonly mini_prayer_pill_position?: MiniPrayerPillPosition | undefined;
   readonly show_progress_bar?: boolean | undefined;
   readonly poster_view_mode?: 'grid' | 'table' | undefined;
@@ -147,6 +148,7 @@ export interface UpdateVenueSettingsInput {
   readonly qr_entrance_delay_seconds?: number | undefined;
   readonly show_qr_during_drawer?: boolean | undefined;
   readonly show_mini_prayer_pill?: boolean | undefined;
+  readonly show_prayer_silence_overlay?: boolean | undefined;
   readonly mini_prayer_pill_position?: MiniPrayerPillPosition | undefined;
   readonly show_progress_bar?: boolean | undefined;
   readonly poster_view_mode?: 'grid' | 'table' | undefined;

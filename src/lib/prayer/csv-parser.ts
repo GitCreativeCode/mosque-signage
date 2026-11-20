@@ -3,13 +3,15 @@
  * MosqueSignage (TV)
  */
 
-import { parseCsvRowDate } from '@/lib/utils/time';
+import { parseCsvRowDate, timeToMinutes } from '@/lib/utils/time';
 
 export type CsvImportFormat = 'full' | 'adhan_only' | 'legacy_iqamah';
 
 export interface CsvImportResult {
   readonly importedCount: number;
   readonly formatDetected: CsvImportFormat;
+  readonly skippedCount?: number | undefined;
+  readonly warnings?: readonly string[] | undefined;
 }
 
 export interface ParsedCsvScheduleRow {
@@ -94,10 +96,28 @@ export function detectCsvDialect(lines: readonly string[]): {
   return { formatDetected, dataLines: lines };
 }
 
+function isTimeOrderValid(earlier: string | null | undefined, later: string | null | undefined): boolean {
+  if (!earlier || !later) return true;
+  return timeToMinutes(later) >= timeToMinutes(earlier);
+}
+
 function parseFullScheduleCols(cols: readonly string[], date: string, nowIso: string): ParsedCsvScheduleRow | null {
   if (cols.length < 11) return null;
   const [fA, fI, sun, dA, dI, aA, aI, mA, mI, iA, iI] = cols.map(normalizeTimeTo24h);
   if (!fA || !dA || !aA || !mA || !iA) return null;
+
+  // Chronological order sanity checks
+  if (fI && !isTimeOrderValid(fA, fI)) return null;
+  if (sun && !isTimeOrderValid(fA, sun)) return null;
+  if (sun && !isTimeOrderValid(sun, dA)) return null;
+  if (dI && !isTimeOrderValid(dA, dI)) return null;
+  if (!isTimeOrderValid(dA, aA)) return null;
+  if (aI && !isTimeOrderValid(aA, aI)) return null;
+  if (!isTimeOrderValid(aA, mA)) return null;
+  if (mI && !isTimeOrderValid(mA, mI)) return null;
+  if (!isTimeOrderValid(mA, iA)) return null;
+  if (iI && !isTimeOrderValid(iA, iI)) return null;
+
   return {
     date, fajr_adhan: fA, fajr_iqamah: fI ?? fA, sunrise: sun, dhuhr_adhan: dA, dhuhr_iqamah: dI ?? dA,
     asr_adhan: aA, asr_iqamah: aI ?? aA, maghrib_adhan: mA, maghrib_iqamah: mI ?? mA,
@@ -109,6 +129,13 @@ function parseAdhanOnlyCols(cols: readonly string[], date: string, nowIso: strin
   if (cols.length < 6) return null;
   const [fA, sun, dA, aA, mA, iA] = cols.map(normalizeTimeTo24h);
   if (!fA || !dA || !aA || !mA || !iA) return null;
+
+  if (sun && !isTimeOrderValid(fA, sun)) return null;
+  if (sun && !isTimeOrderValid(sun, dA)) return null;
+  if (!isTimeOrderValid(dA, aA)) return null;
+  if (!isTimeOrderValid(aA, mA)) return null;
+  if (!isTimeOrderValid(mA, iA)) return null;
+
   return {
     date, fajr_adhan: fA, sunrise: sun, dhuhr_adhan: dA, asr_adhan: aA, maghrib_adhan: mA, isha_adhan: iA,
     updated_at: nowIso,
@@ -119,6 +146,12 @@ function parseLegacyCols(cols: readonly string[], date: string, nowIso: string):
   if (cols.length < 5) return null;
   const [fI, dI, aI, mI, iI] = cols.map(normalizeTimeTo24h);
   if (!fI || !dI || !aI || !mI || !iI) return null;
+
+  if (!isTimeOrderValid(fI, dI)) return null;
+  if (!isTimeOrderValid(dI, aI)) return null;
+  if (!isTimeOrderValid(aI, mI)) return null;
+  if (!isTimeOrderValid(mI, iI)) return null;
+
   return {
     date, fajr_iqamah: fI, dhuhr_iqamah: dI, asr_iqamah: aI, maghrib_iqamah: mI, isha_iqamah: iI,
     updated_at: nowIso,
@@ -129,13 +162,14 @@ export function parseCsvLineToSchedulePayload(
   line: string,
   format: CsvImportFormat,
   defaultYear: number,
-  nowIso: string
+  nowIso: string,
+  forceTargetYear: boolean = false
 ): ParsedCsvScheduleRow | null {
   if (line.startsWith('#') || line.trim().length === 0) return null;
   const parts = line.split(',').map((p) => p.trim());
   if (parts.length < 5) return null;
 
-  const parsedDate = parseCsvRowDate(parts[0], parts[1], defaultYear);
+  const parsedDate = parseCsvRowDate(parts[0], parts[1], defaultYear, forceTargetYear);
   if (!parsedDate) return null;
 
   const cols = parts.slice(parsedDate.dataColOffset);

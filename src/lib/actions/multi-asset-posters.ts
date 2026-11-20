@@ -38,6 +38,7 @@ export interface SaveMultiAssetPosterInput {
   readonly qr_label?: string | undefined;
   readonly qr_position?: QrPosition | undefined;
   readonly allow_audio?: boolean | undefined;
+  readonly recurring_schedule?: string | null | undefined;
 }
 
 export async function uploadLayoutAsset(input: UploadLayoutAssetInput): Promise<UploadLayoutAssetResult> {
@@ -91,6 +92,7 @@ export async function saveMultiAssetPoster(input: SaveMultiAssetPosterInput): Pr
         qr_label: input.qr_label?.trim() || null,
         qr_position: input.qr_position ?? 'bottom-left',
         allow_audio: Boolean(input.allow_audio),
+        ...(input.recurring_schedule !== undefined ? { recurring_schedule: input.recurring_schedule } : {}),
       })
       .where(eq(postersTable.id, safeId));
 
@@ -122,6 +124,7 @@ export async function saveMultiAssetPoster(input: SaveMultiAssetPosterInput): Pr
       start_at: input.start_at,
       end_at: resolvedEndAt,
       duration_seconds: input.duration_seconds,
+      recurring_schedule: input.recurring_schedule ?? null,
       display_order: order,
       is_active: true,
       created_at: nowIso,
@@ -146,6 +149,7 @@ export async function saveMultiAssetPoster(input: SaveMultiAssetPosterInput): Pr
     start_at: input.start_at,
     end_at: resolvedEndAt,
     duration_seconds: input.duration_seconds,
+    recurring_schedule: input.recurring_schedule ?? null,
     display_order: nextOrder,
     is_active: true,
     created_at: nowIso,

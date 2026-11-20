@@ -18,6 +18,7 @@ export interface MultiAssetStageCanvasProps {
   readonly fitMode?: PosterFitMode | undefined;
   readonly mosqueName?: string | undefined;
   readonly slideIndex?: number | undefined;
+  readonly isPaused?: boolean | undefined;
 }
 
 export function MultiAssetStageCanvas({
@@ -25,6 +26,7 @@ export function MultiAssetStageCanvas({
   layout,
   isDrawerOpen = false,
   slideIndex,
+  isPaused = false,
 }: MultiAssetStageCanvasProps) {
   const gridStyle = getArchetypeGridStyle(layout.archetype, layout.split_ratio, layout.slots.length);
   const globalMute = layout.slots.filter((s) => s.type === 'video').length > 1;
@@ -52,7 +54,7 @@ export function MultiAssetStageCanvas({
                 }}
                 className="overflow-hidden shadow-2xl transition-transform"
               >
-                <SlotPresenter slot={slot} isDrawerOpen={isDrawerOpen} globalMute={globalMute} posterAllowAudio={allowAudio} slideIndex={slideIndex} />
+                <SlotPresenter slot={slot} isDrawerOpen={isDrawerOpen} globalMute={globalMute} posterAllowAudio={allowAudio} slideIndex={slideIndex} isPaused={isPaused} />
               </div>
             );
           })}
@@ -82,7 +84,7 @@ export function MultiAssetStageCanvas({
                 className="w-full h-full min-w-0 min-h-0 overflow-hidden"
                 style={getSlotCellPlacement(layout.archetype, idx, layout.slots.length)}
               >
-                <SlotPresenter slot={slot} isDrawerOpen={isDrawerOpen} globalMute={globalMute} posterAllowAudio={allowAudio} slideIndex={slideIndex} />
+                <SlotPresenter slot={slot} isDrawerOpen={isDrawerOpen} globalMute={globalMute} posterAllowAudio={allowAudio} slideIndex={slideIndex} isPaused={isPaused} />
               </div>
             );
           })}

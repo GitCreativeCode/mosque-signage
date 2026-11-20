@@ -15,6 +15,7 @@ export interface NoticeEditFormProps {
   readonly onUpdated: () => void;
   readonly onDirtyChange?: ((isDirty: boolean) => void) | undefined;
   readonly onRequestClose?: (() => void) | undefined;
+  readonly venueTimezone?: string | undefined;
 }
 
 export function NoticeEditForm({
@@ -23,6 +24,7 @@ export function NoticeEditForm({
   onUpdated,
   onDirtyChange,
   onRequestClose,
+  venueTimezone,
 }: NoticeEditFormProps) {
   const form = useNoticeEditForm({ poster, onClose, onUpdated, onDirtyChange });
 
@@ -72,6 +74,9 @@ export function NoticeEditForm({
         onChangeStartAt={form.setStartAt}
         endAt={form.endAt}
         onChangeEndAt={form.setEndAt}
+        recurringSchedule={form.recurringSchedule}
+        onChangeRecurringSchedule={form.setRecurringSchedule}
+        venueTimezone={venueTimezone}
       />
 
       <PosterQrConfigSection

@@ -113,6 +113,7 @@ describe('LAN & Display Data Exposure Remediation', () => {
       qr_entrance_delay_seconds: 3,
       show_qr_during_drawer: false,
       show_mini_prayer_pill: true,
+      show_prayer_silence_overlay: false,
       mini_prayer_pill_position: 'bottom-right',
       show_progress_bar: true,
       poster_view_mode: 'grid',

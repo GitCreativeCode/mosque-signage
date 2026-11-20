@@ -159,19 +159,19 @@ describe('Studio Canvas Text Layer Styling & Typography', () => {
 });
 
 describe('Release Registry & Versioning Metadata', () => {
-  it('correctly reports v0.1.2 as current release with Nov 18, 2026 date', () => {
-    expect(APP_VERSION).toBe('0.1.2');
-    expect(OFFICIAL_RELEASE_HISTORY.length).toBeGreaterThanOrEqual(3);
+  it('correctly reports v0.1.3 as current release with Nov 19, 2026 date', () => {
+    expect(APP_VERSION).toBe('0.1.3');
+    expect(OFFICIAL_RELEASE_HISTORY.length).toBeGreaterThanOrEqual(4);
 
     const latest = OFFICIAL_RELEASE_HISTORY[0]!;
-    expect(latest.version).toBe('0.1.2');
-    expect(latest.date).toBe('November 18, 2026');
+    expect(latest.version).toBe('0.1.3');
+    expect(latest.date).toBe('November 19, 2026');
     expect(latest.isCurrent).toBe(true);
-    expect(latest.title).toContain('v0.1.2');
+    expect(latest.title).toContain('v0.1.3');
     expect(latest.category).toBe('patch');
 
     const previous = OFFICIAL_RELEASE_HISTORY[1]!;
-    expect(previous.version).toBe('0.1.1');
+    expect(previous.version).toBe('0.1.2');
     expect(previous.date).toBe('November 18, 2026');
     expect(previous.isCurrent).toBe(false);
   });
