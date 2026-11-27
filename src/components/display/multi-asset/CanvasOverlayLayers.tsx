@@ -8,11 +8,13 @@ import type {
   PosterTextOverlay,
 } from '@/types/index';
 import { IslamicStickerGraphic } from '@/components/common/IslamicStickerGraphic';
+import { SteppedTextLines } from '@/components/common/SteppedTextLines';
 import { SlotPresenter } from './SlotPresenter';
 import {
+  clampTextScale,
   resolveFontClass,
   resolveOverlayBgClass,
-  resolveTextSizeClass,
+  resolveTextFontSizeCss,
 } from './overlay-styles';
 
 function StickerListLayer({ stickers, defaultZ }: { stickers?: readonly PosterCanvasSticker[] | undefined; defaultZ: number }) {
@@ -52,44 +54,92 @@ function TextOverlayItem({ overlay, defaultZ, compact }: { overlay: PosterTextOv
   const { bgClass, isTransparent, customBgColor } = resolveOverlayBgClass(overlay);
   const topPct = overlay.pos_y !== undefined ? overlay.pos_y : overlay.position === 'top_banner' ? 10 : 85;
   const alignClass = overlay.text_align === 'left' ? 'text-left' : overlay.text_align === 'right' ? 'text-right' : 'text-center';
+  const baseBg = isTransparent
+    ? 'transparent'
+    : customBgColor || (overlay.bg_style === 'emerald' ? '#064e3b' : overlay.bg_style === 'gold' ? '#78350f' : '#000000');
+  const effectiveBg = isTransparent ? 'transparent' : baseBg;
+  const isHugLines = overlay.box_fit === 'hug_lines';
+  const fontSizeCss = resolveTextFontSizeCss(overlay.font_size);
+  const scaleX = clampTextScale(overlay.scale_x);
+  const scaleY = clampTextScale(overlay.scale_y);
+  const layerOpacity = (overlay.bg_opacity ?? 100) / 100;
 
   if (compact) {
-    const compactAlign = overlay.text_align === 'left' ? 'text-left pl-3 pr-8' : overlay.text_align === 'right' ? 'text-right pr-3 pl-8' : 'text-center px-6';
+    const compactAlign = overlay.text_align === 'left' ? 'text-left' : overlay.text_align === 'right' ? 'text-right' : 'text-center';
     return (
       <div
         style={{
           position: 'absolute',
           left: `${overlay.pos_x ?? 50}%`,
           top: `${overlay.pos_y ?? 50}%`,
-          width: overlay.width_percent ? `${overlay.width_percent}%` : 'auto',
-          transform: `translate(-50%, -50%) rotate(${overlay.rotation ?? 0}deg)`,
+          width: overlay.width_percent ? `${overlay.width_percent}%` : 'fit-content',
+          transform: `translate(-50%, -50%) rotate(${overlay.rotation ?? 0}deg) scale(${scaleX}, ${scaleY})`,
           zIndex: overlay.z_index ?? defaultZ,
           color: overlay.text_color || '#ffffff',
-          backgroundColor: isTransparent ? 'transparent' : customBgColor || undefined,
+          backgroundColor: isHugLines ? 'transparent' : effectiveBg,
+          fontSize: fontSizeCss,
+          lineHeight: 1.15,
+          padding: isHugLines ? 0 : '0.22em 0.6em',
+          opacity: layerOpacity,
         }}
-        className={`inline-block py-2 rounded-lg shadow-xl ${bgClass} ${resolveFontClass(overlay.font_family)} ${resolveTextSizeClass(overlay.font_size)} ${overlay.is_bold ?? true ? 'font-bold' : 'font-normal'} ${overlay.is_italic ? 'italic' : ''} ${overlay.is_underline ? 'underline' : ''} ${compactAlign} pointer-events-none`}
+        className={`inline-block ${isHugLines ? 'p-0 bg-transparent shadow-none' : `shadow-xl ${bgClass}`} ${resolveFontClass(overlay.font_family)} ${overlay.is_bold ?? true ? 'font-bold' : 'font-normal'} ${overlay.is_italic ? 'italic' : ''} ${overlay.is_underline ? 'underline' : ''} ${compactAlign} pointer-events-none`}
       >
-        {overlay.text}
+        {isHugLines ? (
+          <SteppedTextLines
+            text={overlay.text}
+            align={overlay.text_align}
+            backgroundColor={effectiveBg}
+            containerClassName="-space-y-0.5"
+            lineClassName="inline-block font-inherit leading-[1.15] whitespace-pre-wrap rounded-none"
+            lineStyle={{ padding: '0.14em 0.45em' }}
+          />
+        ) : (
+          <span className="whitespace-pre-wrap leading-[1.15]">{overlay.text}</span>
+        )}
       </div>
     );
   }
 
-  const widthClass = overlay.width_mode === 'full' ? 'w-11/12 max-w-5xl' : overlay.width_mode === 'custom' && overlay.width_percent ? `w-[${overlay.width_percent}%]` : 'w-fit max-w-[95%]';
+  const isCustomW = overlay.width_mode === 'custom' && Boolean(overlay.width_percent);
+  const outerWidth = overlay.width_mode === 'full' ? '92%' : isCustomW ? `${overlay.width_percent}%` : 'max-content';
+  const outerMaxWidth = isCustomW ? `${overlay.width_percent}%` : '95cqw';
+
   return (
     <div
       style={{
         top: `${topPct}%`,
         left: `${overlay.pos_x ?? 50}%`,
-        transform: `translate(-50%, -50%) rotate(${overlay.rotation || 0}deg)`,
+        width: outerWidth,
+        maxWidth: outerMaxWidth,
+        transform: `translate(-50%, -50%) rotate(${overlay.rotation || 0}deg) scale(${scaleX}, ${scaleY})`,
         zIndex: overlay.z_index ?? defaultZ,
+        opacity: layerOpacity,
       }}
-      className={`absolute pointer-events-none px-4 ${widthClass}`}
+      className="absolute pointer-events-none p-0 m-0"
     >
       <div
-        className={`inline-block w-full px-6 py-3 rounded-lg shadow-2xl transition-opacity ${bgClass} ${resolveFontClass(overlay.font_family)} ${resolveTextSizeClass(overlay.font_size)} ${overlay.is_bold ?? true ? 'font-bold' : 'font-normal'} ${overlay.is_italic ? 'italic' : ''} ${overlay.is_underline ? 'underline' : ''} ${alignClass}`}
-        style={{ color: overlay.text_color || '#ffffff', backgroundColor: isTransparent ? 'transparent' : customBgColor || undefined }}
+        className={`block ${isCustomW || overlay.width_mode === 'full' ? 'w-full' : 'w-fit'} leading-[1.15] ${isHugLines ? 'p-0 bg-transparent border-0 shadow-none' : `shadow-2xl ${bgClass}`} transition-opacity ${resolveFontClass(overlay.font_family)} ${overlay.is_bold ?? true ? 'font-bold' : 'font-normal'} ${overlay.is_italic ? 'italic' : ''} ${overlay.is_underline ? 'underline' : ''} ${alignClass}`}
+        style={{
+          color: overlay.text_color || '#ffffff',
+          backgroundColor: isHugLines ? 'transparent' : effectiveBg,
+          fontSize: fontSizeCss,
+          padding: isHugLines ? 0 : '0.22em 0.6em',
+          whiteSpace: isCustomW ? 'normal' : 'pre-wrap',
+          wordBreak: 'break-word',
+        }}
       >
-        {overlay.text}
+        {isHugLines ? (
+          <SteppedTextLines
+            text={overlay.text}
+            align={overlay.text_align}
+            backgroundColor={effectiveBg}
+            containerClassName="-space-y-0.5"
+            lineClassName="inline-block font-inherit leading-[1.15] whitespace-pre-wrap rounded-none"
+            lineStyle={{ padding: '0.14em 0.45em' }}
+          />
+        ) : (
+          <span className="inline-block whitespace-pre-wrap leading-[1.15]">{overlay.text}</span>
+        )}
       </div>
     </div>
   );

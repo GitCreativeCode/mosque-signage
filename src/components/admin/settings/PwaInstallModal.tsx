@@ -40,13 +40,13 @@ export function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="pwa-install-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn"
     >
       <div
         ref={modalRef}
-        className="w-full max-w-2xl bg-[var(--admin-card)] border border-[var(--admin-border)] rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-scaleUp max-h-[92vh]"
+        className="w-full h-[100dvh] sm:h-auto sm:max-w-2xl bg-[var(--admin-card)] border-0 sm:border border-[var(--admin-border)] rounded-none sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-scaleUp sm:max-h-[92dvh]"
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--admin-border)] bg-[var(--admin-surface)] shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-[var(--admin-border)] bg-[var(--admin-surface)] shrink-0 gap-2">
           <div className="flex items-center space-x-3.5">
             <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-emerald-500/30 shadow-md shrink-0 bg-slate-950">
               <Image src="/icon.svg" alt="MosqueSignage App Icon" fill className="object-contain p-0.5" priority />
@@ -70,7 +70,7 @@ export function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProps) {
           </button>
         </div>
 
-        <div className="p-6 space-y-5 overflow-y-auto">
+        <div className="flex-1 p-4 sm:p-6 space-y-5 overflow-y-auto">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="p-3 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] space-y-1.5">
               <Monitor className="w-4 h-4 text-emerald-500" />
@@ -161,11 +161,11 @@ export function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProps) {
           )}
         </div>
 
-        <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--admin-border)] bg-[var(--admin-surface)] shrink-0">
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-2.5 px-4 sm:px-6 py-3.5 sm:py-4 border-t border-[var(--admin-border)] bg-[var(--admin-surface)] shrink-0">
           <button
             type="button"
             onClick={() => window.open('/display', '_blank', 'noopener,noreferrer')}
-            className="text-xs text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] flex items-center space-x-1 transition cursor-pointer"
+            className="min-h-[40px] sm:min-h-0 text-xs text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] flex items-center justify-center sm:justify-start space-x-1 transition cursor-pointer"
           >
             <span>Open /display in browser</span>
             <ExternalLink className="w-3 h-3" />
@@ -174,7 +174,7 @@ export function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-medium border border-[var(--admin-border)] bg-[var(--admin-card)] hover:bg-[var(--admin-card-hover)] text-[var(--admin-text-primary)] transition cursor-pointer"
+            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-4 py-2 rounded-xl text-xs font-medium border border-[var(--admin-border)] bg-[var(--admin-card)] hover:bg-[var(--admin-card-hover)] text-[var(--admin-text-primary)] transition cursor-pointer"
           >
             Close
           </button>

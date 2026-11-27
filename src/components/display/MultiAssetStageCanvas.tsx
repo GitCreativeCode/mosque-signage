@@ -36,7 +36,7 @@ export function MultiAssetStageCanvas({
 
   if (layout.archetype === 'freeform') {
     return (
-      <div className={`relative w-full h-[calc(100%-4px)] overflow-hidden select-none ${bgProps.className}`} style={bgProps.style}>
+      <div className={`relative w-full h-[calc(100%-4px)] overflow-hidden select-none ${bgProps.className}`} style={{ ...bgProps.style, containerType: 'inline-size' }}>
         <div className="relative w-full h-full overflow-hidden select-none">
           {layout.slots.map((slot) => {
             if (slot.is_hidden) return null;
@@ -73,7 +73,7 @@ export function MultiAssetStageCanvas({
   }
 
   return (
-    <div className={`relative w-full h-[calc(100%-4px)] overflow-hidden select-none ${bgProps.className}`} style={bgProps.style}>
+    <div className={`relative w-full h-[calc(100%-4px)] overflow-hidden select-none ${bgProps.className}`} style={{ ...bgProps.style, containerType: 'inline-size' }}>
       <div className="relative w-full h-full">
         <div className={`w-full h-full grid ${gapClass}`} style={gridStyle}>
           {layout.slots.map((slot, idx) => {

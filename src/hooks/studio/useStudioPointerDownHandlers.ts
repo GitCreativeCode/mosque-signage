@@ -24,6 +24,7 @@ interface UseStudioPointerDownHandlersParams {
   readonly setDraggingCompoundId: (id: string | null) => void;
   readonly setCompoundDragStart: (s: { mouseX: number; mouseY: number; initialX: number; initialY: number } | null) => void;
   readonly setDraggingTextId: (id: string | null) => void;
+  readonly setTextDragStart: (s: { mouseX: number; mouseY: number; initialX: number; initialY: number } | null) => void;
 }
 
 const tryCapture = (el: EventTarget | null, id: number) => {
@@ -33,6 +34,7 @@ const tryCapture = (el: EventTarget | null, id: number) => {
 /** Encapsulates canvas pointer-down selection, multi-drag, and resize session initiation. */
 export function useStudioPointerDownHandlers(p: UseStudioPointerDownHandlersParams) {
   const handleMultiDragStart = (e: React.PointerEvent) => {
+    if (e.button !== 0) return;
     e.stopPropagation();
     tryCapture(e.currentTarget, e.pointerId);
     p.setMultiDragStart({
@@ -45,6 +47,7 @@ export function useStudioPointerDownHandlers(p: UseStudioPointerDownHandlersPara
   };
 
   const handleStartMultiResizing = (e: React.PointerEvent, handle: ResizeHandle) => {
+    if (e.button !== 0) return;
     e.stopPropagation();
     if (!p.groupBounds) return;
     tryCapture(e.target, e.pointerId);
@@ -61,7 +64,23 @@ export function useStudioPointerDownHandlers(p: UseStudioPointerDownHandlersPara
     });
   };
 
-  const handleStartResizing = (e: React.PointerEvent, type: ResizeSession['type'], id: string, handle: ResizeHandle, init: { pos_x: number; pos_y: number; width_percent: number; height_percent: number }) => {
+  const handleStartResizing = (
+    e: React.PointerEvent,
+    type: ResizeSession['type'],
+    id: string,
+    handle: ResizeHandle,
+    init: {
+      pos_x: number;
+      pos_y: number;
+      width_percent: number;
+      height_percent: number;
+      font_size?: number | undefined;
+      scale_x?: number | undefined;
+      scale_y?: number | undefined;
+      rotation?: number | undefined;
+    },
+  ) => {
+    if (e.button !== 0) return;
     e.stopPropagation();
     const locked = type === 'slot' ? p.isItemLocked(p.scene.slots.find((s) => s.id === id))
       : type === 'sticker' ? p.isItemLocked(p.scene.stickers.find((s) => s.id === id))
@@ -71,10 +90,26 @@ export function useStudioPointerDownHandlers(p: UseStudioPointerDownHandlersPara
     tryCapture(e.target, e.pointerId);
     const w = init.width_percent || 40;
     const h = init.height_percent || 40;
-    p.setResizingSession({ type, id, handle, mouseX: e.clientX, mouseY: e.clientY, initialX: init.pos_x ?? 50, initialY: init.pos_y ?? 50, initialW: w, initialH: h, aspectRatio: Math.max(0.05, w / Math.max(1, h)) });
+    p.setResizingSession({
+      type,
+      id,
+      handle,
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      initialX: init.pos_x ?? 50,
+      initialY: init.pos_y ?? 50,
+      initialW: w,
+      initialH: h,
+      aspectRatio: Math.max(0.05, w / Math.max(1, h)),
+      initialFontSize: init.font_size,
+      initialScaleX: init.scale_x,
+      initialScaleY: init.scale_y,
+      rotation: init.rotation,
+    });
   };
 
   const handleFreeformSlotPointerDown = (e: React.PointerEvent, slotId: string, idx: number) => {
+    if (e.button !== 0) return;
     e.stopPropagation();
     if (e.shiftKey) { p.toggleLayerSelection(`slot:${slotId}`); return; }
     if (p.selectedLayerKeys.length > 1 && p.selectedLayerKeys.includes(`slot:${slotId}`)) { handleMultiDragStart(e); return; }
@@ -87,6 +122,7 @@ export function useStudioPointerDownHandlers(p: UseStudioPointerDownHandlersPara
   };
 
   const handleStickerPointerDown = (e: React.PointerEvent, stk: StudioSceneState['stickers'][number], idx: number) => {
+    if (e.button !== 0) return;
     e.stopPropagation();
     if (e.shiftKey) { p.toggleLayerSelection(`sticker:${stk.id}`); return; }
     if (p.selectedLayerKeys.length > 1 && p.selectedLayerKeys.includes(`sticker:${stk.id}`)) { handleMultiDragStart(e); return; }
@@ -98,6 +134,7 @@ export function useStudioPointerDownHandlers(p: UseStudioPointerDownHandlersPara
   };
 
   const handleCompoundPointerDown = (e: React.PointerEvent, compoundId: string) => {
+    if (e.button !== 0) return;
     e.stopPropagation();
     const c = p.scene.compoundLayers.find((cp) => cp.id === compoundId);
     if (e.shiftKey) { p.toggleLayerSelection(`compound:${compoundId}`); return; }
@@ -110,15 +147,23 @@ export function useStudioPointerDownHandlers(p: UseStudioPointerDownHandlersPara
   };
 
   const handleTextPointerDown = (e: React.PointerEvent, textId: string) => {
+    if (e.button !== 0) return;
     e.stopPropagation();
     const idx = p.scene.textOverlays.findIndex((t) => t.id === textId);
     if (idx === -1) return;
     if (e.shiftKey) { p.toggleLayerSelection(`text:${textId}`); return; }
     if (p.selectedLayerKeys.length > 1 && p.selectedLayerKeys.includes(`text:${textId}`)) { handleMultiDragStart(e); return; }
     p.selectText(idx);
-    if (p.isItemLocked(p.scene.textOverlays[idx])) return;
+    const ov = p.scene.textOverlays[idx];
+    if (!ov || p.isItemLocked(ov)) return;
     tryCapture(e.currentTarget, e.pointerId);
     p.setDraggingTextId(textId);
+    p.setTextDragStart({
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      initialX: ov.pos_x ?? 50,
+      initialY: ov.pos_y !== undefined ? ov.pos_y : ov.position === 'top_banner' ? 12 : 85,
+    });
   };
 
   return {

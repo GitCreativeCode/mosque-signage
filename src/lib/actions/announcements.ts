@@ -25,6 +25,8 @@ export interface CreateAnnouncementInput {
   readonly qr_url?: string | undefined;
   readonly qr_label?: string | undefined;
   readonly qr_position?: QrPosition | undefined;
+  readonly qr_start_at?: string | null | undefined;
+  readonly qr_end_at?: string | null | undefined;
   readonly start_at: string;
   readonly end_at?: string | null | undefined;
   readonly duration_seconds?: number | undefined;
@@ -48,6 +50,8 @@ export interface UpdateAnnouncementInput {
   readonly qr_url?: string | undefined;
   readonly qr_label?: string | undefined;
   readonly qr_position?: QrPosition | undefined;
+  readonly qr_start_at?: string | null | undefined;
+  readonly qr_end_at?: string | null | undefined;
   readonly recurring_schedule?: string | null | undefined;
 }
 
@@ -87,6 +91,8 @@ export async function createAnnouncementSlide(input: CreateAnnouncementInput): P
         qr_url: input.qr_url?.trim() || null,
         qr_label: input.qr_label?.trim() || null,
         qr_position: input.qr_position ?? 'bottom-left',
+        qr_start_at: input.qr_start_at || null,
+        qr_end_at: input.qr_end_at || null,
         start_at: input.start_at,
         end_at: resolvedEndAt,
         duration_seconds: input.duration_seconds ?? 15,
@@ -104,20 +110,22 @@ export async function createAnnouncementSlide(input: CreateAnnouncementInput): P
 
   eventBus.emitEvent('POSTERS_UPDATED', { timestamp: nowIso, action: 'create', posterId: uniqueId });
 
-  return {
-    id: uniqueId,
-    title: input.headline.trim(),
-    image_path: relativePath,
-    qr_url: input.qr_url?.trim() || undefined,
-    qr_label: input.qr_label?.trim() || undefined,
-    qr_position: input.qr_position ?? 'bottom-left',
-    start_at: input.start_at,
-    end_at: resolvedEndAt,
-    duration_seconds: input.duration_seconds ?? 15,
-    recurring_schedule: input.recurring_schedule ?? null,
-    display_order: nextOrder,
-    created_at: nowIso,
-  };
+    return {
+      id: uniqueId,
+      title: input.headline.trim(),
+      image_path: relativePath,
+      qr_url: input.qr_url?.trim() || undefined,
+      qr_label: input.qr_label?.trim() || undefined,
+      qr_position: input.qr_position ?? 'bottom-left',
+      qr_start_at: input.qr_start_at ?? null,
+      qr_end_at: input.qr_end_at ?? null,
+      start_at: input.start_at,
+      end_at: resolvedEndAt,
+      duration_seconds: input.duration_seconds ?? 15,
+      recurring_schedule: input.recurring_schedule ?? null,
+      display_order: nextOrder,
+      created_at: nowIso,
+    };
 }
 
 export async function getAnnouncementDetails(posterId: string): Promise<AnnouncementDetails | null> {
@@ -171,6 +179,8 @@ export async function updateAnnouncementSlide(input: UpdateAnnouncementInput): P
         duration_seconds: input.duration_seconds,
         qr_url: input.qr_url?.trim() || null,
         qr_label: input.qr_label?.trim() || null,
+        qr_start_at: input.qr_start_at !== undefined ? (input.qr_start_at || null) : undefined,
+        qr_end_at: input.qr_end_at !== undefined ? (input.qr_end_at || null) : undefined,
         ...(input.qr_position !== undefined ? { qr_position: input.qr_position } : {}),
         ...(input.recurring_schedule !== undefined ? { recurring_schedule: input.recurring_schedule } : {}),
       })

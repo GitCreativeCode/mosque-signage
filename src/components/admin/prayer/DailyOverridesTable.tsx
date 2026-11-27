@@ -2,7 +2,6 @@
 
 import React from 'react';
 import type { PrayerName } from '@/types/index';
-import { TimePicker } from '../TimePicker';
 
 export interface DailyPrayerItem {
   readonly name: PrayerName;
@@ -53,9 +52,11 @@ export function DailyOverridesTable({
                     —
                   </span>
                 ) : (
-                  <TimePicker
+                  <input
+                    type="time"
                     value={iqamahTimes[p.name] ?? ''}
-                    onChange={(val) => onIqamahChange(p.name, val)}
+                    onChange={(e) => onIqamahChange(p.name, e.target.value)}
+                    className="px-2.5 py-1 rounded-lg bg-[#15161b] border border-[#313542] text-white font-mono tabular-nums font-semibold text-xs focus:outline-none focus:border-[#388bfd]"
                   />
                 )}
               </td>

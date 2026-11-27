@@ -7,6 +7,7 @@ import { FrameStylePicker } from '../FrameStylePicker';
 interface StudioFramesTabProps {
   readonly activeSlot: PosterSlotMedia | undefined;
   readonly selectedSlotIndex: number | null;
+  readonly selectedSlotCount?: number | undefined;
   readonly totalSlots: number;
   readonly frameApplyScope: 'selected' | 'all';
   readonly onChangeScope: (scope: 'selected' | 'all') => void;
@@ -17,6 +18,7 @@ interface StudioFramesTabProps {
 export function StudioFramesTab({
   activeSlot,
   selectedSlotIndex,
+  selectedSlotCount,
   totalSlots,
   frameApplyScope,
   onChangeScope,
@@ -36,13 +38,18 @@ export function StudioFramesTab({
           <button
             type="button"
             onClick={() => onChangeScope('selected')}
-            className={`flex-1 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+            disabled={(selectedSlotCount ?? 1) === 0 && selectedSlotIndex === null}
+            className={`flex-1 py-1 rounded-lg font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
               frameApplyScope === 'selected'
                 ? 'bg-[var(--admin-card)] text-[var(--admin-text-primary)] shadow-sm'
                 : 'text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)]'
             }`}
           >
-            Slot {(selectedSlotIndex ?? 0) + 1} Only
+            {(selectedSlotCount ?? 0) > 1
+              ? `Selected Slots (${selectedSlotCount})`
+              : selectedSlotIndex !== null || (selectedSlotCount ?? 0) === 1
+              ? `Slot ${(selectedSlotIndex ?? 0) + 1} Only`
+              : 'No Slots Selected'}
           </button>
           <button
             type="button"

@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Lock, Moon, Sun } from 'lucide-react';
+import { Lock, Menu, Moon, Sun, Laptop } from 'lucide-react';
 import type { VenueSettingsCategory } from '@/types/index';
 import type { AdminTabKey, PrayerSubTabKey } from '@/hooks/useAdminNavigation';
+import type { ThemePreference } from '@/lib/theme/theme-sync';
 import { TopNavDropdown } from './common/TopNavDropdown';
+import { AdminMobileDrawer } from './AdminMobileDrawer';
 
 export interface AdminTopbarProps {
   readonly timezone: string;
@@ -12,6 +14,7 @@ export interface AdminTopbarProps {
   readonly prayerSubTab: PrayerSubTabKey;
   readonly settingsSubTab: VenueSettingsCategory;
   readonly theme: 'light' | 'dark';
+  readonly themePreference?: ThemePreference | undefined;
   readonly isPwaInstalled: boolean;
   readonly isPwaStandalone: boolean;
   readonly onNavigate: (tab: AdminTabKey, sub?: string) => void;
@@ -31,6 +34,7 @@ export function AdminTopbar({
   prayerSubTab,
   settingsSubTab,
   theme,
+  themePreference,
   isPwaInstalled,
   isPwaStandalone,
   onNavigate,
@@ -42,6 +46,8 @@ export function AdminTopbar({
   onOpenPwaModal,
 }: AdminTopbarProps) {
   const [openDropdownId, setOpenDropdownId] = useState<DropdownId>(null);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const openDropdown = (id: Exclude<DropdownId, null>) => {
@@ -59,11 +65,44 @@ export function AdminTopbar({
     setOpenDropdownId(null);
   };
 
-  useEffect(() => () => { if (closeTimerRef.current) clearTimeout(closeTimerRef.current); }, []);
+  useEffect(() => {
+    setMounted(true);
+    return () => { if (closeTimerRef.current) clearTimeout(closeTimerRef.current); };
+  }, []);
 
   return (
-    <header className="sticky top-0 z-40 bg-[var(--admin-surface)] border-b border-[var(--admin-border)] px-4 sm:px-6 py-2.5 shadow-sm">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+    <>
+      <header className="sticky top-0 z-40 bg-[var(--admin-surface)] border-b border-[var(--admin-border)] px-4 sm:px-6 py-2.5 shadow-sm">
+        {/* Mobile & Vertical Tablet Header (< 1024px): Mosque Signage Left, Hamburger Right */}
+        <div className="flex lg:hidden items-center justify-between gap-3">
+          <div className="min-w-0 text-left">
+            <div className="flex items-center space-x-1.5">
+              <span className="text-sm font-bold text-[var(--admin-text-primary)] tracking-tight leading-none truncate">
+                Mosque Signage
+              </span>
+              <span className="px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider rounded-md bg-green-600/15 border border-green-600/30 text-green-700 dark:text-green-400 shrink-0">
+                BETA
+              </span>
+            </div>
+            <p className="text-[10px] text-[var(--admin-text-muted)] font-mono mt-0.5 truncate">
+              {timezone || 'America/Toronto'}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsMobileDrawerOpen(true)}
+            aria-label="Open navigation menu"
+            aria-expanded={isMobileDrawerOpen}
+            aria-controls="admin-mobile-drawer"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border border-[var(--admin-border)] bg-[var(--admin-card)] hover:bg-[var(--admin-card-hover)] text-[var(--admin-text-primary)] transition active:scale-95 cursor-pointer shadow-sm shrink-0"
+          >
+            <Menu className="w-5 h-5" aria-hidden="true" />
+          </button>
+        </div>
+
+        {/* Desktop 3-Zone Header (>= 1024px) */}
+        <div className="hidden lg:flex max-w-7xl mx-auto items-center justify-between gap-4">
         <div className="flex-1 flex items-center justify-start min-w-0">
           <div>
             <div className="flex items-center space-x-1.5">
@@ -118,6 +157,12 @@ export function AdminTopbar({
                 isActive: activeTab === 'PRAYERS' && prayerSubTab === 'JUMMAH',
                 onClick: () => onNavigate('PRAYERS', 'JUMMAH'),
               },
+              {
+                id: 'seasonal-schedules',
+                label: 'Seasonal (Eid & Ramadan)',
+                isActive: activeTab === 'PRAYERS' && prayerSubTab === 'SEASONAL',
+                onClick: () => onNavigate('PRAYERS', 'SEASONAL'),
+              },
             ]}
           />
 
@@ -170,13 +215,36 @@ export function AdminTopbar({
           <button
             type="button"
             onClick={onToggleTheme}
+            suppressHydrationWarning
             className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg border border-[var(--admin-border)] bg-[var(--admin-card)] hover:bg-[var(--admin-card-hover)] text-[var(--admin-text-primary)] transition active:scale-95 cursor-pointer shadow-sm"
-            title={theme === 'light' ? 'Switch to Executive Dark Zinc' : 'Switch to Editorial Light'}
-            aria-label={theme === 'light' ? 'Switch to Executive Dark Zinc' : 'Switch to Editorial Light'}
+            title={
+              !mounted
+                ? 'Theme Switcher'
+                : themePreference === 'system'
+                ? 'Theme: System Default (Click to switch to Light mode)'
+                : themePreference === 'light'
+                ? 'Theme: Light Mode (Click to switch to Dark mode)'
+                : 'Theme: Dark Mode (Click to switch to System mode)'
+            }
+            aria-label={
+              !mounted
+                ? 'Theme Switcher'
+                : themePreference === 'system'
+                ? 'Theme: System Default (Click to switch to Light mode)'
+                : themePreference === 'light'
+                ? 'Theme: Light Mode (Click to switch to Dark mode)'
+                : 'Theme: Dark Mode (Click to switch to System mode)'
+            }
           >
-            {theme === 'light'
-              ? <Moon className="w-4 h-4 text-[var(--admin-text-secondary)]" aria-hidden="true" />
-              : <Sun className="w-4 h-4 text-amber-400" aria-hidden="true" />}
+            {!mounted ? (
+              <Laptop className="w-4 h-4 text-emerald-500" aria-hidden="true" />
+            ) : themePreference === 'system' ? (
+              <Laptop className="w-4 h-4 text-emerald-500" aria-hidden="true" />
+            ) : theme === 'light' ? (
+              <Sun className="w-4 h-4 text-amber-400" aria-hidden="true" />
+            ) : (
+              <Moon className="w-4 h-4 text-[var(--admin-text-secondary)]" aria-hidden="true" />
+            )}
           </button>
 
           <button
@@ -190,7 +258,28 @@ export function AdminTopbar({
           </button>
         </div>
       </div>
-    </header>
+      </header>
+
+      <AdminMobileDrawer
+        isOpen={isMobileDrawerOpen}
+        onClose={() => setIsMobileDrawerOpen(false)}
+        timezone={timezone}
+        activeTab={activeTab}
+        prayerSubTab={prayerSubTab}
+        settingsSubTab={settingsSubTab}
+        theme={theme}
+        themePreference={themePreference}
+        isPwaInstalled={isPwaInstalled}
+        isPwaStandalone={isPwaStandalone}
+        onNavigate={onNavigate}
+        onToggleTheme={onToggleTheme}
+        onLockAdmin={onLockAdmin}
+        onToggleSimulator={onToggleSimulator}
+        onTestDrawer={onTestDrawer}
+        onReloadDisplay={onReloadDisplay}
+        onOpenPwaModal={onOpenPwaModal}
+      />
+    </>
   );
 }
 

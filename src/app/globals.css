@@ -3,6 +3,33 @@
 @tailwind utilities;
 
 /* ============================================================
+   Universal Sleek Custom Scrollbars
+   ============================================================ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--admin-border) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--admin-border);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-text-muted);
+}
+
+/* ============================================================
    Theme Tokens: Responsive Editorial Light vs Executive Dark Zinc
    ============================================================ */
 

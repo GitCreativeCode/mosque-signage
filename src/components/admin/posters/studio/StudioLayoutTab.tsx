@@ -16,6 +16,7 @@ interface StudioLayoutTabProps {
   readonly onChangeArchetype: (arch: PosterLayoutArchetype) => void;
   readonly onEnableFreeform: (updatedSlots: PosterSlotMedia[]) => void;
   readonly onChangeBackground: (bg: CanvasBackgroundPreset) => void;
+  readonly onChangeBackgroundCustom?: ((custom: string) => void) | undefined;
   readonly onChangeGridGap: (gap: LayoutGridGap) => void;
   readonly onToggleAllFitCover: () => void;
   readonly onChangeSplitRatio: (ratio: number) => void;
@@ -46,7 +47,7 @@ const RATIO_PRESETS = [
 /** Inspector tab for partition archetypes, freeform mode, backgrounds, grid gap, and split ratio. */
 export function StudioLayoutTab({
   archetype, canvasBackground, canvasBackgroundCustom, gridGap, splitRatio, slots,
-  onChangeArchetype, onEnableFreeform, onChangeBackground, onChangeGridGap, onToggleAllFitCover, onChangeSplitRatio,
+  onChangeArchetype, onEnableFreeform, onChangeBackground, onChangeBackgroundCustom, onChangeGridGap, onToggleAllFitCover, onChangeSplitRatio,
 }: StudioLayoutTabProps) {
   return (
     <div className="space-y-4">
@@ -94,7 +95,12 @@ export function StudioLayoutTab({
         </div>
       </div>
 
-      <StudioLayoutBackgroundPicker canvasBackground={canvasBackground} canvasBackgroundCustom={canvasBackgroundCustom} onChangeBackground={onChangeBackground} />
+      <StudioLayoutBackgroundPicker
+        canvasBackground={canvasBackground}
+        canvasBackgroundCustom={canvasBackgroundCustom}
+        onChangeBackground={onChangeBackground}
+        onChangeBackgroundCustom={onChangeBackgroundCustom}
+      />
 
       <div className="p-3.5 rounded-2xl bg-[var(--admin-surface)] border border-[var(--admin-border)] space-y-2.5">
         <span className="block text-xs font-bold text-[var(--admin-text-secondary)]">Grid Gap &amp; Edge Spacing</span>

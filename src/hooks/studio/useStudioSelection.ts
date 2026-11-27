@@ -73,13 +73,16 @@ export function useStudioSelection(scene: StudioSceneState) {
       if (!type || !id) return;
       if (type === 'slot') {
         const idx = scene.slots.findIndex((s) => s.id === id);
-        if (idx !== -1) { setSelectedSlotIndex(idx); setSelectedEntity({ type: 'slot', id }); }
+        setSelectedSlotIndex(idx !== -1 ? idx : null);
+        setSelectedEntity({ type: 'slot', id });
       } else if (type === 'sticker') {
         const idx = scene.stickers.findIndex((s) => s.id === id);
-        if (idx !== -1) { setSelectedStickerIndex(idx); setSelectedEntity({ type: 'sticker', id }); }
+        setSelectedStickerIndex(idx !== -1 ? idx : null);
+        setSelectedEntity({ type: 'sticker', id });
       } else if (type === 'text') {
         const idx = scene.textOverlays.findIndex((t) => t.id === id);
-        if (idx !== -1) { setSelectedTextIndex(idx); setSelectedEntity({ type: 'text', id }); }
+        setSelectedTextIndex(idx !== -1 ? idx : 0);
+        setSelectedEntity({ type: 'text', id });
       } else if (type === 'compound') {
         setSelectedCompoundId(id);
         setSelectedEntity({ type: 'compound', id });
@@ -101,11 +104,55 @@ export function useStudioSelection(scene: StudioSceneState) {
           setSelectedCompoundId(null);
         } else {
           setSelectedEntity(null);
+          setSelectedSlotIndex(null);
+          setSelectedStickerIndex(null);
+          setSelectedCompoundId(null);
         }
         return next;
       });
     },
     [syncEntityFromSingleKey],
+  );
+
+  const selectMultipleKeys = useCallback(
+    (keys: string[]) => {
+      setSelectedLayerKeys(keys);
+      if (keys.length === 1 && keys[0]) {
+        syncEntityFromSingleKey(keys[0]);
+      } else {
+        setSelectedEntity(null);
+        setSelectedSlotIndex(null);
+        setSelectedStickerIndex(null);
+        setSelectedCompoundId(null);
+      }
+    },
+    [syncEntityFromSingleKey],
+  );
+
+  const selectSingleEntity = useCallback(
+    (type: 'slot' | 'sticker' | 'text' | 'compound', id: string, index?: number | null) => {
+      setSelectedLayerKeys([`${type}:${id}`]);
+      setSelectedEntity({ type, id });
+      if (type === 'slot') {
+        setSelectedSlotIndex(index ?? null);
+        setSelectedStickerIndex(null);
+        setSelectedCompoundId(null);
+      } else if (type === 'sticker') {
+        setSelectedStickerIndex(index ?? null);
+        setSelectedSlotIndex(null);
+        setSelectedCompoundId(null);
+      } else if (type === 'text') {
+        setSelectedTextIndex(index ?? 0);
+        setSelectedSlotIndex(null);
+        setSelectedStickerIndex(null);
+        setSelectedCompoundId(null);
+      } else if (type === 'compound') {
+        setSelectedCompoundId(id);
+        setSelectedSlotIndex(null);
+        setSelectedStickerIndex(null);
+      }
+    },
+    [],
   );
 
   const isItemLocked = useCallback(
@@ -125,7 +172,8 @@ export function useStudioSelection(scene: StudioSceneState) {
     selectedLayerKeys, setSelectedLayerKeys,
     lastClickedLayerKey, setLastClickedLayerKey,
     selectSlot, selectSticker, selectText, selectCompound,
-    deselectAll, toggleLayerSelection, isItemLocked, isKeyLocked,
+    selectSingleEntity,
+    deselectAll, toggleLayerSelection, selectMultipleKeys, isItemLocked, isKeyLocked,
   };
 }
 

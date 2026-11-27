@@ -59,13 +59,14 @@ export function FactoryResetIntentStep({
         </div>
       </div>
 
-      <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-900 dark:text-rose-200 space-y-2">
-        <p className="font-semibold text-rose-800 dark:text-rose-400">The following data will be permanently wiped:</p>
-        <ul className="list-disc list-inside space-y-1 text-[11px] text-rose-800/90 dark:text-rose-300/90 pl-1">
-          <li>All custom uploaded flyers, announcements, and video slides</li>
-          <li>All manual monthly prayer timetable overrides &amp; custom rules</li>
-          <li>All Friday Jummah shifts and marquee ticker messages</li>
-          <li>All display preferences &amp; layout settings reset to factory defaults</li>
+      <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-900 dark:text-rose-200 space-y-2">
+        <p className="font-bold text-rose-800 dark:text-rose-400 uppercase tracking-wider text-[10px]">What Will Be Cleared:</p>
+        <ul className="list-disc list-inside space-y-1.5 text-[11px] text-rose-800/90 dark:text-rose-300/90 pl-0.5">
+          <li>Venue identity, timezone, and marquee ticker announcements</li>
+          <li>Custom flyers, notices, video slides, frames &amp; layout posters</li>
+          <li>Prayer calculation rules, manual overrides, annual CSV, Jummah &amp; seasonal schedules</li>
+          <li>Display choreography, TV auto-power &amp; audio receiver settings</li>
+          <li>Admin Password &amp; custom PIN (resets to PIN Mode with default PIN 1234)</li>
         </ul>
       </div>
 

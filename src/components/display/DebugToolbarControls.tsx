@@ -1,16 +1,20 @@
 'use client';
 
 import React from 'react';
-import { Calendar, Clock, Play, RotateCcw, SkipBack, SkipForward } from 'lucide-react';
+import { Calendar, Clock, Play, RotateCcw, SkipBack, SkipForward, VolumeX } from 'lucide-react';
 
 export interface DebugToolbarControlsProps {
   readonly timeOverrideMinutes: number | null;
   readonly isFridayForced: boolean;
   readonly onSetTimeOverrideMinutes: (minutes: number | null) => void;
   readonly onToggleForceFriday: () => void;
+  readonly isEidForced?: boolean | undefined;
+  readonly onToggleForceEid?: (() => void) | undefined;
   readonly onTriggerDrawer: () => void;
   readonly onNextPoster: () => void;
   readonly onPrevPoster: () => void;
+  readonly isSilenceTestActive?: boolean | undefined;
+  readonly onToggleSilenceTest?: (() => void) | undefined;
 }
 
 function minutesToTimeString(totalMinutes: number): string {
@@ -24,15 +28,19 @@ export function DebugToolbarControls({
   isFridayForced,
   onSetTimeOverrideMinutes,
   onToggleForceFriday,
+  isEidForced = false,
+  onToggleForceEid,
   onTriggerDrawer,
   onNextPoster,
   onPrevPoster,
+  isSilenceTestActive = false,
+  onToggleSilenceTest,
 }: DebugToolbarControlsProps) {
   const currentScrubberValue = timeOverrideMinutes ?? 720;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-stretch">
-      <div className="md:col-span-6 flex flex-col justify-between bg-[#20222a] p-2.5 rounded-lg border border-[#2e323b] space-y-1.5">
+      <div className="md:col-span-5 flex flex-col justify-between bg-[#20222a] p-2.5 rounded-lg border border-[#2e323b] space-y-1.5">
         <div className="flex items-center justify-between text-xs">
           <span className="text-neutral-300 font-medium flex items-center space-x-1.5">
             <Clock className="w-3.5 h-3.5 text-neutral-400" />
@@ -89,18 +97,18 @@ export function DebugToolbarControls({
         </div>
       </div>
 
-      <div className="md:col-span-3 flex items-center space-x-2">
+      <div className="md:col-span-4 flex flex-wrap items-center gap-2">
         <button
           onClick={onTriggerDrawer}
-          className="flex-1 h-full min-h-[44px] px-3 rounded-lg bg-[#20222a] hover:bg-[#282b35] border border-[#2e323b] text-xs font-medium text-neutral-200 hover:text-white flex items-center justify-center space-x-1.5 transition-colors"
+          className="flex-1 h-full min-h-[44px] px-2.5 rounded-lg bg-[#20222a] hover:bg-[#282b35] border border-[#2e323b] text-xs font-medium text-neutral-200 hover:text-white flex items-center justify-center space-x-1 transition-colors"
         >
           <Play className="w-3.5 h-3.5 text-neutral-400" />
-          <span>Trigger Drawer</span>
+          <span>Drawer</span>
         </button>
 
         <button
           onClick={onToggleForceFriday}
-          className={`h-full min-h-[44px] px-3 rounded-lg text-xs font-medium border flex items-center justify-center space-x-1.5 transition-colors ${
+          className={`h-full min-h-[44px] px-2.5 rounded-lg text-xs font-medium border flex items-center justify-center space-x-1 transition-colors cursor-pointer ${
             isFridayForced
               ? 'bg-amber-950/40 text-amber-300 border-amber-600/40'
               : 'bg-[#20222a] hover:bg-[#282b35] border-[#2e323b] text-neutral-300 hover:text-white'
@@ -108,6 +116,35 @@ export function DebugToolbarControls({
         >
           <Calendar className="w-3.5 h-3.5" />
           <span>{isFridayForced ? 'Fri Active' : 'Force Fri'}</span>
+        </button>
+
+        {onToggleForceEid && (
+          <button
+            onClick={onToggleForceEid}
+            className={`h-full min-h-[44px] px-2.5 rounded-lg text-xs font-medium border flex items-center justify-center space-x-1 transition-colors cursor-pointer ${
+              isEidForced
+                ? 'bg-emerald-950/40 text-emerald-300 border-emerald-600/40'
+                : 'bg-[#20222a] hover:bg-[#282b35] border-[#2e323b] text-neutral-300 hover:text-white'
+            }`}
+            title="Preview Eid Multi-Shift Drawer"
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>{isEidForced ? 'Eid Active' : 'Force Eid'}</span>
+          </button>
+        )}
+
+        <button
+          onClick={onToggleSilenceTest}
+          className={`h-full min-h-[44px] px-2.5 rounded-lg text-xs font-medium border flex items-center justify-center space-x-1 transition-colors ${
+            isSilenceTestActive
+              ? 'bg-rose-950/50 text-rose-300 border-rose-600/50 shadow-sm'
+              : 'bg-[#20222a] hover:bg-[#282b35] border-[#2e323b] text-neutral-300 hover:text-white'
+          }`}
+          title="Toggle Congregation Silence Screen (T)"
+        >
+          <VolumeX className="w-3.5 h-3.5" />
+          <span>{isSilenceTestActive ? 'Exit Silence' : 'Silence'}</span>
+          <kbd className="text-[10px] bg-[#15161b] px-1 py-0.5 rounded text-neutral-400 border border-[#2e323b]">T</kbd>
         </button>
       </div>
     </div>

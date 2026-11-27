@@ -12,6 +12,7 @@ import { calculateDailySchedule } from '@/lib/prayer/prayer-engine';
 import { checkAdminAuth } from '@/lib/actions/auth';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import type { Settings } from '@/types/index';
+import type { ThemePreference } from '@/lib/theme/theme-sync';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +24,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const resolvedParams = searchParams ? await searchParams : {};
   const cookieStore = await cookies();
   const themeCookie = cookieStore.get('mosque_admin_theme')?.value;
+  const prefCookie = cookieStore.get('mosque_admin_theme_pref')?.value;
   const initialTheme: 'light' | 'dark' = themeCookie === 'light' ? 'light' : 'dark';
+  const initialPreference: ThemePreference =
+    prefCookie === 'light' || prefCookie === 'dark' || prefCookie === 'system' ? prefCookie : 'system';
 
   const tabParam = typeof resolvedParams.tab === 'string' ? resolvedParams.tab.toLowerCase() : '';
   const subParam = typeof resolvedParams.sub === 'string' ? resolvedParams.sub.toLowerCase() : undefined;
@@ -55,6 +59,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         initialTab={initialTab}
         initialSubTab={subParam}
         initialTheme={initialTheme}
+        initialPreference={initialPreference}
       />
     );
   }
@@ -99,6 +104,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       initialTab={initialTab}
       initialSubTab={subParam}
       initialTheme={initialTheme}
+      initialPreference={initialPreference}
       hasAnnualSchedule={hasAnnualSchedule}
     />
   );

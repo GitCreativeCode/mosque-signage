@@ -22,7 +22,7 @@ const GAP_CLASSES: Record<LayoutGridGap, string> = {
 };
 
 export function getLayoutGapClass(gap?: LayoutGridGap): string {
-  return gap ? GAP_CLASSES[gap] ?? GAP_CLASSES.normal : GAP_CLASSES.normal;
+  return gap ? GAP_CLASSES[gap] ?? GAP_CLASSES.none : GAP_CLASSES.none;
 }
 
 export function clampSplitRatio(
@@ -55,6 +55,7 @@ export function createDefaultLayoutConfig(
     archetype: resolvedArchetype,
     split_ratio: clampSplitRatio(splitRatio),
     slots,
+    grid_gap: 'none',
     text_overlays: [],
     canvas_background: 'black',
   };

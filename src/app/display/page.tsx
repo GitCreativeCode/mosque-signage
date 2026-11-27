@@ -1,12 +1,10 @@
-import { eq, asc } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db/client';
-import {
-  jummahShiftsTable,
-  prayerOverridesTable,
-} from '@/lib/db/schema';
+import { prayerOverridesTable } from '@/lib/db/schema';
 import { calculateDailySchedule } from '@/lib/prayer/prayer-engine';
-import type { JummahShift, PrayerOverride } from '@/types/index';
+import type { EidShift, JummahShift, PrayerOverride } from '@/types/index';
 import { getPrayerRules, getAnnualScheduleForDate } from '@/lib/actions/prayers';
+import { getEffectiveJummahShifts, getEidShifts } from '@/lib/actions/jummah';
 import { getPublicDisplaySettings } from '@/lib/actions/settings';
 import { getPublicActivePosters } from '@/lib/actions/posters';
 import { verifyCurrentDisplaySession } from '@/lib/auth/display-pairing';
@@ -32,25 +30,23 @@ export default async function DisplayPage() {
   const today = new Date();
   const { posters } = await getPublicActivePosters(today);
 
-  // Fetch Jummah shifts ordered chronologically
-  const rawShifts = await db
-    .select()
-    .from(jummahShiftsTable)
-    .orderBy(asc(jummahShiftsTable.shift_number));
-  const jummahShifts: JummahShift[] = rawShifts.map((s) => ({
-    shift_number: s.shift_number,
-    khateeb_name: s.khateeb_name,
-    adhan_time: s.adhan_time,
-    iqamah_time: s.iqamah_time,
-    status: (s.status as JummahShift['status']) ?? 'UPCOMING',
-  }));
-
-  // Resolve venue local date before querying day-scoped overrides and annual timetable
+  // Resolve venue local date before querying day-scoped overrides, Jummah roster, and annual timetable
   const todayIsoDate = new Intl.DateTimeFormat('en-CA', { timeZone: settings.timezone }).format(today);
-  const rawOverrides = await db
-    .select()
-    .from(prayerOverridesTable)
-    .where(eq(prayerOverridesTable.date, todayIsoDate));
+  const activeEidFilter =
+    settings.active_eid_type && settings.active_eid_type !== 'none'
+      ? settings.active_eid_type
+      : undefined;
+
+  const [jummahShiftsRaw, eidShiftsRaw, rawOverrides, rules, annualSchedule] = await Promise.all([
+    getEffectiveJummahShifts(todayIsoDate),
+    getEidShifts(activeEidFilter),
+    db.select().from(prayerOverridesTable).where(eq(prayerOverridesTable.date, todayIsoDate)),
+    getPrayerRules(),
+    getAnnualScheduleForDate(todayIsoDate),
+  ]);
+
+  const jummahShifts: JummahShift[] = jummahShiftsRaw;
+  const eidShifts: EidShift[] = eidShiftsRaw;
   const prayerOverrides: PrayerOverride[] = rawOverrides.map((o) => ({
     id: o.id,
     date: o.date,
@@ -58,10 +54,6 @@ export default async function DisplayPage() {
     adhan_override: o.adhan_override ?? undefined,
     iqamah_time: o.iqamah_time,
   }));
-
-  // Fetch dynamic rules and annual timetable
-  const rules = await getPrayerRules();
-  const annualSchedule = await getAnnualScheduleForDate(todayIsoDate);
 
   // Calculate today's astronomical prayer schedule
   const prayerSchedule = calculateDailySchedule(
@@ -75,6 +67,7 @@ export default async function DisplayPage() {
       timezone: settings.timezone,
       method: settings.calculation_method,
       madhab: settings.madhab ?? 'shafi',
+      highLatitudeRule: settings.high_latitude_rule,
       rules,
       annualSchedule: annualSchedule ?? undefined,
       adhanOffsets: {
@@ -94,6 +87,7 @@ export default async function DisplayPage() {
       initialPosters={posters}
       prayers={prayerSchedule}
       jummahShifts={jummahShifts}
+      eidShifts={eidShifts}
     />
   );
 }

@@ -3,13 +3,18 @@
 import React from 'react';
 import type { BadgeVariant, IslamicStickerType } from '@/types/index';
 import { CrescentMoonStickerSvg, FanousStickerSvg } from './stickers/StickerLanternAndMoon';
-import { MosqueStickerSvg } from './stickers/StickerMosqueArchitecture';
 import {
   BismillahStickerSvg,
   IslamicStarStickerSvg,
   KaabaStickerSvg,
   TasbihStickerSvg,
 } from './stickers/StickerGeometricAndSacred';
+import {
+  AlhamdulillahStickerSvg,
+  MashaallahStickerSvg,
+  SubhanallahStickerSvg,
+} from './stickers/StickerLiturgicalCalligraphy';
+import { MihrabArchStickerSvg } from './stickers/StickerLiturgicalMotifs';
 
 export interface IslamicStickerGraphicProps {
   readonly type: IslamicStickerType;
@@ -47,11 +52,14 @@ export function IslamicStickerGraphic({
 
   if (type === 'fanous') return <FanousStickerSvg {...props} />;
   if (type === 'crescent_moon') return <CrescentMoonStickerSvg {...props} />;
-  if (type === 'mosque') return <MosqueStickerSvg {...props} />;
-  if (type === 'islamic_star') return <IslamicStarStickerSvg {...props} />;
   if (type === 'bismillah') return <BismillahStickerSvg {...props} />;
+  if (type === 'alhamdulillah') return <AlhamdulillahStickerSvg {...props} />;
+  if (type === 'mashaallah') return <MashaallahStickerSvg {...props} />;
+  if (type === 'subhanallah') return <SubhanallahStickerSvg {...props} />;
+  if (type === 'mihrab_arch') return <MihrabArchStickerSvg {...props} />;
   if (type === 'kaaba') return <KaabaStickerSvg {...props} />;
   if (type === 'tasbih') return <TasbihStickerSvg {...props} />;
+  if (type === 'islamic_star') return <IslamicStarStickerSvg {...props} />;
 
   return (
     <div className={`w-full h-full flex items-center justify-center select-none ${className}`} style={style}>

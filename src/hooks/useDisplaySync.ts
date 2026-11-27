@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { Settings, PublicDisplaySettings, Poster, PrayerTimesToday, JummahShift } from '@/types/index';
+import type { Settings, PublicDisplaySettings, Poster, PrayerTimesToday, JummahShift, EidShift } from '@/types/index';
 import { subscribeSignageBroadcast } from '@/lib/events/broadcast-channel';
 import {
   fetchPostersLive,
@@ -16,6 +16,7 @@ export interface UseDisplaySyncParams {
   readonly initialPosters: readonly Poster[];
   readonly initialPrayers: PrayerTimesToday;
   readonly initialJummahShifts: readonly JummahShift[];
+  readonly initialEidShifts?: readonly EidShift[] | undefined;
 }
 
 export interface UseDisplaySyncResult {
@@ -23,6 +24,7 @@ export interface UseDisplaySyncResult {
   readonly posters: readonly Poster[];
   readonly prayers: PrayerTimesToday;
   readonly jummahShifts: readonly JummahShift[];
+  readonly eidShifts: readonly EidShift[];
   readonly isConnected: boolean;
 }
 
@@ -31,11 +33,13 @@ export function useDisplaySync({
   initialPosters,
   initialPrayers,
   initialJummahShifts,
+  initialEidShifts = [],
 }: UseDisplaySyncParams): UseDisplaySyncResult {
   const [settings, setSettings] = useState<Settings>(initialSettings);
   const [posters, setPosters] = useState<readonly Poster[]>(initialPosters);
   const [prayers, setPrayers] = useState<PrayerTimesToday>(initialPrayers);
   const [jummahShifts, setJummahShifts] = useState<readonly JummahShift[]>(initialJummahShifts);
+  const [eidShifts, setEidShifts] = useState<readonly EidShift[]>(initialEidShifts);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const transitionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -88,6 +92,7 @@ export function useDisplaySync({
     const updated = await fetchPrayersAndShiftsLive();
     if (!updated) return false;
     setJummahShifts(updated.jummahShifts);
+    setEidShifts(updated.eidShifts);
     setSettings(updated.settings);
     setPrayers(updated.prayers);
     return true;
@@ -159,5 +164,5 @@ export function useDisplaySync({
     onConnectionChange: setIsConnected,
   });
 
-  return { settings, posters, prayers, jummahShifts, isConnected };
+  return { settings, posters, prayers, jummahShifts, eidShifts, isConnected };
 }

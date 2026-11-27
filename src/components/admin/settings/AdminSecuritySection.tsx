@@ -185,7 +185,7 @@ export function AdminSecuritySection({ settings, onLocked }: AdminSecuritySectio
           <button
             type="submit"
             disabled={!canSubmit}
-            className="px-4 py-2 rounded-xl bg-[var(--admin-btn-primary-bg)] hover:bg-[var(--admin-btn-primary-hover)] text-[var(--admin-btn-primary-text)] font-semibold text-xs flex items-center space-x-1.5 transition active:scale-[0.98] cursor-pointer disabled:opacity-50 shadow-sm w-fit"
+            className="w-full sm:w-fit min-h-[44px] sm:min-h-0 px-4 py-2 rounded-xl bg-[var(--admin-btn-primary-bg)] hover:bg-[var(--admin-btn-primary-hover)] text-[var(--admin-btn-primary-text)] font-semibold text-xs flex items-center justify-center space-x-1.5 transition active:scale-[0.98] cursor-pointer disabled:opacity-50 shadow-sm"
           >
             {isUpdating ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />

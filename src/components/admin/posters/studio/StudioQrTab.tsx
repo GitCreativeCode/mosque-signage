@@ -4,17 +4,23 @@ import React from 'react';
 import type { QrPosition } from '@/types/index';
 import { Eye, EyeOff } from 'lucide-react';
 import { QrPositionSelector } from '../QrPositionSelector';
+import { PosterQrScheduleSection } from '../PosterQrScheduleSection';
 
 interface StudioQrTabProps {
   readonly hasQr: boolean;
   readonly qrUrl: string;
   readonly qrLabel: string;
   readonly qrPosition: QrPosition;
+  readonly qrStartAt?: string | null | undefined;
+  readonly qrEndAt?: string | null | undefined;
+  readonly venueTimezone?: string | undefined;
   readonly showPreviewQr: boolean;
   readonly onChangeHasQr: (val: boolean) => void;
   readonly onChangeQrUrl: (val: string) => void;
   readonly onChangeQrLabel: (val: string) => void;
   readonly onChangeQrPosition: (pos: QrPosition) => void;
+  readonly onChangeQrStartAt?: ((val: string | null) => void) | undefined;
+  readonly onChangeQrEndAt?: ((val: string | null) => void) | undefined;
   readonly onTogglePreviewQr: () => void;
 }
 
@@ -24,11 +30,16 @@ export function StudioQrTab({
   qrUrl,
   qrLabel,
   qrPosition,
+  qrStartAt,
+  qrEndAt,
+  venueTimezone,
   showPreviewQr,
   onChangeHasQr,
   onChangeQrUrl,
   onChangeQrLabel,
   onChangeQrPosition,
+  onChangeQrStartAt,
+  onChangeQrEndAt,
   onTogglePreviewQr,
 }: StudioQrTabProps) {
   return (
@@ -75,6 +86,17 @@ export function StudioQrTab({
             <label className="block text-xs font-semibold text-[var(--admin-text-secondary)] mb-1">On-Screen Placement Corner</label>
             <QrPositionSelector value={qrPosition} onChange={onChangeQrPosition} />
           </div>
+          {onChangeQrStartAt && onChangeQrEndAt && (
+            <PosterQrScheduleSection
+              qrUrl={qrUrl}
+              qrStartAt={qrStartAt}
+              onChangeQrStartAt={onChangeQrStartAt}
+              qrEndAt={qrEndAt}
+              onChangeQrEndAt={onChangeQrEndAt}
+              venueTimezone={venueTimezone}
+              layoutMode="stacked"
+            />
+          )}
           <div className="flex items-center justify-between p-2.5 rounded-xl bg-[var(--admin-card)] border border-[var(--admin-border)]">
             <div>
               <span className="font-semibold text-xs block text-[var(--admin-text-primary)]">Canvas Preview</span>

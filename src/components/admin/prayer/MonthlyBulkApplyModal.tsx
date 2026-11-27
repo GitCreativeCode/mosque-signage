@@ -4,7 +4,6 @@ import React from 'react';
 import { AlertCircle, Loader2, X } from 'lucide-react';
 import type { PrayerName } from '@/types/index';
 import { format12h } from '@/lib/utils/time';
-import { TimePicker } from '@/components/admin/common/TimePicker';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 export interface MonthlyBulkApplyModalProps {
@@ -37,12 +36,12 @@ export function MonthlyBulkApplyModal(p: MonthlyBulkApplyModalProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="bulk-apply-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
       onClick={(e) => { if (e.target === e.currentTarget) p.onClose(); }}
     >
       <div
         ref={modalRef}
-        className="w-full max-w-lg bg-[var(--admin-card)] border border-[var(--admin-border)] rounded-2xl p-6 shadow-2xl text-[var(--admin-text-primary)]"
+        className="w-full h-[100dvh] sm:h-auto sm:max-h-[90dvh] sm:max-w-lg bg-[var(--admin-card)] border-0 sm:border border-[var(--admin-border)] rounded-none sm:rounded-2xl p-4 sm:p-6 shadow-2xl text-[var(--admin-text-primary)] overflow-y-auto"
       >
         <div className="flex items-center justify-between pb-4 border-b border-[var(--admin-border)] mb-4">
           <div>
@@ -70,7 +69,7 @@ export function MonthlyBulkApplyModal(p: MonthlyBulkApplyModalProps) {
         <form onSubmit={p.onSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-[var(--admin-text-secondary)]">Timing Method</label>
-            <div className="flex items-center space-x-1 bg-[var(--admin-surface)] p-1 rounded-xl border border-[var(--admin-border)] w-fit">
+            <div className="flex flex-wrap items-center gap-1 bg-[var(--admin-surface)] p-1 rounded-xl border border-[var(--admin-border)] w-full sm:w-fit">
               <button type="button" onClick={() => p.setBulkTimingMode('FIXED')} className={`px-3 py-1 text-xs rounded-lg font-medium transition cursor-pointer ${p.bulkTimingMode === 'FIXED' ? 'bg-[var(--admin-card)] text-[var(--admin-text-primary)] border border-[var(--admin-border)] shadow-sm font-semibold' : 'text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)]'}`}>
                 Fixed Clock Time
               </button>
@@ -93,7 +92,12 @@ export function MonthlyBulkApplyModal(p: MonthlyBulkApplyModalProps) {
                 {p.bulkTimingMode === 'FIXED' ? 'New Iqamah Time' : 'Minutes After Adhan'}
               </label>
               {p.bulkTimingMode === 'FIXED' ? (
-                <TimePicker value={p.bulkTime} onChange={p.setBulkTime} />
+                <input
+                  type="time"
+                  value={p.bulkTime}
+                  onChange={(e) => p.setBulkTime(e.target.value)}
+                  className="w-full px-3 py-1.5 text-xs font-mono font-semibold rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-tab-active-border)]"
+                />
               ) : (
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2">

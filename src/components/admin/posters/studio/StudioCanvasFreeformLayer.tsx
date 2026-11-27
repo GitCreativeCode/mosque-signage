@@ -41,16 +41,12 @@ export function StudioCanvasFreeformLayer({
 }: StudioCanvasFreeformLayerProps) {
   return (
     <>
-      {isSnappedCenterX && (
-        <div className="absolute inset-y-0 left-1/2 w-[2px] bg-amber-400 z-40 pointer-events-none shadow-[0_0_8px_rgba(251,191,36,0.9)] animate-pulse" />
-      )}
-      {isSnappedCenterY && (
-        <div className="absolute inset-x-0 top-1/2 h-[2px] bg-amber-400 z-40 pointer-events-none shadow-[0_0_8px_rgba(251,191,36,0.9)] animate-pulse" />
-      )}
-
       {slots.map((s, idx) => {
         if (s.is_hidden) return null;
-        const isSelected = (selectedEntity?.type === 'slot' && selectedEntity.id === s.id) || selectedLayerKeys.includes(`slot:${s.id}`);
+        const isSelected = selectedLayerKeys.length > 0
+          ? selectedLayerKeys.includes(`slot:${s.id}`)
+          : selectedEntity?.type === 'slot' && selectedEntity.id === s.id;
+        const showSingleRing = isSelected && selectedLayerKeys.length <= 1;
         const locked = isItemLocked(s);
         const posX = s.pos_x ?? 50;
         const posY = s.pos_y ?? 50;
@@ -60,6 +56,10 @@ export function StudioCanvasFreeformLayer({
         return (
           <div
             key={s.id}
+            data-studio-layer="true"
+            data-layer-id={s.id}
+            data-layer-type="slot"
+            data-layer-index={idx}
             onPointerDown={(e) => onSlotPointerDown(e, s.id, idx)}
             style={{
               position: 'absolute', left: `${posX}%`, top: `${posY}%`,
@@ -68,7 +68,7 @@ export function StudioCanvasFreeformLayer({
               zIndex: draggingFreeformSlotId === s.id ? 999 : s.z_index ?? idx + 1,
             }}
             className={`group select-none transition-shadow ${locked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} ${
-              isSelected ? 'ring-2 ring-amber-400 shadow-2xl' : 'hover:ring-1 hover:ring-white/40'
+              showSingleRing ? 'ring-2 ring-amber-400 ring-offset-0 shadow-2xl' : 'hover:ring-1 hover:ring-white/40'
             }`}
           >
             {isSelected && !locked && selectedLayerKeys.length === 1 && (

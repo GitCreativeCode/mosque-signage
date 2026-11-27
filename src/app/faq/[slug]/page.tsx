@@ -38,10 +38,10 @@ export default async function FaqArticlePage({ params }: PageProps) {
   const relatedItems = getRelatedFaqItems(item);
 
   return (
-    <div className="min-h-screen bg-[var(--admin-bg)] text-[var(--admin-text-primary)] flex flex-col font-sans selection:bg-[var(--admin-accent)]/20">
+    <div className="min-h-screen overflow-x-hidden bg-[var(--admin-bg)] text-[var(--admin-text-primary)] flex flex-col font-sans selection:bg-[var(--admin-accent)]/20">
       <PublicHeader subtitle="Knowledge Base" />
 
-      <main className="flex-1 max-w-3xl w-full mx-auto px-6 py-10 space-y-10">
+      <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8 sm:space-y-10">
         <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs text-[var(--admin-text-muted)] flex-wrap">
           <Link href="/faq" className="hover:text-[var(--admin-text-primary)] hover:underline underline-offset-4 transition">FAQ</Link>
           <span className="text-[var(--admin-border)]">/</span>
@@ -94,7 +94,7 @@ export default async function FaqArticlePage({ params }: PageProps) {
         {/* Community Helpdesk & Feedback Support Banner */}
         <HelpdeskSupportCard />
 
-        <div className="pt-4 border-t border-[var(--admin-border)] flex items-center justify-between text-xs">
+        <div className="pt-4 border-t border-[var(--admin-border)] flex flex-wrap items-center justify-between gap-3 text-xs">
           <Link href="/faq" className="inline-flex items-center space-x-1.5 text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] hover:underline underline-offset-4 transition">
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to All Questions</span>

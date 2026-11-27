@@ -1,18 +1,24 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { AlertTriangle, CheckCircle2, Loader2, Save } from 'lucide-react';
 import type { Settings, VenueSettingsCategory } from '@/types/index';
 import { broadcastSignageEvent } from '@/lib/events/broadcast-channel';
 import { useVenueSettingsForm } from '@/hooks/useVenueSettingsForm';
 import { AdminSecuritySection } from './settings/AdminSecuritySection';
 import { DisplayPairingSettingsCard } from './settings/DisplayPairingSettingsCard';
-import { FactoryResetModal } from './settings/FactoryResetModal';
 import { ApplianceHardwareSection } from './settings/ApplianceHardwareSection';
 import { KioskChoreographySection } from './settings/KioskChoreographySection';
 import { VenueIdentityTabCard } from './settings/VenueIdentityTabCard';
 import { VenueAstronomyTabCard } from './settings/VenueAstronomyTabCard';
 import { VenueSettingsTabHeader } from './settings/VenueSettingsTabHeader';
+import { AdminLoadingFallback } from './common/AdminLoadingFallback';
+
+const DynamicFactoryResetModal = dynamic(
+  () => import('./settings/FactoryResetModal').then((m) => m.FactoryResetModal),
+  { loading: () => <AdminLoadingFallback label="Loading recovery wizard..." /> }
+);
 
 export type { VenueSettingsCategory };
 
@@ -20,6 +26,7 @@ export interface VenueSettingsFormProps {
   readonly settings: Settings;
   readonly onRefresh: () => void;
   readonly onResetSuccessWithSetup?: (() => void) | undefined;
+  readonly onResetModalStateChange?: ((isOpen: boolean) => void) | undefined;
   readonly onDirtyChange?: ((isDirty: boolean) => void) | undefined;
   readonly initialSubTab?: string | undefined;
   readonly activeCategoryProp?: VenueSettingsCategory | undefined;
@@ -36,6 +43,10 @@ const SAVE_MESSAGES: Record<Exclude<VenueSettingsCategory, 'SECURITY'>, { readon
 
 export function VenueSettingsForm(props: VenueSettingsFormProps) {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const handleSetResetModalOpen = (isOpen: boolean) => {
+    setIsResetModalOpen(isOpen);
+    props.onResetModalStateChange?.(isOpen);
+  };
   const {
     activeCategory, handleCategoryChange, draft, updateField, markDirty,
     isDetectingLocation, detectLocationMsg, handleAutoDetectLocation,
@@ -61,7 +72,7 @@ export function VenueSettingsForm(props: VenueSettingsFormProps) {
       <VenueSettingsTabHeader activeCategory={activeCategory} onCategoryChange={handleCategoryChange} />
 
       {activeCategory === 'SECURITY' ? (
-        <div className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-card)] p-6 space-y-6 shadow-sm">
+        <div className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-card)] p-4 sm:p-6 space-y-6 shadow-sm">
           <AdminSecuritySection settings={props.settings} onLocked={props.onRefresh} />
           <DisplayPairingSettingsCard settings={props.settings} onRefresh={props.onRefresh} />
         </div>
@@ -132,9 +143,13 @@ export function VenueSettingsForm(props: VenueSettingsFormProps) {
                 showQrDuringDrawer={draft.showQrDuringDrawer} setShowQrDuringDrawer={(v) => updateField('showQrDuringDrawer', v)}
                 showMiniPrayerPill={draft.showMiniPrayerPill} setShowMiniPrayerPill={(v) => updateField('showMiniPrayerPill', v)}
                 showPrayerSilenceOverlay={draft.showPrayerSilenceOverlay} setShowPrayerSilenceOverlay={(v) => updateField('showPrayerSilenceOverlay', v)}
+                silenceScreenSubtitle={draft.silenceScreenSubtitle} setSilenceScreenSubtitle={(v) => updateField('silenceScreenSubtitle', v)}
+                silenceScreenAccentTheme={draft.silenceScreenAccentTheme} setSilenceScreenAccentTheme={(v) => updateField('silenceScreenAccentTheme', v)}
                 miniPrayerPillPosition={draft.miniPrayerPillPosition} setMiniPrayerPillPosition={(v) => updateField('miniPrayerPillPosition', v)}
                 displayResolution={draft.displayResolution} setDisplayResolution={(v) => updateField('displayResolution', v)}
                 overscanMarginPercent={draft.overscanMarginPercent} setOverscanMarginPercent={(v) => updateField('overscanMarginPercent', v)}
+                clockShowSeconds={draft.clockShowSeconds} setClockShowSeconds={(v) => updateField('clockShowSeconds', v)}
+                clockTimeFormat={draft.clockTimeFormat} setClockTimeFormat={(v) => updateField('clockTimeFormat', v)}
                 posterFit={draft.posterFit} setPosterFit={(v) => updateField('posterFit', v)}
                 posterTransition={draft.posterTransition} setPosterTransition={(v) => updateField('posterTransition', v)}
                 showProgressBar={draft.showProgressBar} setShowProgressBar={(v) => updateField('showProgressBar', v)}
@@ -179,7 +194,7 @@ export function VenueSettingsForm(props: VenueSettingsFormProps) {
                       Permanently wipes all uploaded posters, notices, timetable overrides, and custom rules back to factory default presets.
                     </p>
                   </div>
-                  <button type="button" onClick={() => setIsResetModalOpen(true)} className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition shadow-sm self-start sm:self-auto cursor-pointer">
+                  <button type="button" onClick={() => handleSetResetModalOpen(true)} className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition shadow-sm self-start sm:self-auto cursor-pointer">
                     Factory Reset...
                   </button>
                 </div>
@@ -187,15 +202,15 @@ export function VenueSettingsForm(props: VenueSettingsFormProps) {
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3 pt-2">
             <div>
               {saveSuccess && (
                 <span className="text-xs font-semibold text-emerald-500 flex items-center space-x-1.5 animate-fadeIn">
-                  <CheckCircle2 className="w-4 h-4" /><span>{SAVE_MESSAGES[activeCategory].toast}</span>
+                  <CheckCircle2 className="w-4 h-4 shrink-0" /><span>{SAVE_MESSAGES[activeCategory].toast}</span>
                 </span>
               )}
             </div>
-            <button type="submit" disabled={isSaving} className="px-5 py-2.5 rounded-xl bg-[var(--admin-btn-primary-bg)] hover:bg-[var(--admin-btn-primary-hover)] text-[var(--admin-btn-primary-text)] font-semibold text-xs flex items-center space-x-2 transition active:scale-95 disabled:opacity-50 cursor-pointer shadow-sm">
+            <button type="submit" disabled={isSaving} className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-5 py-2.5 rounded-xl bg-[var(--admin-btn-primary-bg)] hover:bg-[var(--admin-btn-primary-hover)] text-[var(--admin-btn-primary-text)] font-semibold text-xs flex items-center justify-center space-x-2 transition active:scale-95 disabled:opacity-50 cursor-pointer shadow-sm">
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               <span>{isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : SAVE_MESSAGES[activeCategory].btn}</span>
             </button>
@@ -204,12 +219,12 @@ export function VenueSettingsForm(props: VenueSettingsFormProps) {
       )}
 
       {isResetModalOpen && (
-        <FactoryResetModal
+        <DynamicFactoryResetModal
           isOpen={isResetModalOpen}
           authMode={props.settings?.auth_mode ?? 'pin'}
-          onClose={() => setIsResetModalOpen(false)}
+          onClose={() => handleSetResetModalOpen(false)}
           onResetSuccess={(opts) => {
-            setIsResetModalOpen(false);
+            handleSetResetModalOpen(false);
             if (opts?.triggerInitialSetup && props.onResetSuccessWithSetup) props.onResetSuccessWithSetup();
             else props.onRefresh();
           }}

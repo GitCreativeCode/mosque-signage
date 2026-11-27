@@ -59,8 +59,12 @@ export function ImageLightbox({
           className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-[1.01]"
         />
 
-        {/* Hover overlay hint */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2 text-white text-xs font-semibold backdrop-blur-[2px]">
+        {/* Hover / mobile expand hint */}
+        <div className="sm:hidden absolute bottom-2 right-2 px-2.5 py-1 rounded-lg bg-black/75 border border-white/15 text-white text-[11px] font-semibold flex items-center space-x-1.5 backdrop-blur-sm">
+          <Maximize2 className="w-3.5 h-3.5 text-green-400" />
+          <span>Tap to expand</span>
+        </div>
+        <div className="hidden sm:flex absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center space-x-2 text-white text-xs font-semibold backdrop-blur-[2px]">
           <Maximize2 className="w-4 h-4 text-green-400" />
           <span>Click to expand full schematic</span>
         </div>
@@ -97,16 +101,18 @@ export function ImageLightbox({
                 <button
                   type="button"
                   onClick={() => setIsZoomed(!isZoomed)}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
                   title={isZoomed ? 'Zoom Out' : 'Zoom In'}
+                  aria-label={isZoomed ? 'Zoom Out' : 'Zoom In'}
                 >
                   {isZoomed ? <ZoomOut className="w-4 h-4" /> : <ZoomIn className="w-4 h-4" />}
                 </button>
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
                   title="Close Fullscreen View (Esc)"
+                  aria-label="Close Fullscreen View"
                 >
                   <X className="w-4 h-4" />
                 </button>

@@ -13,7 +13,7 @@ interface StickerSvgProps {
 export function FanousStickerSvg({ primaryColor, secondaryColor, className, style }: StickerSvgProps) {
   return (
     <svg
-      viewBox="0 0 100 140"
+      viewBox="18 0 64 140"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={`w-full h-full select-none filter drop-shadow-[0_4px_12px_rgba(245,158,11,0.6)] ${className}`}

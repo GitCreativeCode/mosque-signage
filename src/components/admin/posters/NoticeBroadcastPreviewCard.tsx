@@ -43,11 +43,10 @@ export function NoticeBroadcastPreviewCard({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
+      <div>
         <label className="block text-xs font-semibold text-[var(--admin-text-secondary)]">
-          Live Display Preview (16:9 Broadcast)
+          Live Display Preview
         </label>
-        <span className="text-[var(--admin-text-muted)] font-mono text-[11px]">1920 × 1080 Aspect Ratio</span>
       </div>
       <div
         className="relative w-full aspect-video rounded-2xl overflow-hidden border shadow-lg flex flex-col justify-between p-6 transition-colors duration-300"

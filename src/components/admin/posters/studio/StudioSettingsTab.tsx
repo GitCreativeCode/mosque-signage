@@ -79,10 +79,10 @@ export function StudioSettingsTab({
           </div>
           <input
             type="range"
-            min={10}
-            max={60}
+            min={15}
+            max={120}
             step={5}
-            value={duration}
+            value={Math.max(15, duration)}
             onChange={(e) => onChangeDuration(parseInt(e.target.value, 10))}
             className="w-full accent-[var(--admin-btn-primary-bg)] cursor-pointer"
           />

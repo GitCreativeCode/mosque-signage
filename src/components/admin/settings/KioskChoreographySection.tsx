@@ -8,6 +8,7 @@ import type {
   PosterTransitionType,
   SidebarMode,
   SidebarPosition,
+  SilenceScreenAccentTheme,
 } from '@/types/index';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
 import { ConfirmationModal } from '../common/ConfirmationModal';
@@ -34,12 +35,20 @@ export interface KioskChoreographySectionProps {
   readonly setShowMiniPrayerPill: (val: boolean) => void;
   readonly showPrayerSilenceOverlay: boolean;
   readonly setShowPrayerSilenceOverlay: (val: boolean) => void;
+  readonly silenceScreenSubtitle?: string | undefined;
+  readonly setSilenceScreenSubtitle?: ((val: string) => void) | undefined;
+  readonly silenceScreenAccentTheme?: SilenceScreenAccentTheme | undefined;
+  readonly setSilenceScreenAccentTheme?: ((val: SilenceScreenAccentTheme) => void) | undefined;
   readonly miniPrayerPillPosition: MiniPrayerPillPosition;
   readonly setMiniPrayerPillPosition: (val: MiniPrayerPillPosition) => void;
   readonly displayResolution: DisplayResolution;
   readonly setDisplayResolution: (val: DisplayResolution) => void;
   readonly overscanMarginPercent?: number | undefined;
   readonly setOverscanMarginPercent?: ((val: number) => void) | undefined;
+  readonly clockShowSeconds?: boolean | undefined;
+  readonly setClockShowSeconds?: ((val: boolean) => void) | undefined;
+  readonly clockTimeFormat?: '12h' | '24h' | undefined;
+  readonly setClockTimeFormat?: ((val: '12h' | '24h') => void) | undefined;
   readonly posterFit: PosterFitMode;
   readonly setPosterFit: (val: PosterFitMode) => void;
   readonly posterTransition: PosterTransitionType;
@@ -130,6 +139,10 @@ export function KioskChoreographySection(props: KioskChoreographySectionProps) {
         setShowMiniPrayerPill={handleToggleMiniPrayerPill}
         showPrayerSilenceOverlay={props.showPrayerSilenceOverlay}
         setShowPrayerSilenceOverlay={props.setShowPrayerSilenceOverlay}
+        silenceScreenSubtitle={props.silenceScreenSubtitle}
+        setSilenceScreenSubtitle={props.setSilenceScreenSubtitle}
+        silenceScreenAccentTheme={props.silenceScreenAccentTheme}
+        setSilenceScreenAccentTheme={props.setSilenceScreenAccentTheme}
         miniPrayerPillPosition={props.miniPrayerPillPosition}
         setMiniPrayerPillPosition={props.setMiniPrayerPillPosition}
         qrReadDelay={props.qrReadDelay}
@@ -141,6 +154,10 @@ export function KioskChoreographySection(props: KioskChoreographySectionProps) {
         setDisplayResolution={props.setDisplayResolution}
         overscanMarginPercent={props.overscanMarginPercent ?? 0}
         setOverscanMarginPercent={props.setOverscanMarginPercent}
+        clockShowSeconds={props.clockShowSeconds}
+        setClockShowSeconds={props.setClockShowSeconds}
+        clockTimeFormat={props.clockTimeFormat}
+        setClockTimeFormat={props.setClockTimeFormat}
         isPwaInstalled={isPwaInstalled}
         isPwaStandalone={isPwaStandalone}
         onOpenPwaModal={() => setIsPwaModalOpen(true)}

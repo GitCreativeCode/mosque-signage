@@ -138,12 +138,12 @@ export function ScheduleExportModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="schedule-export-modal-title"
-        className="print-modal-overlay no-print fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
+        className="print-modal-overlay no-print fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       >
         <div
           ref={modalRef}
-          className="print-modal-card w-full max-w-3xl bg-[var(--admin-card)] border border-[var(--admin-border)] rounded-2xl p-6 shadow-2xl text-[var(--admin-text-primary)] max-h-[90vh] flex flex-col"
+          className="print-modal-card w-full h-[100dvh] sm:h-auto sm:max-w-3xl bg-[var(--admin-card)] border-0 sm:border border-[var(--admin-border)] rounded-none sm:rounded-2xl p-4 sm:p-6 shadow-2xl text-[var(--admin-text-primary)] sm:max-h-[90dvh] flex flex-col overflow-y-auto"
         >
           <div className="no-print flex items-center justify-between pb-4 border-b border-[var(--admin-border)] mb-4 shrink-0">
             <div className="flex items-center space-x-2.5">

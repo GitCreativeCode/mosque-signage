@@ -117,13 +117,13 @@ export function FactoryResetModal({
       aria-modal="true"
       aria-labelledby="factory-reset-modal-title"
       tabIndex={-1}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4"
     >
       <div className="fixed -inset-8 bg-black/80 backdrop-blur-md animate-fadeIn" aria-hidden="true" onClick={handleClose} />
 
-      <div className="relative w-full max-w-lg rounded-2xl border border-rose-500/30 bg-[var(--admin-card)] text-[var(--admin-text-primary)] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full h-[100dvh] sm:h-auto sm:max-w-lg rounded-none sm:rounded-2xl border-0 sm:border border-rose-500/30 bg-[var(--admin-card)] text-[var(--admin-text-primary)] shadow-2xl overflow-hidden flex flex-col sm:max-h-[90dvh]">
         <h2 id="factory-reset-modal-title" className="sr-only">Factory Reset Wizard</h2>
-        <div className="px-5 pt-4 pb-3 border-b border-[var(--admin-border)] bg-[var(--admin-surface)]/50 flex items-center justify-between">
+        <div className="px-4 sm:px-5 pt-4 pb-3 border-b border-[var(--admin-border)] bg-[var(--admin-surface)]/50 flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-2">
             {[1, 2, 3, 4].map((s) => (
               <div
@@ -152,7 +152,7 @@ export function FactoryResetModal({
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto space-y-5 text-xs leading-relaxed select-text">
+        <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-5 text-xs leading-relaxed select-text">
           {isComplete && (
             <FactoryResetCompleteView
               onAcknowledge={() => {

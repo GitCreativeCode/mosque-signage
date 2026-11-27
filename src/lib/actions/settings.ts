@@ -40,9 +40,20 @@ export async function updateVenueSettings(input: UpdateVenueSettingsInput): Prom
 
   const hasPrayerUpdate =
     ADHAN_OFFSET_KEYS.some((k) => input[k] !== undefined) ||
-    Boolean(input.calculation_method || input.madhab) ||
+    Boolean(input.calculation_method || input.madhab || input.high_latitude_rule) ||
     input.latitude !== undefined ||
-    input.longitude !== undefined;
+    input.longitude !== undefined ||
+    input.ramadan_mode_enabled !== undefined ||
+    input.ramadan_display_start_date !== undefined ||
+    input.ramadan_suhoor_buffer_minutes !== undefined ||
+    input.ramadan_silence_during_taraweeh !== undefined ||
+    input.ramadan_taraweeh_sessions !== undefined ||
+    input.ramadan_taraweeh_time !== undefined ||
+    input.ramadan_taraweeh_rakats !== undefined ||
+    input.active_eid_type !== undefined ||
+    input.active_eid_date !== undefined ||
+    input.eid_auto_hide_minutes !== undefined ||
+    input.eid_friday_note !== undefined;
 
   if (hasPrayerUpdate) {
     eventBus.emitEvent('PRAYERS_UPDATED', { timestamp: nowIso });

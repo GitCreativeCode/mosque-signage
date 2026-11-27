@@ -2,7 +2,6 @@
 
 import React from 'react';
 import type { PrayerName } from '@/types/index';
-import { TimePicker } from '@/components/admin/common/TimePicker';
 
 export interface RuleItemState {
   readonly type: 'OFFSET' | 'FIXED';
@@ -75,7 +74,12 @@ export function IqamahRulesTabPanel({ rulesState, onUpdateRule }: IqamahRulesTab
                   <span className="text-xs font-medium text-[var(--admin-text-muted)]">min after Adhan</span>
                 </div>
               ) : (
-                <TimePicker value={rule.fixed} onChange={(val) => onUpdateRule(p.name, { fixed: val })} className="w-32" />
+                <input
+                  type="time"
+                  value={rule.fixed}
+                  onChange={(e) => onUpdateRule(p.name, { fixed: e.target.value })}
+                  className="px-2.5 py-1.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-card)] text-xs font-mono font-semibold text-[var(--admin-text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-tab-active-border)]"
+                />
               )}
             </div>
           </div>

@@ -101,79 +101,52 @@ export const CANVAS_BACKGROUNDS_REGISTRY: readonly CanvasBackgroundMeta[] = [
   {
     id: 'black',
     label: 'Deep Black',
-    description: 'Pitch black presentation background',
+    description: '',
     previewBackground: { backgroundColor: '#000000' },
   },
   {
     id: 'dark_slate',
-    label: 'Dark Slate',
-    description: 'Subtle deep charcoal slate',
-    previewBackground: { backgroundColor: '#0f172a' },
-  },
-  {
-    id: 'mosque_green',
-    label: 'Mosque Green',
-    description: 'Reverent deep forest green',
-    previewBackground: { backgroundColor: '#052e16' },
-  },
-  {
-    id: 'blur_ambient',
-    label: 'Blur Ambient',
-    description: 'Dynamic ambient halo from primary media',
+    label: 'Midnight Slate',
+    description: '',
     previewBackground: {
-      backgroundImage: 'radial-gradient(ellipse at center, #312e81 0%, #090d16 65%, #020617 100%)',
-      backgroundColor: '#020617',
-    },
-  },
-  {
-    id: 'islamic_star',
-    label: 'Islamic Star Tile',
-    description: 'Traditional 8-point geometric star pattern',
-    previewBackground: {
-      backgroundImage: `url("${ISLAMIC_STAR_SVG}")`,
-      backgroundRepeat: 'repeat',
-      backgroundSize: '28px 28px',
-      backgroundColor: '#040914',
-    },
-  },
-  {
-    id: 'arabesque',
-    label: 'Arabesque Lattice',
-    description: 'Ornate sacred floral arabesque lattice',
-    previewBackground: {
-      backgroundImage: `url("${ARABESQUE_SVG}")`,
-      backgroundRepeat: 'repeat',
-      backgroundSize: '24px 24px',
-      backgroundColor: '#022c22',
-    },
-  },
-  {
-    id: 'mashrabiya',
-    label: 'Mashrabiya Wood',
-    description: 'Warm traditional carved wooden mashrabiya',
-    previewBackground: {
-      backgroundImage: `url("${MASHRABIYA_SVG}")`,
-      backgroundRepeat: 'repeat',
-      backgroundSize: '20px 20px',
-      backgroundColor: '#140f0b',
+      backgroundImage: 'radial-gradient(circle at center, #334155 0%, #1e293b 65%, #090d16 100%)',
+      backgroundColor: '#090d16',
     },
   },
   {
     id: 'emerald_gradient',
-    label: 'Emerald Glow',
-    description: 'Regal emerald & gold radial gradient',
+    label: 'Radiant Emerald',
+    description: '',
     previewBackground: {
-      backgroundImage: 'radial-gradient(ellipse at center, #059669 0%, #022c22 65%, #000000 100%)',
-      backgroundColor: '#000000',
+      backgroundImage: 'radial-gradient(circle at center, #059669 0%, #047857 60%, #064e3b 100%)',
+      backgroundColor: '#064e3b',
+    },
+  },
+  {
+    id: 'blur_ambient',
+    label: 'Ocean Azure',
+    description: '',
+    previewBackground: {
+      backgroundImage: 'radial-gradient(circle at center, #2563eb 0%, #1d4ed8 60%, #0f172a 100%)',
+      backgroundColor: '#0f172a',
     },
   },
   {
     id: 'gold_gradient',
-    label: 'Royal Gold',
-    description: 'Polished gold ambient glow on midnight slate',
+    label: 'Warm Amber',
+    description: '',
     previewBackground: {
-      backgroundImage: 'radial-gradient(ellipse at center, #d97706 0%, #1e1b4b 60%, #020617 100%)',
-      backgroundColor: '#020617',
+      backgroundImage: 'radial-gradient(circle at center, #f59e0b 0%, #d97706 60%, #78350f 100%)',
+      backgroundColor: '#78350f',
+    },
+  },
+  {
+    id: 'mosque_green',
+    label: 'Regal Ruby',
+    description: '',
+    previewBackground: {
+      backgroundImage: 'radial-gradient(circle at center, #e11d48 0%, #be123c 60%, #4c0519 100%)',
+      backgroundColor: '#4c0519',
     },
   },
 ];
@@ -187,11 +160,13 @@ export interface IslamicStickerPreset {
 }
 
 export const ISLAMIC_STICKERS_REGISTRY: readonly IslamicStickerPreset[] = [
+  { id: 'alhamdulillah', label: 'Alhamdulillah Calligraphy', description: 'Royal flowing Arabic calligraphy praising Allah (الحمد لله)', defaultWidth: 24, defaultHeight: 14 },
+  { id: 'mashaallah', label: 'Masha\'Allah Calligraphy', description: 'Liturgical Arabic vector calligraphy expressing divine blessing (ما شاء الله)', defaultWidth: 24, defaultHeight: 14 },
+  { id: 'subhanallah', label: 'Subhan Allah Calligraphy', description: 'Classical Islamic calligraphy glorifying Allah (سبحان الله)', defaultWidth: 24, defaultHeight: 14 },
+  { id: 'mihrab_arch', label: 'Mihrab Arch & Lattice', description: 'Intricate Islamic pointed prayer niche arch with geometric mashrabiya', defaultWidth: 18, defaultHeight: 24 },
   { id: 'fanous', label: 'Fanous Lantern', description: 'Traditional hanging Ramadan lantern with golden flame', defaultWidth: 16, defaultHeight: 25 },
   { id: 'crescent_moon', label: 'Crescent & Star', description: 'Sacred golden crescent moon and five-point star', defaultWidth: 18, defaultHeight: 22 },
-  { id: 'mosque', label: 'Mosque & Minaret', description: 'Majestic dome and minaret architectural silhouette', defaultWidth: 22, defaultHeight: 22 },
-  { id: 'islamic_star', label: '8-Point Star', description: 'Traditional Islamic Khatam geometric star', defaultWidth: 16, defaultHeight: 19 },
-  { id: 'bismillah', label: 'Bismillah Calligraphy', description: 'Sacred Bismillah calligraphy in ornate medallion', defaultWidth: 24, defaultHeight: 16 },
+  { id: 'bismillah', label: 'Bismillah Calligraphy', description: 'Sacred Bismillah calligraphy in pure floating gold', defaultWidth: 24, defaultHeight: 14 },
   { id: 'kaaba', label: 'The Holy Kaaba', description: 'Kaaba cube with golden Kiswah band and door', defaultWidth: 18, defaultHeight: 22 },
   { id: 'tasbih', label: 'Tasbih Beads', description: 'Circular prayer beads with decorative tassel', defaultWidth: 18, defaultHeight: 20 },
 ];

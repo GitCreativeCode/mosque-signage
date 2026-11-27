@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Sparkles, ChevronRight } from 'lucide-react';
 
 export interface ReleaseHighlightsViewProps {
   readonly title?: string | undefined;
@@ -22,11 +21,54 @@ export function sanitizeReleaseMarkdown(rawMarkdown: string): string {
   return rawMarkdown
     // Strip <details>...</details> blocks entirely (technical offline archive info)
     .replace(/<details[\s\S]*?<\/details>/gi, '')
-    // Strip remaining HTML tags like <summary>, </summary>, <br>, etc.
-    .replace(/<\/?[^>]+(>|$)/g, '')
+    // Strip actual HTML tags like <summary>, </summary>, <br>, etc., without matching math/comparisons like (< 2025)
+    .replace(/<[a-zA-Z/][^>]*>/g, '')
     // Strip markdown horizontal rules (---, ***, ___)
     .replace(/^(\s*[-*_]\s*){3,}$/gm, '')
     .trim();
+}
+
+/**
+ * Extracts the concise opening paragraph from sanitized GitHub release markdown,
+ * falling back to the first non-heading line if no intro paragraph precedes headings.
+ */
+export function extractFirstReleaseParagraph(rawMarkdown: string): string {
+  const sanitized = sanitizeReleaseMarkdown(rawMarkdown);
+  if (!sanitized) return '';
+
+  const lines = sanitized.split(/\r?\n/);
+  const introLines: string[] = [];
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) {
+      if (introLines.length > 0) break;
+      continue;
+    }
+
+    const isHeading = /^#{1,4}\s+/.test(line);
+    const isBullet = /^[-*•]\s+/.test(line) || /^\d+\.\s+/.test(line);
+    if (isHeading || isBullet) {
+      if (introLines.length > 0) break;
+      continue;
+    }
+
+    introLines.push(line);
+  }
+
+  if (introLines.length > 0) {
+    return introLines.join(' ');
+  }
+
+  // Fallback for releases that start directly with a heading and bullet list
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line || /^#{1,4}\s+/.test(line)) continue;
+    const bulletMatch = line.match(/^[-*•]\s+(.+)$/) || line.match(/^\d+\.\s+(.+)$/);
+    return (bulletMatch?.[1] ?? line).trim();
+  }
+
+  return '';
 }
 
 /**
@@ -88,49 +130,37 @@ function renderInlineMarkdown(text: string) {
 }
 
 /**
- * Renders structured, clean release highlights in place of raw monospace markdown.
+ * Renders a concise release summary paragraph and directs administrators to GitHub for the full release notes.
  */
 export function ReleaseHighlightsView({ title, body }: ReleaseHighlightsViewProps) {
-  const sanitized = sanitizeReleaseMarkdown(
+  const summaryParagraph = extractFirstReleaseParagraph(
     body || 'Includes performance optimizations, security hardening, and liturgical calculation adjustments.'
   );
-  const sections = parseReleaseSections(sanitized);
 
   return (
     <div className="space-y-2">
       <div className="flex items-center space-x-1.5 text-xs font-bold text-[var(--admin-text-muted)] uppercase tracking-wider">
-        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-        <span>Release Highlights</span>
+        <span>Release Summary</span>
       </div>
 
-      <div className="p-4 rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)]/60 text-xs text-[var(--admin-text-secondary)] space-y-4 max-h-52 overflow-y-auto leading-relaxed">
+      <div className="p-4 rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)]/60 text-xs text-[var(--admin-text-secondary)] space-y-2.5 leading-relaxed">
         {title && (
-          <p className="font-bold text-[var(--admin-text-primary)] text-sm pb-1 border-b border-[var(--admin-border)]/60">
+          <p className="font-bold text-[var(--admin-text-primary)] text-sm pb-1.5 border-b border-[var(--admin-border)]/60">
             {title}
           </p>
         )}
 
-        {sections.length === 0 ? (
-          <p className="text-[11px] text-[var(--admin-text-muted)] italic">No release notes provided.</p>
+        {summaryParagraph ? (
+          <p className="text-xs text-[var(--admin-text-secondary)] leading-relaxed">
+            {renderInlineMarkdown(summaryParagraph)}
+          </p>
         ) : (
-          sections.map((sec, secIdx) => (
-            <div key={secIdx} className="space-y-2">
-              {sec.heading && (
-                <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-[var(--admin-card)] border border-[var(--admin-border)] text-[11px] font-semibold text-[var(--admin-text-primary)]">
-                  {sec.heading}
-                </div>
-              )}
-              <ul className="space-y-1.5 pl-0.5">
-                {sec.items.map((item, itemIdx) => (
-                  <li key={itemIdx} className="flex items-start space-x-2 text-[11px]">
-                    <ChevronRight className="w-3 h-3 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
-                    <span className="leading-snug">{renderInlineMarkdown(item)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))
+          <p className="text-[11px] text-[var(--admin-text-muted)] italic">No release notes provided.</p>
         )}
+
+        <p className="text-[11px] text-[var(--admin-text-muted)] pt-1">
+          View the full release on GitHub below for complete feature details, bug fixes, and update instructions.
+        </p>
       </div>
     </div>
   );

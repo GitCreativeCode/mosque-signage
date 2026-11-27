@@ -37,36 +37,37 @@ export function RecurringScheduleRuleCard({
 
   return (
     <div className="p-3 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-card)] space-y-2.5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pb-1 border-b border-[var(--admin-border)]/50">
         <span className="text-[11px] font-bold text-[var(--admin-text-secondary)] uppercase tracking-wider">
           Window #{index + 1}
         </span>
-        <div className="flex items-center space-x-1">
-          <span className="text-[10px] text-[var(--admin-text-muted)] mr-1">Presets:</span>
-          {(['FRIDAYS', 'WEEKENDS', 'WEEKDAYS', 'ALL'] as const).map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              onClick={() => onApplyPreset(index, preset)}
-              className="px-1.5 py-0.5 text-[10px] rounded border border-[var(--admin-border)] bg-[var(--admin-surface)] hover:bg-[var(--admin-card)] text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] transition cursor-pointer"
-            >
-              {preset === 'FRIDAYS' ? 'Fridays' : preset === 'WEEKENDS' ? 'Weekends' : preset === 'WEEKDAYS' ? 'Weekdays' : 'All Days'}
-            </button>
-          ))}
-          {totalRules > 1 && (
-            <button
-              type="button"
-              onClick={() => onRemoveRule(index)}
-              className="ml-2 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 rounded cursor-pointer"
-              title="Remove rule"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
+        {totalRules > 1 && (
+          <button
+            type="button"
+            onClick={() => onRemoveRule(index)}
+            className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 rounded cursor-pointer transition"
+            title="Remove rule"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-[10px] text-[var(--admin-text-muted)] font-medium mr-0.5">Presets:</span>
+        {(['FRIDAYS', 'WEEKENDS', 'WEEKDAYS', 'ALL'] as const).map((preset) => (
+          <button
+            key={preset}
+            type="button"
+            onClick={() => onApplyPreset(index, preset)}
+            className="px-2 py-1 text-[11px] rounded-md border border-[var(--admin-border)] bg-[var(--admin-surface)] hover:bg-[var(--admin-card)] text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] transition cursor-pointer"
+          >
+            {preset === 'FRIDAYS' ? 'Fridays' : preset === 'WEEKENDS' ? 'Weekends' : preset === 'WEEKDAYS' ? 'Weekdays' : 'All Days'}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
         {DAYS_OF_WEEK.map(({ day, label, full }) => {
           const isSelected = rule.days.includes(day);
           return (
@@ -75,7 +76,7 @@ export function RecurringScheduleRuleCard({
               type="button"
               title={full}
               onClick={() => onToggleDay(index, day)}
-              className={`w-9 h-7 text-[11px] font-semibold rounded-md border transition-colors cursor-pointer ${
+              className={`h-9 sm:h-7 text-[11px] font-semibold rounded-md border transition-colors cursor-pointer flex items-center justify-center ${
                 isSelected
                   ? 'bg-neutral-900 border-neutral-900 text-white dark:bg-white dark:border-white dark:text-neutral-900 font-bold shadow-sm'
                   : 'border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] hover:border-[var(--admin-border-subtle)]'

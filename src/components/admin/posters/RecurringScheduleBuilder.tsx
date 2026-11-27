@@ -112,19 +112,20 @@ export function RecurringScheduleBuilder({
 
   return (
     <div className={containerClasses}>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center space-x-2">
           <Clock className="w-4 h-4 text-[var(--admin-text-primary)]" />
           <span className="text-xs font-semibold text-[var(--admin-text-primary)]">Schedule Mode</span>
         </div>
-        <div className="flex items-center space-x-1 p-0.5 rounded-lg bg-[var(--admin-card)] border border-[var(--admin-border)]">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => handleToggleEnabled(false)}
-            className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors cursor-pointer ${
+            aria-pressed={!isEnabled}
+            className={`min-h-[36px] px-3 py-1.5 text-[11px] font-semibold rounded-lg border transition-all cursor-pointer ${
               !isEnabled
-                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm'
-                : 'text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)]'
+                ? 'bg-neutral-900 border-neutral-900 text-white dark:bg-white dark:border-white dark:text-neutral-900 shadow-sm'
+                : 'bg-[var(--admin-card)] border-[var(--admin-border)] text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] hover:border-[var(--admin-border-subtle)]'
             }`}
           >
             All Day (Continuous)
@@ -132,10 +133,11 @@ export function RecurringScheduleBuilder({
           <button
             type="button"
             onClick={() => handleToggleEnabled(true)}
-            className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors cursor-pointer ${
+            aria-pressed={isEnabled}
+            className={`min-h-[36px] px-3 py-1.5 text-[11px] font-semibold rounded-lg border transition-all cursor-pointer ${
               isEnabled
-                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm'
-                : 'text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)]'
+                ? 'bg-neutral-900 border-neutral-900 text-white dark:bg-white dark:border-white dark:text-neutral-900 shadow-sm'
+                : 'bg-[var(--admin-card)] border-[var(--admin-border)] text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] hover:border-[var(--admin-border-subtle)]'
             }`}
           >
             Recurring Windows

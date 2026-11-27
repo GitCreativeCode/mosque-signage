@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { deleteLayerKeysFromScene } from '@/lib/posters/studio-layers';
+import { deleteLayerKeysFromScene, moveLayerToExtreme } from '@/lib/posters/studio-layers';
 import { isLayerKeyLocked } from '@/lib/posters/studio-zindex';
 import { resolveKeysToDelete } from '@/hooks/studio/useStudioKeyboardShortcuts';
 import { resolveTextClasses } from '@/components/admin/posters/studio/StudioCanvasTextLayer';
@@ -122,6 +122,23 @@ describe('Poster Studio Locked Layer Safeguard (Delete / Backspace)', () => {
     const empty = resolveKeysToDelete(scene, [], null, null);
     expect(empty).toEqual([]);
   });
+
+  it('moveLayerToExtreme moves an unlocked layer to extreme front or back', () => {
+    const scene = createMockScene();
+    // Bring text:t1 to front
+    const frontScene = moveLayerToExtreme(scene, { type: 'text', id: 't1' }, 'front');
+    expect(frontScene).not.toBeNull();
+    expect(frontScene!.rootOrder[0]).toBe('text:t1');
+
+    // Send slot:s1 to back
+    const backScene = moveLayerToExtreme(scene, { type: 'slot', id: 's1' }, 'back');
+    expect(backScene).not.toBeNull();
+    expect(backScene!.rootOrder[backScene!.rootOrder.length - 1]).toBe('slot:s1');
+
+    // Attempting to move locked layer returns null
+    const lockedRes = moveLayerToExtreme(scene, { type: 'slot', id: 's2' }, 'front');
+    expect(lockedRes).toBeNull();
+  });
 });
 
 describe('Studio Canvas Text Layer Styling & Typography', () => {
@@ -158,19 +175,65 @@ describe('Studio Canvas Text Layer Styling & Typography', () => {
   });
 });
 
+describe('Photoshop-Style History Snapshots & Action Labels', () => {
+  it('supports actionLabel on history snapshots and preserves sequence', () => {
+    const scene = createMockScene();
+    const snap1 = { ...scene, actionLabel: 'Initial State' };
+    const snap2 = { ...scene, actionLabel: 'Move Sticker' };
+    const snap3 = { ...scene, actionLabel: 'Resize Layer' };
+
+    const history = [snap1, snap2, snap3];
+    expect(history[0]?.actionLabel).toBe('Initial State');
+    expect(history[1]?.actionLabel).toBe('Move Sticker');
+    expect(history[2]?.actionLabel).toBe('Resize Layer');
+
+    // Photoshop-style truncation when branching
+    const jumpedIndex = 1;
+    const nextSnap = { ...scene, actionLabel: 'Rotate Sticker' };
+    const branched = [...history.slice(0, jumpedIndex + 1), nextSnap];
+    expect(branched.length).toBe(3);
+    expect(branched[2]?.actionLabel).toBe('Rotate Sticker');
+  });
+});
+
+describe('Multi-Slot Frame Batch Styling', () => {
+  it('applies frame style to selected slot keys and ignores non-slot keys', () => {
+    const slots = [
+      { id: 's1', type: 'image', asset_path: '/1.jpg', frame_style: 'none' as const },
+      { id: 's2', type: 'image', asset_path: '/2.jpg', frame_style: 'none' as const },
+      { id: 's3', type: 'image', asset_path: '/3.jpg', frame_style: 'none' as const },
+    ];
+    const selectedLayerKeys = ['slot:s1', 'slot:s3', 'sticker:stk-1', 'text:txt-1'];
+    const selectedSlotIds = selectedLayerKeys.filter((k) => k.startsWith('slot:')).map((k) => k.slice(5));
+
+    const updated = slots.map((s) =>
+      selectedSlotIds.includes(s.id) ? { ...s, frame_style: 'gold_matting' as const } : s,
+    );
+
+    expect(updated[0]?.frame_style).toBe('gold_matting');
+    expect(updated[1]?.frame_style).toBe('none');
+    expect(updated[2]?.frame_style).toBe('gold_matting');
+  });
+});
+
 describe('Release Registry & Versioning Metadata', () => {
-  it('correctly reports v0.1.3 as current release with Nov 19, 2026 date', () => {
-    expect(APP_VERSION).toBe('0.1.3');
-    expect(OFFICIAL_RELEASE_HISTORY.length).toBeGreaterThanOrEqual(4);
+  it('correctly reports v0.2.0 as current release with Nov 26, 2026 date and v0.1.3 with Nov 20, 2026 date', () => {
+    expect(APP_VERSION).toBe('0.2.0');
+    expect(OFFICIAL_RELEASE_HISTORY.length).toBeGreaterThanOrEqual(5);
 
     const latest = OFFICIAL_RELEASE_HISTORY[0]!;
-    expect(latest.version).toBe('0.1.3');
-    expect(latest.date).toBe('November 19, 2026');
+    expect(latest.version).toBe('0.2.0');
+    expect(latest.date).toBe('November 26, 2026');
     expect(latest.isCurrent).toBe(true);
-    expect(latest.title).toContain('v0.1.3');
-    expect(latest.category).toBe('patch');
+    expect(latest.title).toContain('v0.2.0');
+    expect(latest.category).toBe('minor');
 
-    const previous = OFFICIAL_RELEASE_HISTORY[1]!;
+    const v013 = OFFICIAL_RELEASE_HISTORY.find((r) => r.version === '0.1.3');
+    expect(v013).toBeDefined();
+    expect(v013?.date).toBe('November 20, 2026');
+    expect(v013?.isCurrent).toBe(false);
+
+    const previous = OFFICIAL_RELEASE_HISTORY[2]!;
     expect(previous.version).toBe('0.1.2');
     expect(previous.date).toBe('November 18, 2026');
     expect(previous.isCurrent).toBe(false);

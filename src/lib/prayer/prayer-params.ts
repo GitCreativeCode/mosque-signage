@@ -3,7 +3,7 @@
  * MosqueSignage (TV)
  */
 
-import { CalculationMethod, type CalculationParameters } from 'adhan';
+import { CalculationMethod, type CalculationParameters, HighLatitudeRule } from 'adhan';
 import type { PrayerOverride, PrayerRule } from '@/types/index';
 
 export interface AnnualScheduleDay {
@@ -38,6 +38,7 @@ export interface PrayerEngineOptions {
   readonly timezone?: string | undefined;
   readonly method?: string | undefined;
   readonly madhab?: 'shafi' | 'hanafi' | undefined;
+  readonly highLatitudeRule?: string | undefined;
   readonly rules?: readonly PrayerRule[] | undefined;
   readonly annualSchedule?: AnnualScheduleDay | undefined;
   readonly adhanOffsets?: AdhanOffsetsInput | undefined;
@@ -65,27 +66,62 @@ export function formatHHMM(date: Date, timezone: string = 'America/Toronto'): st
 }
 
 /**
- * Resolves CalculationParameters based on method name.
+ * Resolves CalculationParameters based on method name and high-latitude rule.
  */
-export function getCalculationParameters(methodName: string = 'NorthAmerica'): CalculationParameters {
+export function getCalculationParameters(
+  methodName: string = 'NorthAmerica',
+  highLatitudeRule?: string
+): CalculationParameters {
+  let params: CalculationParameters;
   switch (methodName.toLowerCase()) {
     case 'muslimworldleague':
     case 'mwl':
-      return CalculationMethod.MuslimWorldLeague();
+      params = CalculationMethod.MuslimWorldLeague();
+      break;
     case 'egyptian':
-      return CalculationMethod.Egyptian();
+      params = CalculationMethod.Egyptian();
+      break;
     case 'karachi':
-      return CalculationMethod.Karachi();
+      params = CalculationMethod.Karachi();
+      break;
     case 'ummalqura':
-      return CalculationMethod.UmmAlQura();
+      params = CalculationMethod.UmmAlQura();
+      break;
     case 'dubai':
-      return CalculationMethod.Dubai();
+      params = CalculationMethod.Dubai();
+      break;
     case 'moonsightingcommittee':
-      return CalculationMethod.MoonsightingCommittee();
+      params = CalculationMethod.MoonsightingCommittee();
+      break;
     case 'northamerica':
     case 'isna':
     default:
-      return CalculationMethod.NorthAmerica();
+      params = CalculationMethod.NorthAmerica();
+      break;
   }
+
+  if (highLatitudeRule) {
+    switch (highLatitudeRule.toLowerCase()) {
+      case 'middle_of_night':
+      case 'middleofthenight':
+        params.highLatitudeRule = HighLatitudeRule.MiddleOfTheNight;
+        break;
+      case 'twilight_angle':
+      case 'twilightangle':
+        params.highLatitudeRule = HighLatitudeRule.TwilightAngle;
+        break;
+      case 'none':
+        break;
+      case 'seventh_of_night':
+      case 'seventhofthenight':
+      default:
+        params.highLatitudeRule = HighLatitudeRule.SeventhOfTheNight;
+        break;
+    }
+  } else {
+    params.highLatitudeRule = HighLatitudeRule.SeventhOfTheNight;
+  }
+
+  return params;
 }
 

@@ -5,6 +5,7 @@ import {
   checkChronologicalShifts,
   formatCountdown,
   parseCsvRowDate,
+  formatIsoDateTime,
 } from '@/lib/utils/time';
 import { formatRemainingTime } from '@/components/display/MiniPrayerPill';
 
@@ -184,6 +185,23 @@ describe('Time Utilities & Formatting Suite', () => {
       expect(parseCsvRowDate('', '', defaultYear)).toBeNull();
       expect(parseCsvRowDate(undefined, undefined, defaultYear)).toBeNull();
       expect(parseCsvRowDate('not-a-date', 'gibberish', defaultYear)).toBeNull();
+    });
+  });
+
+  describe('formatIsoDateTime', () => {
+    it('formats ISO timestamps into human-readable date & time', () => {
+      const res = formatIsoDateTime('2026-11-23T14:30:00.000Z');
+      expect(res).toBeDefined();
+      expect(res).not.toBe('—');
+    });
+
+    it('returns dash for null or undefined timestamps', () => {
+      expect(formatIsoDateTime(null)).toBe('—');
+      expect(formatIsoDateTime(undefined)).toBe('—');
+    });
+
+    it('gracefully returns raw string on invalid date inputs', () => {
+      expect(formatIsoDateTime('invalid-iso-string')).toBe('invalid-iso-string');
     });
   });
 });

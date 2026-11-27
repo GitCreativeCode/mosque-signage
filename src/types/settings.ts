@@ -3,6 +3,8 @@
  * MosqueSignage (TV)
  */
 
+import type { ActiveEidType, TaraweehSession } from './prayer';
+
 export type DateDisplayMode = 'both' | 'hijri' | 'gregorian';
 export type PosterTransitionType = 'fade' | 'slide-left' | 'slide-right' | 'slide-up' | 'zoom';
 export type PosterFitMode = 'contain' | 'cover';
@@ -10,6 +12,8 @@ export type DisplayResolution = '1080p' | '4k' | '1600x900' | '720p' | 'auto';
 export type SidebarMode = 'drawer' | 'always_open' | 'hidden';
 export type SidebarPosition = 'right' | 'left';
 export type SidebarAccentTheme = 'blue' | 'gold' | 'teal' | 'slate';
+export type SilenceScreenAccentTheme = 'green' | 'amber' | 'teal' | 'white';
+export type HighLatitudeRule = 'seventh_of_night' | 'middle_of_night' | 'twilight_angle' | 'none';
 export type MiniPrayerPillPosition = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
 
 export type PowerScheduleMode = 'fixed' | 'prayer_relative';
@@ -89,10 +93,14 @@ export interface Settings {
   readonly audio_mute_delay_seconds?: number | undefined;
   readonly show_mini_prayer_pill?: boolean | undefined;
   readonly show_prayer_silence_overlay?: boolean | undefined;
+  readonly silence_screen_subtitle?: string | null | undefined;
+  readonly silence_screen_accent_theme?: SilenceScreenAccentTheme | undefined;
   readonly mini_prayer_pill_position?: MiniPrayerPillPosition | undefined;
   readonly show_progress_bar?: boolean | undefined;
   readonly poster_view_mode?: 'grid' | 'table' | undefined;
   readonly overscan_margin_percent?: number | undefined;
+  readonly clock_show_seconds?: boolean | undefined;
+  readonly clock_time_format?: '12h' | '24h' | undefined;
   readonly display_access_mode?: 'open' | 'pairing_required' | undefined;
   readonly display_allow_localhost?: boolean | undefined;
   readonly display_session_version?: number | undefined;
@@ -103,6 +111,18 @@ export interface Settings {
   readonly initial_setup_completed?: boolean | undefined;
   readonly terms_accepted?: boolean | undefined;
   readonly terms_accepted_at?: string | null | undefined;
+  readonly high_latitude_rule?: HighLatitudeRule | undefined;
+  readonly ramadan_mode_enabled?: boolean | undefined;
+  readonly ramadan_display_start_date?: string | null | undefined;
+  readonly ramadan_taraweeh_time?: string | null | undefined;
+  readonly ramadan_taraweeh_rakats?: string | null | undefined;
+  readonly ramadan_taraweeh_sessions?: readonly TaraweehSession[] | undefined;
+  readonly ramadan_suhoor_buffer_minutes?: number | undefined;
+  readonly ramadan_silence_during_taraweeh?: boolean | undefined;
+  readonly active_eid_type?: ActiveEidType | undefined;
+  readonly active_eid_date?: string | null | undefined;
+  readonly eid_auto_hide_minutes?: number | undefined;
+  readonly eid_friday_note?: string | null | undefined;
 }
 
 export type PublicDisplaySettings = Omit<
@@ -149,10 +169,14 @@ export interface UpdateVenueSettingsInput {
   readonly show_qr_during_drawer?: boolean | undefined;
   readonly show_mini_prayer_pill?: boolean | undefined;
   readonly show_prayer_silence_overlay?: boolean | undefined;
+  readonly silence_screen_subtitle?: string | null | undefined;
+  readonly silence_screen_accent_theme?: SilenceScreenAccentTheme | undefined;
   readonly mini_prayer_pill_position?: MiniPrayerPillPosition | undefined;
   readonly show_progress_bar?: boolean | undefined;
   readonly poster_view_mode?: 'grid' | 'table' | undefined;
   readonly overscan_margin_percent?: number | undefined;
+  readonly clock_show_seconds?: boolean | undefined;
+  readonly clock_time_format?: '12h' | '24h' | undefined;
   readonly latitude?: number | null | undefined;
   readonly longitude?: number | null | undefined;
   readonly calculation_method?: string | undefined;
@@ -187,5 +211,17 @@ export interface UpdateVenueSettingsInput {
   readonly initial_setup_completed?: boolean | undefined;
   readonly terms_accepted?: boolean | undefined;
   readonly terms_accepted_at?: string | null | undefined;
+  readonly high_latitude_rule?: HighLatitudeRule | undefined;
+  readonly ramadan_mode_enabled?: boolean | undefined;
+  readonly ramadan_display_start_date?: string | null | undefined;
+  readonly ramadan_taraweeh_time?: string | null | undefined;
+  readonly ramadan_taraweeh_rakats?: string | null | undefined;
+  readonly ramadan_taraweeh_sessions?: readonly TaraweehSession[] | undefined;
+  readonly ramadan_suhoor_buffer_minutes?: number | undefined;
+  readonly ramadan_silence_during_taraweeh?: boolean | undefined;
+  readonly active_eid_type?: ActiveEidType | undefined;
+  readonly active_eid_date?: string | null | undefined;
+  readonly eid_auto_hide_minutes?: number | undefined;
+  readonly eid_friday_note?: string | null | undefined;
 }
 

@@ -107,12 +107,12 @@ export function CsvImportModal({ isOpen, onClose, onImportSuccess }: CsvImportMo
       role="dialog"
       aria-modal="true"
       aria-labelledby="csv-import-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
         ref={modalRef}
-        className="w-full max-w-xl rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-card)] p-6 shadow-2xl text-[var(--admin-text-primary)] space-y-4"
+        className="w-full h-[100dvh] sm:h-auto sm:max-h-[90dvh] sm:max-w-xl rounded-none sm:rounded-2xl border-0 sm:border border-[var(--admin-border)] bg-[var(--admin-card)] p-4 sm:p-6 shadow-2xl text-[var(--admin-text-primary)] space-y-4 overflow-y-auto"
       >
         <div className="flex items-center justify-between pb-3 border-b border-[var(--admin-border)]">
           <div className="flex items-center space-x-2.5">

@@ -51,7 +51,7 @@ export function useStudioLifecycle(params: UseStudioLifecycleParams) {
   const [duration, setDuration] = useState(20);
   const [archetype, setArchetype] = useState<PosterLayoutArchetype>('split_vertical');
   const [splitRatio, setSplitRatio] = useState(50);
-  const [gridGap, setGridGap] = useState<LayoutGridGap>('normal');
+  const [gridGap, setGridGap] = useState<LayoutGridGap>('none');
   const [canvasBackground, setCanvasBackground] = useState<CanvasBackgroundPreset>('black');
   const [canvasBackgroundCustom, setCanvasBackgroundCustom] = useState<string>('');
   const [customBadgeText, setCustomBadgeText] = useState('SPECIAL PROGRAM');
@@ -62,6 +62,8 @@ export function useStudioLifecycle(params: UseStudioLifecycleParams) {
   const [qrUrl, setQrUrl] = useState('');
   const [qrLabel, setQrLabel] = useState('Scan to Register');
   const [qrPosition, setQrPosition] = useState<QrPosition>('bottom-left');
+  const [qrStartAt, setQrStartAt] = useState<string | null>(null);
+  const [qrEndAt, setQrEndAt] = useState<string | null>(null);
   const [startAt, setStartAt] = useState<string>(() => toLocalDatetimeString(new Date()));
   const [endAt, setEndAt] = useState<string>('');
   const [isIndefinite, setIsIndefinite] = useState(true);
@@ -109,7 +111,8 @@ export function useStudioLifecycle(params: UseStudioLifecycleParams) {
       const p = buildInitialStateFromPoster(initialPoster);
       if (p) {
         setTitle(p.title); setDuration(p.duration); setQrUrl(p.qrUrl); setHasQr(p.hasQr); setQrLabel(p.qrLabel);
-        setQrPosition(p.qrPosition); setStartAt(p.startAt); setEndAt(p.endAt); setIsIndefinite(p.isIndefinite);
+        setQrPosition(p.qrPosition); setQrStartAt(p.qrStartAt); setQrEndAt(p.qrEndAt);
+        setStartAt(p.startAt); setEndAt(p.endAt); setIsIndefinite(p.isIndefinite);
         setRecurringSchedule(p.recurringSchedule);
         setArchetype(p.archetype); setSplitRatio(p.splitRatio); setGridGap(p.gridGap);
         setCanvasBackground(p.canvasBackground); setCanvasBackgroundCustom(p.canvasBackgroundCustom);
@@ -118,7 +121,7 @@ export function useStudioLifecycle(params: UseStudioLifecycleParams) {
       }
     }
 
-    setTitle('Community Multi-Program Slide'); setDuration(20); setIsIndefinite(true); setRecurringSchedule(null);
+    setTitle('Community Multi-Program Slide'); setDuration(20); setIsIndefinite(true); setRecurringSchedule(null); setGridGap('none');
     if (initialFiles && initialFiles.length > 0) {
       setIsUploading(true);
       uploadInitialFilesToSlots(initialFiles, uploadLayoutAsset)
@@ -128,11 +131,11 @@ export function useStudioLifecycle(params: UseStudioLifecycleParams) {
       return;
     }
     if (initialNotice) {
-      setTitle(initialNotice.headline || 'Community Announcement'); setArchetype('single'); setGridGap('normal');
+      setTitle(initialNotice.headline || 'Community Announcement'); setArchetype('single'); setGridGap('none');
       resetHistoryWithSnapshot(buildInitialNoticeSnapshot(initialNotice)); setSelectedSlotIndex(0);
       return;
     }
-    setArchetype('split_vertical'); setGridGap('normal');
+    setArchetype('split_vertical'); setGridGap('none');
     resetHistoryWithSnapshot(createEmptyStudioSnapshot()); setSelectedSlotIndex(0);
   }, [isOpen, initialPoster, initialFiles, noticeHeadline, noticeDescription, noticeTheme]);
 
@@ -179,6 +182,8 @@ export function useStudioLifecycle(params: UseStudioLifecycleParams) {
         qr_url: hasQr && qrUrl.trim() ? qrUrl.trim() : undefined,
         qr_label: hasQr && qrLabel.trim() ? qrLabel.trim() : undefined,
         qr_position: hasQr ? qrPosition : undefined,
+        qr_start_at: hasQr ? (qrStartAt || null) : null,
+        qr_end_at: hasQr ? (qrEndAt || null) : null,
         allow_audio: false,
         recurring_schedule: recurringSchedule,
       });
@@ -199,6 +204,7 @@ export function useStudioLifecycle(params: UseStudioLifecycleParams) {
     customBadgeText, setCustomBadgeText, customBadgeVariant, setCustomBadgeVariant,
     isAspectLocked, setIsAspectLocked, frameApplyScope, setFrameApplyScope,
     hasQr, setHasQr, qrUrl, setQrUrl, qrLabel, setQrLabel, qrPosition, setQrPosition,
+    qrStartAt, setQrStartAt, qrEndAt, setQrEndAt,
     startAt, setStartAt, endAt, setEndAt, isIndefinite, setIsIndefinite,
     recurringSchedule, setRecurringSchedule,
     showSafeZone, setShowSafeZone, showPreviewQr, setShowPreviewQr,

@@ -48,9 +48,10 @@ export function StudioCanvasPartitionGrid({
   return (
     <div className={`relative w-full h-full grid ${gapClass}`} style={gridStyle}>
       {slots.map((s, idx) => {
-        const isSelected =
-          (selectedSlotIndex === idx && selectedEntity?.type === 'slot') ||
-          selectedLayerKeys.includes(`slot:${s.id}`);
+        const isSelected = selectedLayerKeys.length > 0
+          ? selectedLayerKeys.includes(`slot:${s.id}`)
+          : selectedSlotIndex === idx && selectedEntity?.type === 'slot';
+        const showSlotOutline = isSelected && selectedLayerKeys.length <= 1;
         const isDragged = draggedCanvasSlotIndex === idx;
         const isDropTarget = canvasDropTargetIndex === idx && !isDragged;
         const nextFit: SlotFitMode = s.fit_mode === 'contain' ? 'contain_blur' : s.fit_mode === 'contain_blur' ? 'cover' : 'contain';
@@ -58,6 +59,10 @@ export function StudioCanvasPartitionGrid({
         return (
           <div
             key={s.id}
+            data-studio-layer="true"
+            data-layer-id={s.id}
+            data-layer-type="slot"
+            data-layer-index={idx}
             draggable={slots.length > 1}
             onDragStart={(e) => {
               if (slots.length <= 1) return;
@@ -67,7 +72,7 @@ export function StudioCanvasPartitionGrid({
               e.dataTransfer.effectAllowed = 'move';
             }}
             onDragOver={(e) => {
-              if (slots.length <= 1) return;
+              if (slots.length <= 1 || !e.dataTransfer.types.includes('text/x-slot-index')) return;
               e.preventDefault(); e.stopPropagation();
               e.dataTransfer.dropEffect = 'move';
               if (canvasDropTargetIndex !== idx) setCanvasDropTargetIndex(idx);
@@ -94,7 +99,7 @@ export function StudioCanvasPartitionGrid({
             className={`relative w-full h-full min-w-0 min-h-0 select-none transition-all ${slots.length > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} ${
               isDragged ? 'opacity-35 scale-[0.98] ring-2 ring-dashed ring-amber-400 z-20'
               : isDropTarget ? 'ring-4 ring-amber-400 ring-offset-2 ring-offset-black z-30 scale-[1.01] shadow-2xl'
-              : isSelected ? 'ring-2 ring-white/90 z-10 shadow-lg'
+              : showSlotOutline ? 'ring-2 ring-white/90 z-10 shadow-lg'
               : 'hover:opacity-90'
             }`}
           >
@@ -115,7 +120,7 @@ export function StudioCanvasPartitionGrid({
                 <span>{s.label || `Layer ${idx + 1}`}</span>
               </span>
 
-              {isSelected && (
+              {showSlotOutline && (
                 <div className="flex items-center gap-1 pointer-events-auto">
                   {s.type !== 'notice' && s.type !== 'badge' && (
                     <button

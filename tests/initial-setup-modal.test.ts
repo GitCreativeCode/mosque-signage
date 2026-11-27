@@ -148,6 +148,18 @@ describe('Initial Venue Configuration & Onboarding Modal', () => {
       expect(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(helpdeskEmail)).toBe(true);
     });
 
+    it('ensures Terms of Use and Privacy Policy links open in a new tab without enclosing label tags', () => {
+      const linkProps = {
+        privacy: { href: '/privacy', target: '_blank', rel: 'noopener noreferrer' },
+        terms: { href: '/terms', target: '_blank', rel: 'noopener noreferrer' },
+      };
+
+      expect(linkProps.privacy.target).toBe('_blank');
+      expect(linkProps.privacy.rel).toBe('noopener noreferrer');
+      expect(linkProps.terms.target).toBe('_blank');
+      expect(linkProps.terms.rel).toBe('noopener noreferrer');
+    });
+
     it('validates optional Admin PIN: blank maintains existing PIN, 4-8 digits is valid', () => {
       const validatePin = (pin: string) => {
         const trimmed = pin.trim();

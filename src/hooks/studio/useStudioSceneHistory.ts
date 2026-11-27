@@ -50,6 +50,7 @@ export function useStudioSceneHistory() {
       newCompounds: PosterCompoundLayer[] = sceneRef.current.compoundLayers,
       newFolders: PosterLayerFolder[] = sceneRef.current.folders,
       newRoot: string[] = sceneRef.current.rootOrder,
+      actionLabel?: string,
     ) => {
       isDirtyRef.current = true;
       const snapshot: StudioHistorySnapshot = {
@@ -59,6 +60,7 @@ export function useStudioSceneHistory() {
         compoundLayers: newCompounds,
         folders: newFolders,
         rootOrder: newRoot,
+        actionLabel: actionLabel || 'Edit Layout',
       };
       const curr = historyRef.current;
       const nextState: AtomicHistoryState = {
@@ -72,7 +74,7 @@ export function useStudioSceneHistory() {
   );
 
   const commitScene = useCallback(
-    (next: StudioSceneState) => {
+    (next: StudioSceneState, actionLabel?: string) => {
       applySceneWithoutHistory(next);
       recordStudioSnapshot(
         next.slots,
@@ -81,15 +83,24 @@ export function useStudioSceneHistory() {
         next.compoundLayers,
         next.folders,
         next.rootOrder,
+        actionLabel,
       );
     },
     [applySceneWithoutHistory, recordStudioSnapshot],
   );
 
   const commitSlots = useCallback(
-    (newSlots: PosterSlotMedia[]) => {
+    (newSlots: PosterSlotMedia[], actionLabel?: string) => {
       setSlots(newSlots);
-      recordStudioSnapshot(newSlots);
+      recordStudioSnapshot(
+        newSlots,
+        sceneRef.current.stickers,
+        sceneRef.current.textOverlays,
+        sceneRef.current.compoundLayers,
+        sceneRef.current.folders,
+        sceneRef.current.rootOrder,
+        actionLabel || 'Update Slots',
+      );
     },
     [recordStudioSnapshot],
   );
@@ -119,8 +130,32 @@ export function useStudioSceneHistory() {
     [applySceneWithoutHistory],
   );
 
+  const jumpToHistoryIndex = useCallback(
+    (targetIndex: number, onAfterStep: () => void) => {
+      const curr = historyRef.current;
+      if (targetIndex < 0 || targetIndex >= curr.history.length) return;
+      const target = curr.history[targetIndex];
+      if (!target) return;
+
+      const nextState: AtomicHistoryState = { history: curr.history, index: targetIndex };
+      historyRef.current = nextState;
+      setHistoryState(nextState);
+      applySceneWithoutHistory({
+        slots: [...target.slots],
+        stickers: [...target.stickers],
+        textOverlays: [...target.textOverlays],
+        compoundLayers: [...target.compoundLayers],
+        folders: [...target.folders],
+        rootOrder: [...target.rootOrder],
+      });
+      onAfterStep();
+      isDirtyRef.current = true;
+    },
+    [applySceneWithoutHistory],
+  );
+
   const resetHistoryWithSnapshot = useCallback(
-    (snapshot: StudioHistorySnapshot) => {
+    (snapshot: StudioHistorySnapshot, actionLabel: string = 'Initial State') => {
       applySceneWithoutHistory({
         slots: [...snapshot.slots],
         stickers: [...snapshot.stickers],
@@ -129,7 +164,10 @@ export function useStudioSceneHistory() {
         folders: [...snapshot.folders],
         rootOrder: [...snapshot.rootOrder],
       });
-      const resetState: AtomicHistoryState = { history: [snapshot], index: 0 };
+      const resetState: AtomicHistoryState = {
+        history: [{ ...snapshot, actionLabel: snapshot.actionLabel || actionLabel }],
+        index: 0,
+      };
       historyRef.current = resetState;
       setHistoryState(resetState);
       isDirtyRef.current = false;
@@ -142,6 +180,6 @@ export function useStudioSceneHistory() {
     compoundLayers, setCompoundLayers, folders, setFolders, rootOrder, setRootOrder,
     history: historyState.history, historyIndex: historyState.index, isDirtyRef,
     applySceneWithoutHistory, recordStudioSnapshot, commitScene, commitSlots,
-    stepHistory, resetHistoryWithSnapshot,
+    stepHistory, jumpToHistoryIndex, resetHistoryWithSnapshot,
   };
 }

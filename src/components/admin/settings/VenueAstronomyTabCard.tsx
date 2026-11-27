@@ -81,6 +81,37 @@ export function VenueAstronomyTabCard(props: VenueAstronomyTabCardProps) {
           </div>
         </div>
 
+        <div className="md:col-span-2 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--admin-border)]/60">
+          <div>
+            <label className="text-xs font-semibold text-[var(--admin-text-secondary)] block">
+              Venue Astronomical Coordinates
+            </label>
+            <span className="text-[10px] text-[var(--admin-text-muted)]">
+              Latitude and Longitude in decimal degrees (e.g. 43.5890, -79.6441)
+            </span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={props.onAutoDetectLocation}
+              disabled={props.isDetectingLocation}
+              className="px-2.5 py-1 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] hover:bg-[var(--admin-card)] text-xs font-medium text-[var(--admin-text-primary)] flex items-center space-x-1.5 transition cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
+            >
+              {props.isDetectingLocation ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <MapPin className="w-3.5 h-3.5 text-emerald-500" />
+              )}
+              <span>{props.isDetectingLocation ? 'Detecting...' : 'Auto-Detect Coordinates'}</span>
+            </button>
+            {props.detectLocationMsg && (
+              <span className="text-xs font-semibold text-emerald-500 animate-fadeIn font-mono">
+                {props.detectLocationMsg}
+              </span>
+            )}
+          </div>
+        </div>
+
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-[var(--admin-text-secondary)]">Venue Latitude</label>
           <input
@@ -111,16 +142,6 @@ export function VenueAstronomyTabCard(props: VenueAstronomyTabCardProps) {
             }}
             className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-tab-active-border)] font-mono"
           />
-        </div>
-
-        <div className="md:col-span-2 flex flex-wrap items-center justify-between gap-2 pt-1">
-          <button type="button" onClick={props.onAutoDetectLocation} disabled={props.isDetectingLocation} className="px-3 py-1.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] hover:bg-[var(--admin-card)] text-xs font-medium text-[var(--admin-text-primary)] flex items-center space-x-1.5 transition cursor-pointer shadow-sm active:scale-95 disabled:opacity-50">
-            {props.isDetectingLocation ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MapPin className="w-3.5 h-3.5 text-emerald-500" />}
-            <span>{props.isDetectingLocation ? 'Detecting Coordinates...' : 'Auto-Detect Coordinates'}</span>
-          </button>
-          {props.detectLocationMsg && (
-            <span className="text-xs font-semibold text-emerald-500 animate-fadeIn font-mono">{props.detectLocationMsg}</span>
-          )}
         </div>
       </div>
 

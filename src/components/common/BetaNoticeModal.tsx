@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, Check, HelpCircle, Sparkles } from 'lucide-react';
+import { AlertCircle, Check, HelpCircle } from 'lucide-react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 export const BETA_ACKNOWLEDGED_KEY = 'ms_beta_acknowledged';
@@ -75,20 +75,15 @@ export function BetaNoticeModal({ isSuspended = false }: BetaNoticeModalProps = 
     >
       <div
         ref={modalRef}
-        className="w-full max-w-lg rounded-3xl border border-[var(--admin-border)] bg-[var(--admin-card)] text-[var(--admin-text-primary)] shadow-2xl p-6 sm:p-7 space-y-6 max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-lg rounded-2xl sm:rounded-3xl border border-[var(--admin-border)] bg-[var(--admin-card)] text-[var(--admin-text-primary)] shadow-2xl p-5 sm:p-7 space-y-5 sm:space-y-6 max-h-[92dvh] overflow-y-auto"
       >
-        <div className="flex items-start space-x-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
-            <Sparkles className="w-6 h-6 animate-pulse" />
+        <div>
+          <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-400 text-[11px] font-bold uppercase tracking-wider">
+            <span>Public Beta Preview</span>
           </div>
-          <div>
-            <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-400 text-[11px] font-bold uppercase tracking-wider">
-              <span>Public Beta Preview</span>
-            </div>
-            <h2 id="beta-modal-title" className="text-xl font-bold text-[var(--admin-text-primary)] tracking-tight mt-1">
-              Welcome to MosqueSignage
-            </h2>
-          </div>
+          <h2 id="beta-modal-title" className="text-xl font-bold text-[var(--admin-text-primary)] tracking-tight mt-1">
+            Welcome to MosqueSignage
+          </h2>
         </div>
 
         <div className="space-y-3 text-xs sm:text-sm text-[var(--admin-text-secondary)] leading-relaxed">

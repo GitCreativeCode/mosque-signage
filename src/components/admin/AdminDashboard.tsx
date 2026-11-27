@@ -10,20 +10,30 @@ import type {
   PrayerRule,
 } from '@/types/index';
 import type { DbJummahShiftRecord } from '@/lib/actions/jummah';
-import { useAppTheme } from '@/lib/theme/theme-sync';
+import { useAppTheme, type ThemePreference } from '@/lib/theme/theme-sync';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
+import dynamic from 'next/dynamic';
 import { useAdminNavigation, type AdminTabKey } from '@/hooks/useAdminNavigation';
 import { useAdminLiveSync } from '@/hooks/useAdminLiveSync';
 import { broadcastSignageEvent } from '@/lib/events/broadcast-channel';
 import { PosterList } from './posters/PosterList';
-import { PrayerScheduleManager } from './PrayerScheduleManager';
-import { VenueSettingsForm } from './VenueSettingsForm';
 import { AdminPinGate } from './AdminPinGate';
 import { AdminTopbar } from './AdminTopbar';
 import { AdminModalsPortal } from './AdminModalsPortal';
+import { AdminLoadingFallback } from './common/AdminLoadingFallback';
 import { SiteFooter } from '../common/SiteFooter';
 import { triggerBetaNoticeReset } from '../common/BetaNoticeModal';
 import { resetPrayerDisclaimer } from './prayer/PrayerCalculationDisclaimer';
+
+const DynamicPrayerScheduleManager = dynamic(
+  () => import('./PrayerScheduleManager').then((m) => m.PrayerScheduleManager),
+  { loading: () => <AdminLoadingFallback label="Loading prayer schedule manager..." /> }
+);
+
+const DynamicVenueSettingsForm = dynamic(
+  () => import('./VenueSettingsForm').then((m) => m.VenueSettingsForm),
+  { loading: () => <AdminLoadingFallback label="Loading system settings..." /> }
+);
 
 export interface AdminDashboardProps {
   readonly initialSettings: Settings;
@@ -36,6 +46,7 @@ export interface AdminDashboardProps {
   readonly initialTab?: AdminTabKey | undefined;
   readonly initialSubTab?: string | undefined;
   readonly initialTheme?: 'light' | 'dark' | undefined;
+  readonly initialPreference?: ThemePreference | undefined;
   readonly hasAnnualSchedule?: boolean | undefined;
 }
 
@@ -50,6 +61,7 @@ export function AdminDashboard({
   initialTab = 'POSTERS',
   initialSubTab,
   initialTheme = 'dark',
+  initialPreference = 'system',
   hasAnnualSchedule = false,
 }: AdminDashboardProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(initialIsAuthenticated);
@@ -58,21 +70,29 @@ export function AdminDashboard({
   const [isInitialSetupModalOpen, setIsInitialSetupModalOpen] = useState(
     initialIsAuthenticated && !initialSettings.initial_setup_completed
   );
+  const [isFactoryResetModalOpen, setIsFactoryResetModalOpen] = useState(false);
   const [showPwaModal, setShowPwaModal] = useState(false);
-  const hasOpenedInitialSetupRef = useRef(isInitialSetupModalOpen);
+  const hasOpenedInitialSetupRef = useRef(
+    Boolean(initialSettings.initial_setup_completed) || isInitialSetupModalOpen
+  );
 
   const router = useRouter();
   const { isInstalled: isPwaInstalled, isStandalone: isPwaStandalone } = usePwaInstall();
-  const { theme, toggleTheme } = useAppTheme(initialTheme);
+  const { theme, preference, toggleTheme } = useAppTheme(initialTheme, initialPreference);
   const nav = useAdminNavigation(initialTab, initialSubTab);
   const sync = useAdminLiveSync(initialSettings, initialPosters, initialIsAuthenticated);
 
   useEffect(() => {
-    if (isAuthenticated && !sync.settings.initial_setup_completed && !hasOpenedInitialSetupRef.current) {
+    if (
+      isAuthenticated &&
+      !sync.settings.initial_setup_completed &&
+      !hasOpenedInitialSetupRef.current &&
+      !isFactoryResetModalOpen
+    ) {
       hasOpenedInitialSetupRef.current = true;
       setIsInitialSetupModalOpen(true);
     }
-  }, [isAuthenticated, sync.settings.initial_setup_completed]);
+  }, [isAuthenticated, sync.settings.initial_setup_completed, isFactoryResetModalOpen]);
 
   const handleLockAdmin = async () => {
     try {
@@ -80,6 +100,8 @@ export function AdminDashboard({
       await logoutAdmin();
       sync.clearPosters();
       setIsAuthenticated(false);
+      setIsFactoryResetModalOpen(false);
+      setIsInitialSetupModalOpen(false);
       router.refresh();
     } catch (err) {
       console.error('Failed to lock admin panel:', err);
@@ -109,7 +131,7 @@ export function AdminDashboard({
 
   return (
     <div
-      className={`min-h-screen ${
+      className={`min-h-screen overflow-x-hidden ${
         theme === 'light' ? 'admin-theme-light' : 'admin-theme-dark'
       } bg-[var(--admin-bg)] text-[var(--admin-text-primary)] flex flex-col font-sans selection:bg-[var(--admin-accent)]/20 transition-colors duration-200`}
     >
@@ -119,6 +141,7 @@ export function AdminDashboard({
         prayerSubTab={nav.prayerSubTab}
         settingsSubTab={nav.settingsSubTab}
         theme={theme}
+        themePreference={preference}
         isPwaInstalled={isPwaInstalled}
         isPwaStandalone={isPwaStandalone}
         onNavigate={nav.handleNavAction}
@@ -130,7 +153,7 @@ export function AdminDashboard({
         onOpenPwaModal={() => setShowPwaModal(true)}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 py-4 sm:py-6 space-y-5 sm:space-y-6">
         {nav.activeTab === 'POSTERS' && (
           <div id="panel-posters" role="tabpanel" aria-labelledby="tab-posters">
             <PosterList
@@ -146,7 +169,7 @@ export function AdminDashboard({
 
         {nav.activeTab === 'PRAYERS' && (
           <div id="panel-prayers" role="tabpanel" aria-labelledby="tab-prayers">
-            <PrayerScheduleManager
+            <DynamicPrayerScheduleManager
               settings={sync.settings}
               prayers={initialPrayers}
               initialOverrides={initialOverrides}
@@ -163,20 +186,22 @@ export function AdminDashboard({
 
         {nav.activeTab === 'SETTINGS' && (
           <div id="panel-settings" role="tabpanel" aria-labelledby="tab-settings">
-            <VenueSettingsForm
+            <DynamicVenueSettingsForm
               settings={sync.settings}
               initialSubTab={initialSubTab}
               activeCategoryProp={nav.settingsSubTab}
               onCategoryChange={nav.setSettingsSubTab}
               hasAnnualSchedule={hasAnnualSchedule}
+              onResetModalStateChange={setIsFactoryResetModalOpen}
               onRefresh={() => { sync.refreshSettings(); broadcastSignageEvent({ type: 'SETTINGS_UPDATED' }); }}
               onResetSuccessWithSetup={() => {
+                setIsFactoryResetModalOpen(false);
                 triggerBetaNoticeReset();
                 resetPrayerDisclaimer();
                 sync.refreshSettings();
                 sync.refreshPosters();
                 nav.applyNavigation('POSTERS');
-                hasOpenedInitialSetupRef.current = false;
+                hasOpenedInitialSetupRef.current = true;
                 setIsInitialSetupModalOpen(true);
               }}
               onDirtyChange={nav.setHasUnsavedChanges}
@@ -192,7 +217,7 @@ export function AdminDashboard({
         quickActionNotice={sync.quickActionNotice}
         isUploadModalOpen={isUploadModalOpen}
         isAnnouncementModalOpen={isAnnouncementModalOpen}
-        isInitialSetupModalOpen={isInitialSetupModalOpen}
+        isInitialSetupModalOpen={isInitialSetupModalOpen && !isFactoryResetModalOpen}
         showPwaModal={showPwaModal}
         showLeaveConfirmation={nav.showLeaveConfirmation}
         onCloseUpload={() => setIsUploadModalOpen(false)}

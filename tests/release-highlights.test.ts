@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   sanitizeReleaseMarkdown,
   parseReleaseSections,
+  extractFirstReleaseParagraph,
 } from '@/components/common/ReleaseHighlightsView';
 
 describe('Release Highlights Markdown Formatter', () => {
@@ -38,6 +39,19 @@ ___
     expect(sanitized).not.toMatch(/^[ \t]*[-*_]{3,}[ \t]*$/m);
   });
 
+  it('does not truncate text containing comparisons or brackets like (< 2025)', () => {
+    const raw = `
+### Improvements & Bug Fixes
+- Added support for legacy events (< 2025) across all calendars.
+- Preserved display timestamps.
+`;
+    const sanitized = sanitizeReleaseMarkdown(raw);
+    expect(sanitized).toContain('legacy events (< 2025)');
+    expect(sanitized).toContain('Preserved display timestamps.');
+    const sections = parseReleaseSections(sanitized);
+    expect(sections[0]?.items[0]).toContain('(< 2025)');
+  });
+
   it('parses sections with headings and bullet items correctly', () => {
     const raw = `
 ### Visual Design & UI Enhancements
@@ -64,6 +78,41 @@ ___
   it('handles empty or undefined inputs gracefully without throwing', () => {
     expect(sanitizeReleaseMarkdown('')).toBe('');
     expect(parseReleaseSections('')).toEqual([]);
+    expect(extractFirstReleaseParagraph('')).toBe('');
+  });
+
+  it('extracts only the opening summary paragraph from full GitHub release markdown', () => {
+    const raw = `
+Comprehensive release delivering prayer schedule upgrades and studio tools.
+Supports multi-shift Jummah and Eid workflows.
+
+### Key Highlights
+- Feature 1
+- Feature 2
+
+---
+<details>
+<summary>How to Download</summary>
+1. Click zip
+</details>
+`;
+    const first = extractFirstReleaseParagraph(raw);
+    expect(first).toBe(
+      'Comprehensive release delivering prayer schedule upgrades and studio tools. Supports multi-shift Jummah and Eid workflows.'
+    );
+    expect(first).not.toContain('Key Highlights');
+    expect(first).not.toContain('Feature 1');
+    expect(first).not.toContain('How to Download');
+  });
+
+  it('falls back cleanly to the first bullet item when release markdown starts directly with a heading', () => {
+    const raw = `
+### New Features
+- Added automatic update polling.
+- Improved display scaling.
+`;
+    const first = extractFirstReleaseParagraph(raw);
+    expect(first).toBe('Added automatic update polling.');
   });
 });
 
@@ -74,10 +123,10 @@ describe('Canonical Release Notes Formatter Script (release-notes-builder.ts)', 
     expect(rel013.version).toBe('0.1.3');
 
     const latest = resolveReleaseItem();
-    expect(latest.version).toBe('0.1.3');
+    expect(latest.version).toBe('0.2.0');
 
     const fallback = resolveReleaseItem('999.0.0');
-    expect(fallback.version).toBe('0.1.3');
+    expect(fallback.version).toBe('0.2.0');
   });
 
   it('builds canonical title prefixed with MosqueSignage', async () => {

@@ -11,6 +11,7 @@ import type {
   PrayerSlot,
   PrayerTimesToday,
 } from '@/types/index';
+import { timeToMinutes } from '@/lib/utils/time';
 import {
   formatHHMM,
   getCalculationParameters,
@@ -104,27 +105,47 @@ function resolvePrayerSlot(
     prayer, rawDate, baseDate, timezone, options, override
   );
 
+  let rawIqamah = '--:--';
+  let isRuleDerived = false;
+
   if (override?.iqamah_time && override.iqamah_time.trim().length > 0) {
-    return { adhan_time: adhanTimeStr, iqamah_time: override.iqamah_time.trim() };
+    rawIqamah = override.iqamah_time.trim();
+  } else {
+    const annualKey = `${prayer.toLowerCase()}_iqamah` as keyof AnnualScheduleDay;
+    const annualIqamah = options?.annualSchedule?.[annualKey];
+    if (annualIqamah && annualIqamah.trim().length > 0) {
+      rawIqamah = annualIqamah.trim();
+    } else {
+      const ruleIqamah = resolveRuleIqamah(prayer, effectiveAdhanDate, timezone, options?.rules);
+      if (ruleIqamah) {
+        rawIqamah = ruleIqamah;
+        isRuleDerived = true;
+      } else if (effectiveAdhanDate) {
+        const fallbackDate = new Date(effectiveAdhanDate.getTime() + defaultOffsetMin * 60 * 1000);
+        rawIqamah = formatHHMM(fallbackDate, timezone);
+      }
+    }
   }
 
-  const annualKey = `${prayer.toLowerCase()}_iqamah` as keyof AnnualScheduleDay;
-  const annualIqamah = options?.annualSchedule?.[annualKey];
-  if (annualIqamah && annualIqamah.trim().length > 0) {
-    return { adhan_time: adhanTimeStr, iqamah_time: annualIqamah.trim() };
+  // Smart Clamping: If solar Adhan shifts later than fixed Iqamah rule, clamp Iqamah to Adhan + 5 min
+  let isClamped = false;
+  if (
+    isRuleDerived &&
+    prayer !== 'sunrise' &&
+    effectiveAdhanDate &&
+    rawIqamah !== '--:--' &&
+    adhanTimeStr !== '--:--'
+  ) {
+    const adhanMins = timeToMinutes(adhanTimeStr);
+    const iqamahMins = timeToMinutes(rawIqamah);
+    if (iqamahMins < adhanMins + 5) {
+      const clampedDate = new Date(effectiveAdhanDate.getTime() + 5 * 60 * 1000);
+      rawIqamah = formatHHMM(clampedDate, timezone);
+      isClamped = true;
+    }
   }
 
-  const ruleIqamah = resolveRuleIqamah(prayer, effectiveAdhanDate, timezone, options?.rules);
-  if (ruleIqamah) {
-    return { adhan_time: adhanTimeStr, iqamah_time: ruleIqamah };
-  }
-
-  if (effectiveAdhanDate) {
-    const fallbackDate = new Date(effectiveAdhanDate.getTime() + defaultOffsetMin * 60 * 1000);
-    return { adhan_time: adhanTimeStr, iqamah_time: formatHHMM(fallbackDate, timezone) };
-  }
-
-  return { adhan_time: adhanTimeStr, iqamah_time: '--:--' };
+  return { adhan_time: adhanTimeStr, iqamah_time: rawIqamah, is_clamped: isClamped };
 }
 
 /**
@@ -138,7 +159,7 @@ export function calculateDailySchedule(
 ): PrayerTimesToday {
   const timezone = options?.timezone ?? 'America/Toronto';
   const targetIsoDate = new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(date);
-  const parameters = getCalculationParameters(options?.method ?? 'NorthAmerica');
+  const parameters = getCalculationParameters(options?.method ?? 'NorthAmerica', options?.highLatitudeRule);
   parameters.madhab = options?.madhab === 'hanafi' ? Madhab.Hanafi : Madhab.Shafi;
 
   const hasCoords =

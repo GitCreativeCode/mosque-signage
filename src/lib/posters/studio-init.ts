@@ -30,6 +30,8 @@ export interface ParsedInitialStudioConfig {
   readonly hasQr: boolean;
   readonly qrLabel: string;
   readonly qrPosition: QrPosition;
+  readonly qrStartAt: string | null;
+  readonly qrEndAt: string | null;
   readonly startAt: string;
   readonly endAt: string;
   readonly isIndefinite: boolean;
@@ -55,6 +57,8 @@ export function buildInitialStateFromPoster(poster: Poster): ParsedInitialStudio
     hasQr: Boolean(poster.qr_url),
     qrLabel: poster.qr_label || 'Scan to Register',
     qrPosition: (poster.qr_position as QrPosition) || 'bottom-left',
+    qrStartAt: poster.qr_start_at ?? null,
+    qrEndAt: poster.qr_end_at ?? null,
     startAt: poster.start_at ? toLocalDatetimeString(new Date(poster.start_at)) : toLocalDatetimeString(new Date()),
     endAt: poster.end_at ? toLocalDatetimeString(new Date(poster.end_at)) : '',
     isIndefinite: !poster.end_at,
@@ -72,7 +76,7 @@ export function buildInitialStateFromPoster(poster: Poster): ParsedInitialStudio
         ...base,
         archetype: safeArch,
         splitRatio: cfg.split_ratio || 50,
-        gridGap: cfg.grid_gap || 'normal',
+        gridGap: cfg.grid_gap || 'none',
         canvasBackground: cfg.canvas_background ?? 'black',
         canvasBackgroundCustom: cfg.canvas_background_custom ?? '',
         snapshot: {
@@ -103,7 +107,7 @@ export function buildInitialStateFromPoster(poster: Poster): ParsedInitialStudio
     ...base,
     archetype: 'split_vertical',
     splitRatio: 50,
-    gridGap: 'normal',
+    gridGap: 'none',
     canvasBackground: 'black',
     canvasBackgroundCustom: '',
     snapshot: { ...createEmptyStudioSnapshot(), slots: [singleSlot], rootOrder: [`slot:${singleSlot.id}`] },

@@ -34,11 +34,18 @@ export type IslamicStickerType =
   | 'bismillah'
   | 'kaaba'
   | 'tasbih'
+  | 'quran_rehal'
+  | 'alhamdulillah'
+  | 'mashaallah'
+  | 'subhanallah'
+  | 'mihrab_arch'
+  | 'dates_dallah'
   | 'badge_custom';
 
 export type BadgeVariant = 'red' | 'gold' | 'emerald' | 'blue' | 'purple' | 'amber';
 export type TextOverlayFont = 'sans' | 'serif' | 'mono' | 'traditional';
-export type TextOverlaySize = 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl';
+export type TextOverlaySizePreset = 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl';
+export type TextOverlaySize = TextOverlaySizePreset | number;
 export type TextOverlayBgStyle = 'dark' | 'glass' | 'emerald' | 'gold' | 'transparent';
 export type TextOverlayPositionPreset =
   | 'top_banner'
@@ -93,6 +100,9 @@ export interface PosterSlotMedia {
   readonly video_duration_seconds?: number | undefined;
   readonly video_loop_count?: number | undefined;
   readonly notice_headline?: string | undefined;
+  readonly notice_headline_italic?: boolean | undefined;
+  readonly notice_headline_underline?: boolean | undefined;
+  readonly notice_headline_align?: 'left' | 'center' | 'right' | undefined;
   readonly notice_description?: string | undefined;
   readonly notice_theme?: NoticeTheme | undefined;
   readonly notice_font?: TextOverlayFont | undefined;
@@ -117,8 +127,12 @@ export interface PosterTextOverlay {
   readonly pos_y?: number | undefined;
   readonly pos_x?: number | undefined;
   readonly rotation?: number | undefined;
+  readonly scale_x?: number | undefined;
+  readonly scale_y?: number | undefined;
   readonly width_mode?: 'fit' | 'full' | 'custom' | undefined;
   readonly width_percent?: number | undefined;
+  readonly bg_opacity?: number | undefined;
+  readonly box_fit?: 'block' | 'hug_lines' | undefined;
   readonly layer_folder_id?: string | undefined;
   readonly is_hidden?: boolean | undefined;
   readonly is_locked?: boolean | undefined;

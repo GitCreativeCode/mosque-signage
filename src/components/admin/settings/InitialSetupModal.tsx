@@ -5,6 +5,7 @@ import { AlertTriangle, ArrowLeft, ArrowRight, Loader2, X } from 'lucide-react';
 import type { Settings } from '@/types/index';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useInitialSetupModal } from '@/hooks/useInitialSetupModal';
+import { useAppTheme } from '@/lib/theme/theme-sync';
 import { InitialSetupIdentityStep } from './InitialSetupIdentityStep';
 import { InitialSetupLocationStep } from './InitialSetupLocationStep';
 import { InitialSetupScreenStep } from './InitialSetupScreenStep';
@@ -25,6 +26,7 @@ export const STEP_LABELS: Record<number, string> = {
 export function InitialSetupModal({ isOpen, settings, onClose, onComplete }: InitialSetupModalProps) {
   const isTermsAlreadyAccepted = Boolean(settings.terms_accepted);
   const s = useInitialSetupModal(isOpen, settings, onComplete, onClose);
+  const { preference: themePref, setPreference: setThemePref } = useAppTheme();
   const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -46,16 +48,16 @@ export function InitialSetupModal({ isOpen, settings, onClose, onComplete }: Ini
       aria-modal="true"
       aria-labelledby="initial-setup-title"
       tabIndex={-1}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4"
     >
       <div
         className="fixed -inset-8 bg-black/80 backdrop-blur-md animate-fadeIn"
         aria-hidden="true"
         onClick={isTermsAlreadyAccepted ? onClose : undefined}
       />
-      <div className="relative w-full max-w-xl rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-card)] text-[var(--admin-text-primary)] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
-        <div className="px-6 pt-5 pb-4 border-b border-[var(--admin-border)] bg-[var(--admin-surface)]/60 flex items-start justify-between">
-          <div className="space-y-1">
+      <div className="relative w-full h-[100dvh] sm:h-auto sm:max-w-xl rounded-none sm:rounded-2xl border-0 sm:border border-[var(--admin-border)] bg-[var(--admin-card)] text-[var(--admin-text-primary)] shadow-2xl overflow-hidden flex flex-col sm:max-h-[92dvh]">
+        <div className="px-4 sm:px-6 pt-4 sm:pt-5 pb-3.5 sm:pb-4 border-b border-[var(--admin-border)] bg-[var(--admin-surface)]/60 flex items-start justify-between gap-2 shrink-0">
+          <div className="space-y-1 min-w-0">
             <h2 id="initial-setup-title" className="text-base font-bold tracking-tight text-[var(--admin-text-primary)]">
               Initial Venue Configuration
             </h2>
@@ -68,7 +70,7 @@ export function InitialSetupModal({ isOpen, settings, onClose, onComplete }: Ini
               type="button"
               onClick={onClose}
               disabled={s.isSaving}
-              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)] hover:bg-[var(--admin-surface)] transition cursor-pointer disabled:opacity-30"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)] hover:bg-[var(--admin-surface)] transition cursor-pointer disabled:opacity-30 shrink-0"
               aria-label="Close setup modal"
             >
               <X className="w-4 h-4" />
@@ -76,23 +78,23 @@ export function InitialSetupModal({ isOpen, settings, onClose, onComplete }: Ini
           )}
         </div>
 
-        <div className="px-6 py-2.5 bg-[var(--admin-card)] border-b border-[var(--admin-border)]/60 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-2.5 bg-[var(--admin-card)] border-b border-[var(--admin-border)]/60 flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-2 w-full">
             {[1, 2, 3].map((idx) => (
               <div
                 key={idx}
-                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all ${
+                className={`py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-1.5 sm:space-x-2 transition-all ${
                   s.step === idx
-                    ? 'border border-[var(--admin-tab-active-border)] bg-[var(--admin-surface)] text-[var(--admin-text-primary)] font-bold shadow-xs'
+                    ? 'flex-1 border border-[var(--admin-tab-active-border)] bg-[var(--admin-surface)] text-[var(--admin-text-primary)] font-bold shadow-xs'
                     : s.step > idx
-                      ? 'border border-[var(--admin-border)] bg-[var(--admin-surface)]/60 text-[var(--admin-text-primary)]'
-                      : 'border border-[var(--admin-border)] text-[var(--admin-text-muted)] opacity-60'
+                      ? 'sm:flex-1 border border-[var(--admin-border)] bg-[var(--admin-surface)]/60 text-[var(--admin-text-primary)]'
+                      : 'sm:flex-1 border border-[var(--admin-border)] text-[var(--admin-text-muted)] opacity-60'
                 }`}
               >
-                <span className="w-4 h-4 rounded-full bg-[var(--admin-border)] text-[var(--admin-text-secondary)] flex items-center justify-center text-[10px] font-bold">
+                <span className="w-4 h-4 rounded-full bg-[var(--admin-border)] text-[var(--admin-text-secondary)] flex items-center justify-center text-[10px] font-bold shrink-0">
                   {idx}
                 </span>
-                <span className="text-[11px] truncate">
+                <span className={`text-[11px] truncate ${s.step === idx ? 'inline' : 'hidden sm:inline'}`}>
                   {STEP_LABELS[idx]}
                 </span>
               </div>
@@ -100,7 +102,7 @@ export function InitialSetupModal({ isOpen, settings, onClose, onComplete }: Ini
           </div>
         </div>
 
-        <div ref={scrollContainerRef} className="p-6 overflow-y-auto space-y-5 text-xs leading-relaxed select-text">
+        <div ref={scrollContainerRef} className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-5 text-xs leading-relaxed select-text">
           {s.error && (
             <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs font-medium flex items-center space-x-2">
               <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -112,9 +114,11 @@ export function InitialSetupModal({ isOpen, settings, onClose, onComplete }: Ini
               mosqueName={s.mosqueName}
               headerGreeting={s.headerGreeting}
               tickerText={s.tickerText}
+              themePreference={themePref}
               onChangeMosqueName={s.setMosqueName}
               onChangeHeaderGreeting={s.setHeaderGreeting}
               onChangeTickerText={s.setTickerText}
+              onChangeThemePreference={setThemePref}
             />
           )}
           {s.step === 2 && (
@@ -144,7 +148,7 @@ export function InitialSetupModal({ isOpen, settings, onClose, onComplete }: Ini
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-[var(--admin-border)] bg-[var(--admin-surface)]/60 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-t border-[var(--admin-border)] bg-[var(--admin-surface)]/60 flex items-center justify-between gap-2 shrink-0">
           <div>
             {s.step > 1 ? (
               <button

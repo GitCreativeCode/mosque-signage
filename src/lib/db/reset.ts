@@ -14,9 +14,12 @@ import {
   prayerRulesTable,
   annualSchedulesTable,
   jummahShiftsTable,
+  fridayKhateebRosterTable,
+  eidShiftsTable,
   tickerMessagesTable,
 } from './schema';
 import { runSerializedTransaction } from './tx';
+import { hashPin } from '@/lib/auth/crypto';
 import { eventBus } from '@/lib/events/event-bus';
 import { ensureDefaultPosterAssets } from './seed';
 import {
@@ -34,7 +37,6 @@ export interface FactoryResetOptions {
 
 const PRESERVED_UPLOAD_NAMES = new Set([
   'posters',
-  'frames',
   'Mosque_Signage_Welcome.webp',
   'Mosque_Signage_Ramadan.webp',
 ]);
@@ -70,23 +72,12 @@ function purgeCustomUploadFiles(targetUploadsDir: string): void {
   }
 }
 
-interface ExistingAuthInfo {
-  readonly pinHash: string | null;
-  readonly pinSalt: string | null;
-  readonly sessionVersion: number;
-}
-
-async function readExistingAuthInfo(targetDb: typeof db): Promise<ExistingAuthInfo> {
+async function readExistingSessionVersion(targetDb: typeof db): Promise<number> {
   try {
     const rows = await targetDb.select().from(settingsTable).where(eq(settingsTable.id, 'global'));
-    const first = rows[0];
-    return {
-      pinHash: first?.admin_pin_hash ?? null,
-      pinSalt: first?.admin_pin_salt ?? null,
-      sessionVersion: first?.session_version ?? 1,
-    };
+    return rows[0]?.session_version ?? 1;
   } catch {
-    return { pinHash: null, pinSalt: null, sessionVersion: 1 };
+    return 1;
   }
 }
 
@@ -95,8 +86,9 @@ export async function executeFactoryResetCore(
 ): Promise<{ sessionVersion: number }> {
   const targetDb = options?.dbOverride ?? db;
   const targetUploadsDir = options?.uploadsDirOverride ?? path.resolve(process.cwd(), 'public/uploads');
-  const authInfo = await readExistingAuthInfo(targetDb);
-  const nextSessionVersion = authInfo.sessionVersion + 1;
+  const currentSessionVersion = await readExistingSessionVersion(targetDb);
+  const nextSessionVersion = currentSessionVersion + 1;
+  const defaultPin = hashPin('1234');
   const nowIso = (options?.now ?? new Date()).toISOString();
 
   await runSerializedTransaction(targetDb, async (tx) => {
@@ -105,13 +97,15 @@ export async function executeFactoryResetCore(
     await tx.delete(prayerRulesTable);
     await tx.delete(annualSchedulesTable);
     await tx.delete(jummahShiftsTable);
+    await tx.delete(fridayKhateebRosterTable);
+    await tx.delete(eidShiftsTable);
     await tx.delete(tickerMessagesTable);
     await tx.delete(settingsTable);
 
     await tx.insert(settingsTable).values(
       buildDefaultSettingsRow(
         nowIso,
-        { hash: authInfo.pinHash, salt: authInfo.pinSalt },
+        { hash: defaultPin.hash, salt: defaultPin.salt },
         nextSessionVersion
       )
     );

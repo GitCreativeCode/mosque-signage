@@ -22,8 +22,8 @@ export function AdminPinGate({
   const isPasswordMode = authMode === 'password';
 
   return (
-    <div className="min-h-screen bg-[var(--admin-bg)] flex flex-col items-center justify-center p-4 selection:bg-neutral-700">
-      <div className="w-full max-w-sm bg-[var(--admin-card)] border border-[var(--admin-border)] rounded-2xl p-6 shadow-2xl text-[var(--admin-text-primary)] space-y-6 animate-fadeIn">
+    <div className="min-h-[100dvh] bg-[var(--admin-bg)] flex flex-col items-center justify-center p-3 sm:p-4 selection:bg-neutral-700">
+      <div className="w-full max-w-sm bg-[var(--admin-card)] border border-[var(--admin-border)] rounded-2xl p-5 sm:p-6 shadow-2xl text-[var(--admin-text-primary)] space-y-5 sm:space-y-6 animate-fadeIn">
         {/* Header Branding */}
         <div className="text-center space-y-1.5">
           <div className="w-12 h-12 rounded-2xl bg-[var(--admin-surface)] border border-[var(--admin-border)] flex items-center justify-center mx-auto text-[var(--admin-text-primary)] shadow-sm">

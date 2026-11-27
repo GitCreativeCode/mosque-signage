@@ -69,11 +69,10 @@ export function PosterLivePreview({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
+      <div>
         <label className="block text-xs font-semibold text-[var(--admin-text-secondary)]">
-          Live Display Preview (16:9 Broadcast)
+          Live Display Preview
         </label>
-        <span className="text-[var(--admin-text-muted)] font-mono text-[11px]">1920 × 1080 Aspect Ratio</span>
       </div>
 
       <div
@@ -113,26 +112,12 @@ export function PosterLivePreview({
               />
             )}
 
-            {/* Top-Left Controls: Replace Image/Video & Add More Media (Split Screen) */}
+            {/* Top-Left Controls: Replace Image/Video */}
             <div className="absolute top-2.5 left-2.5 z-20 flex items-center space-x-2">
               {onReplaceImage && (
                 <div className="bg-black/75 hover:bg-black/90 backdrop-blur-md px-2.5 py-1 rounded-lg text-[11px] font-medium text-white border border-white/15 shadow-lg flex items-center space-x-1.5 transition">
                   <span>{isVideo ? 'Click to change video clip' : 'Click to change poster image'}</span>
                 </div>
-              )}
-              {onAddMore && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddMore();
-                  }}
-                  className="bg-black/75 hover:bg-black/90 active:scale-95 backdrop-blur-md px-2.5 py-1 rounded-lg text-[11px] font-semibold text-white border border-white/20 shadow-lg flex items-center space-x-1.5 transition cursor-pointer"
-                  title="Combine multiple images into a split-screen slide"
-                >
-                  <Columns className="w-3 h-3 text-[var(--admin-text-muted)]" />
-                  <span>+ Add More (Split Screen)</span>
-                </button>
               )}
             </div>
 

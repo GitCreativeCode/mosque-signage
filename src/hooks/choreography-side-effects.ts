@@ -1,7 +1,7 @@
 'use client';
 
 import type { MutableRefObject } from 'react';
-import type { JummahShift, Poster, PrayerTimesToday, Settings } from '@/types/index';
+import type { EidShift, JummahShift, Poster, PrayerTimesToday, Settings } from '@/types/index';
 import { computeDisplaySnapshot, getActivePosters, shouldTriggerDrawer } from '@/lib/engine/index';
 import {
   buildPowerConfigFromSettings,
@@ -9,6 +9,7 @@ import {
   posterContainsVideo,
 } from '@/lib/engine/choreography-helpers';
 import { isScreenInPowerWindow } from '@/lib/hardware/power-engine';
+import { isPosterQrActive } from '@/lib/posters/qr-schedule';
 
 export interface ManualPowerOverride {
   readonly state: 'ON' | 'STANDBY';
@@ -35,6 +36,7 @@ export interface ChoreographyMutableState {
   lastDrawerTrigger: Date;
   timeOverrideMinutes: number | null;
   isFridayForced: boolean;
+  isEidForced?: boolean | undefined;
   isQrVisible: boolean;
   manualPowerOverride: ManualPowerOverride | null;
 }
@@ -44,6 +46,7 @@ export interface ChoreographyLiveProps {
   initialPosters: readonly Poster[];
   prayers: PrayerTimesToday;
   jummahShifts: readonly JummahShift[];
+  eidShifts?: readonly EidShift[] | undefined;
 }
 
 export interface ChoreographyTickSetters {
@@ -123,7 +126,9 @@ function rotatePosterOnDwellComplete(
   setters.setSlideElapsedSeconds(0);
   setTimeout(() => setters.setIsCrossFading(false), 600);
   if (!isAlwaysOpen) return;
-  const nextHasQr = Boolean(activeList[nextIdx]?.qr_url?.trim());
+  const nextHasQr = Boolean(
+    activeList[nextIdx]?.qr_url?.trim() && isPosterQrActive(activeList[nextIdx], currentNow)
+  );
   if (nextHasQr) setTimeout(() => setters.setIsQrVisible(true), 300);
   else setters.setIsQrVisible(false);
 }
@@ -136,7 +141,7 @@ export function processChoreographyTick(
 ): void {
   const currentNow = getEffectiveNow();
   setters.setNow(currentNow);
-  const { settings: curSet, prayers: curPrayers, jummahShifts: curShifts, initialPosters: curPosters } = livePropsRef.current;
+  const { settings: curSet, prayers: curPrayers, jummahShifts: curShifts, initialPosters: curPosters, eidShifts: curEidShifts } = livePropsRef.current;
   const state = stateRef.current;
 
   const inPower = isScreenInPowerWindow(
@@ -150,7 +155,8 @@ export function processChoreographyTick(
   setters.setIsStandby(isStandby);
 
   const snap = computeDisplaySnapshot(
-    curSet, curPosters, curPrayers, curShifts, state.slideIndex, state.lastDrawerTrigger, currentNow
+    curSet, curPosters, curPrayers, curShifts, state.slideIndex, state.lastDrawerTrigger, currentNow,
+    { eidShifts: curEidShifts, forceEid: state.isEidForced }
   );
   const isDndActive = Boolean(curSet.show_prayer_silence_overlay) && !isStandby && snap.next_prayer?.status === 'STARTING_NOW';
   const activeList = getActivePosters(curPosters, currentNow, curSet.timezone);
@@ -170,7 +176,7 @@ export function processChoreographyTick(
     evaluateQrVisibilityOnTick(
       activePoster, activeList.length, nextElapsed, dwell,
       curSet.sidebar_mode === 'always_open', state.isDrawerOpen, curSet,
-      state.isQrVisible
+      state.isQrVisible, currentNow
     )
   );
   if (nextElapsed < dwell) return;

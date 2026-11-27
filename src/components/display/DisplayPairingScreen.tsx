@@ -79,8 +79,8 @@ export function DisplayPairingScreen({ mosqueName, greeting }: DisplayPairingScr
   };
 
   return (
-    <div className="fixed inset-0 bg-[#0d0e12] text-white flex flex-col items-center justify-center p-6 select-none font-sans z-50">
-      <div className="max-w-md w-full bg-[#181a20] border border-[#2a2d36] rounded-2xl p-8 shadow-2xl flex flex-col items-center text-center space-y-6">
+    <div className="fixed inset-0 bg-[#0d0e12] text-white flex flex-col items-center justify-center p-4 sm:p-6 select-none font-sans z-50 overflow-y-auto">
+      <div className="max-w-md w-full bg-[#181a20] border border-[#2a2d36] rounded-2xl p-5 sm:p-8 shadow-2xl flex flex-col items-center text-center space-y-5 sm:space-y-6">
         <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
           <KeyRound className="w-8 h-8" />
         </div>
@@ -114,7 +114,7 @@ export function DisplayPairingScreen({ mosqueName, greeting }: DisplayPairingScr
             }}
             placeholder="••••••"
             aria-label="6-character pairing code"
-            className="w-full text-center text-3xl font-mono tracking-[0.4em] py-3 px-4 rounded-xl border border-[#2e323b] bg-[#111216] text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 font-bold placeholder:tracking-normal placeholder:text-neutral-600"
+            className="w-full text-center text-2xl sm:text-3xl font-mono tracking-[0.25em] sm:tracking-[0.4em] py-3 px-4 rounded-xl border border-[#2e323b] bg-[#111216] text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 font-bold placeholder:tracking-normal placeholder:text-neutral-600"
           />
 
           <button

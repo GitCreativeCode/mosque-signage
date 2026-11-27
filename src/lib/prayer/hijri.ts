@@ -29,6 +29,51 @@ function extractCalendarPartsInTz(
   };
 }
 
+export interface HijriDateParts {
+  readonly day: number;
+  readonly month: number;
+  readonly year: number;
+  readonly monthName: string;
+}
+
+/**
+ * Extracts structured numeric & localized Hijri date parts anchored to the venue timezone.
+ * Hijri months: 8 = Sha'ban, 9 = Ramadan, 10 = Shawwal.
+ */
+export function getHijriDateParts(
+  date: Date,
+  offsetDays: number = 0,
+  timezone: string = 'UTC'
+): HijriDateParts {
+  const { year, month, day } = extractCalendarPartsInTz(date, timezone);
+  const targetDate = new Date(Date.UTC(year, month - 1, day + offsetDays, 12, 0, 0));
+
+  try {
+    const numFormatter = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
+      timeZone: 'UTC',
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+    });
+    const longFormatter = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
+      timeZone: 'UTC',
+      month: 'long',
+    });
+
+    const numParts = numFormatter.formatToParts(targetDate);
+    const longParts = longFormatter.formatToParts(targetDate);
+
+    return {
+      day: Number.parseInt(numParts.find((p) => p.type === 'day')?.value ?? '1', 10) || 1,
+      month: Number.parseInt(numParts.find((p) => p.type === 'month')?.value ?? '1', 10) || 1,
+      year: Number.parseInt(numParts.find((p) => p.type === 'year')?.value ?? '1447', 10) || 1447,
+      monthName: longParts.find((p) => p.type === 'month')?.value ?? '',
+    };
+  } catch {
+    return { day: 1, month: 1, year: 1447, monthName: '' };
+  }
+}
+
 /**
  * Formats a Gregorian date into a deterministic Hijri date string using
  * the Umm al-Qura calendar anchored in the venue's IANA timezone.

@@ -12,6 +12,8 @@ interface NoticeSnapshot {
   readonly qrUrl: string;
   readonly qrLabel: string;
   readonly qrPosition: QrPosition;
+  readonly qrStartAt: string | null;
+  readonly qrEndAt: string | null;
   readonly duration: number;
   readonly isIndefinite: boolean;
   readonly startAt: string;
@@ -36,6 +38,8 @@ function isNoticeSnapshotDirty(snap: NoticeSnapshot | null, current: NoticeSnaps
     (current.hasQr && current.qrUrl.trim() !== snap.qrUrl.trim()) ||
     (current.hasQr && current.qrLabel.trim() !== snap.qrLabel.trim()) ||
     (current.hasQr && current.qrPosition !== snap.qrPosition) ||
+    (current.hasQr && current.qrStartAt !== snap.qrStartAt) ||
+    (current.hasQr && current.qrEndAt !== snap.qrEndAt) ||
     current.duration !== snap.duration ||
     current.isIndefinite !== snap.isIndefinite ||
     current.startAt !== snap.startAt ||
@@ -62,6 +66,8 @@ export function useNoticeEditForm({ poster, onClose, onUpdated, onDirtyChange }:
   const [qrUrl, setQrUrl] = useState<string>(poster.qr_url ?? '');
   const [qrLabel, setQrLabel] = useState<string>(poster.qr_label ?? 'Scan to Learn More');
   const [qrPosition, setQrPosition] = useState<QrPosition>(poster.qr_position ?? 'bottom-left');
+  const [qrStartAt, setQrStartAt] = useState<string | null>(poster.qr_start_at ?? null);
+  const [qrEndAt, setQrEndAt] = useState<string | null>(poster.qr_end_at ?? null);
   const [duration, setDuration] = useState<number>(poster.duration_seconds || 15);
 
   const [isIndefinite, setIsIndefinite] = useState<boolean>(poster.end_at === null || poster.end_at === undefined);
@@ -89,7 +95,7 @@ export function useNoticeEditForm({ poster, onClose, onUpdated, onDirtyChange }:
         if (details?.theme) setSelectedTheme(details.theme);
         initialSnapshotRef.current = {
           headline: loadedHeadline, description: loadedDescription, theme: loadedTheme,
-          hasQr, qrUrl, qrLabel, qrPosition, duration, isIndefinite, startAt, endAt,
+          hasQr, qrUrl, qrLabel, qrPosition, qrStartAt: poster.qr_start_at ?? null, qrEndAt: poster.qr_end_at ?? null, duration, isIndefinite, startAt, endAt,
           recurringSchedule: poster.recurring_schedule ?? null,
         };
       } catch (err) {
@@ -97,7 +103,7 @@ export function useNoticeEditForm({ poster, onClose, onUpdated, onDirtyChange }:
         if (isMounted) {
           initialSnapshotRef.current = {
             headline, description, theme: selectedTheme,
-            hasQr, qrUrl, qrLabel, qrPosition, duration, isIndefinite, startAt, endAt,
+            hasQr, qrUrl, qrLabel, qrPosition, qrStartAt: poster.qr_start_at ?? null, qrEndAt: poster.qr_end_at ?? null, duration, isIndefinite, startAt, endAt,
             recurringSchedule: poster.recurring_schedule ?? null,
           };
         }
@@ -112,7 +118,7 @@ export function useNoticeEditForm({ poster, onClose, onUpdated, onDirtyChange }:
 
   const isDirty = isNoticeSnapshotDirty(initialSnapshotRef.current, {
     headline, description, theme: selectedTheme,
-    hasQr, qrUrl, qrLabel, qrPosition, duration, isIndefinite, startAt, endAt,
+    hasQr, qrUrl, qrLabel, qrPosition, qrStartAt, qrEndAt, duration, isIndefinite, startAt, endAt,
     recurringSchedule,
   });
 
@@ -143,6 +149,8 @@ export function useNoticeEditForm({ poster, onClose, onUpdated, onDirtyChange }:
         qr_url: hasQr && qrUrl.trim() ? qrUrl.trim() : undefined,
         qr_label: hasQr && qrLabel.trim() ? qrLabel.trim() : undefined,
         qr_position: hasQr ? qrPosition : undefined,
+        qr_start_at: hasQr ? qrStartAt : null,
+        qr_end_at: hasQr ? qrEndAt : null,
         recurring_schedule: recurringSchedule,
       });
       onDirtyChange?.(false);
@@ -158,7 +166,8 @@ export function useNoticeEditForm({ poster, onClose, onUpdated, onDirtyChange }:
   return {
     headline, setHeadline, description, setDescription, selectedTheme, setSelectedTheme,
     isLoadingDetails, hasQr, setHasQr, qrUrl, setQrUrl, qrLabel, setQrLabel,
-    qrPosition, setQrPosition, duration, setDuration, isIndefinite, setIsIndefinite,
+    qrPosition, setQrPosition, qrStartAt, setQrStartAt, qrEndAt, setQrEndAt,
+    duration, setDuration, isIndefinite, setIsIndefinite,
     recurringSchedule, setRecurringSchedule,
     startAt, setStartAt, endAt, setEndAt, isSubmitting, error, handleSubmit,
   };

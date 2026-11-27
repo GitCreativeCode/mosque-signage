@@ -630,30 +630,33 @@ describe('Display Choreography & Mutual Exclusion Engine', () => {
     };
 
     it('pins QR permanently visible without blinking when activeCount <= 1', () => {
+      const fixedNow = new Date('2026-01-01T12:00:00Z');
       // Tick 1 (elapsed 1s < entrance delay 3s): not yet visible
-      expect(evaluateQrVisibilityOnTick(posterWithQr, 1, 1, 15, false, false, mockSettings, false)).toBe(false);
+      expect(evaluateQrVisibilityOnTick(posterWithQr, 1, 1, 15, false, false, mockSettings, false, fixedNow)).toBe(false);
 
       // Tick 3 (elapsed 3s >= entrance delay 3s): becomes visible
-      expect(evaluateQrVisibilityOnTick(posterWithQr, 1, 3, 15, false, false, mockSettings, false)).toBe(true);
+      expect(evaluateQrVisibilityOnTick(posterWithQr, 1, 3, 15, false, false, mockSettings, false, fixedNow)).toBe(true);
 
       // Tick 16 (slide loops back to 1s, but currentlyVisible is true): stays visible permanently
-      expect(evaluateQrVisibilityOnTick(posterWithQr, 1, 1, 15, false, false, mockSettings, true)).toBe(true);
+      expect(evaluateQrVisibilityOnTick(posterWithQr, 1, 1, 15, false, false, mockSettings, true, fixedNow)).toBe(true);
 
       // At end of dwell (15s): still visible
-      expect(evaluateQrVisibilityOnTick(posterWithQr, 1, 15, 15, false, false, mockSettings, true)).toBe(true);
+      expect(evaluateQrVisibilityOnTick(posterWithQr, 1, 15, 15, false, false, mockSettings, true, fixedNow)).toBe(true);
     });
 
     it('fades QR before slide transition when activeCount > 1 (multi-slide mode)', () => {
+      const fixedNow = new Date('2026-01-01T12:00:00Z');
       // Tick 3 (elapsed 3s): visible
-      expect(evaluateQrVisibilityOnTick(posterWithQr, 2, 3, 15, false, false, mockSettings, false)).toBe(true);
+      expect(evaluateQrVisibilityOnTick(posterWithQr, 2, 3, 15, false, false, mockSettings, false, fixedNow)).toBe(true);
 
       // Tick 14 (elapsed 14s >= dwell 15s - 1.5s = 13.5s): fades out for slide cross-fade
-      expect(evaluateQrVisibilityOnTick(posterWithQr, 2, 14, 15, false, false, mockSettings, true)).toBe(false);
+      expect(evaluateQrVisibilityOnTick(posterWithQr, 2, 14, 15, false, false, mockSettings, true, fixedNow)).toBe(false);
     });
 
     it('hides QR when drawer opens if show_qr_during_drawer is false', () => {
+      const fixedNow = new Date('2026-01-01T12:00:00Z');
       const settingsNoQrInDrawer = { ...mockSettings, show_qr_during_drawer: false };
-      expect(evaluateQrVisibilityOnTick(posterWithQr, 1, 5, 15, false, true, settingsNoQrInDrawer, true)).toBe(false);
+      expect(evaluateQrVisibilityOnTick(posterWithQr, 1, 5, 15, false, true, settingsNoQrInDrawer, true, fixedNow)).toBe(false);
     });
 
     it('accurately identifies standalone and multi-asset video posters', () => {

@@ -60,7 +60,7 @@ export function EditPosterModal({
         aria-modal="true"
         aria-labelledby="edit-poster-modal-title"
         tabIndex={-1}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4"
       >
         {/* Full-bleed Backdrop extending beyond viewport to eliminate blur kernel edge decay */}
         <div
@@ -69,9 +69,9 @@ export function EditPosterModal({
           onClick={handleRequestClose}
         />
 
-        <div className="relative w-full max-w-2xl bg-[var(--admin-card)] border border-[var(--admin-border)] rounded-2xl shadow-2xl p-6 md:p-8 max-h-[90vh] overflow-y-auto text-[var(--admin-text-primary)]">
+        <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[90dvh] sm:max-w-2xl bg-[var(--admin-card)] border-0 sm:border border-[var(--admin-border)] rounded-none sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden text-[var(--admin-text-primary)]">
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-[var(--admin-border)] mb-6">
+          <div className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-3.5 sm:py-4 border-b border-[var(--admin-border)] bg-[var(--admin-surface)]/50 shrink-0">
             <div>
               <h2 id="edit-poster-modal-title" className="text-base font-bold text-[var(--admin-text-primary)] tracking-tight">
                 {isNotice ? 'Edit Notice Slide' : 'Edit Poster Flyer'}
@@ -90,27 +90,29 @@ export function EditPosterModal({
             </button>
           </div>
 
-          {/* Content Body routed by slide archetype */}
-          {isNotice ? (
-            <NoticeEditForm
-              poster={poster}
-              onClose={onClose}
-              onUpdated={onUpdated}
-              onDirtyChange={setIsDirty}
-              onRequestClose={handleRequestClose}
-              venueTimezone={venueTimezone}
-            />
-          ) : (
-            <MediaEditForm
-              poster={poster}
-              onClose={onClose}
-              onUpdated={onUpdated}
-              onDirtyChange={setIsDirty}
-              onRequestClose={handleRequestClose}
-              onOpenStudio={onOpenStudio}
-              venueTimezone={venueTimezone}
-            />
-          )}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+            {/* Content Body routed by slide archetype */}
+            {isNotice ? (
+              <NoticeEditForm
+                poster={poster}
+                onClose={onClose}
+                onUpdated={onUpdated}
+                onDirtyChange={setIsDirty}
+                onRequestClose={handleRequestClose}
+                venueTimezone={venueTimezone}
+              />
+            ) : (
+              <MediaEditForm
+                poster={poster}
+                onClose={onClose}
+                onUpdated={onUpdated}
+                onDirtyChange={setIsDirty}
+                onRequestClose={handleRequestClose}
+                onOpenStudio={onOpenStudio}
+                venueTimezone={venueTimezone}
+              />
+            )}
+          </div>
         </div>
       </div>
 

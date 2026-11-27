@@ -50,7 +50,7 @@ export function ConfirmationModal({
         onClick={onCancel}
       />
 
-      <div className="relative w-full max-w-md rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-card)] text-[var(--admin-text-primary)] shadow-2xl p-6 space-y-4">
+      <div className="relative w-full max-w-md rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-card)] text-[var(--admin-text-primary)] shadow-2xl p-5 sm:p-6 space-y-4 max-h-[92dvh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[var(--admin-border)]">
           <div className="flex items-center space-x-2.5">

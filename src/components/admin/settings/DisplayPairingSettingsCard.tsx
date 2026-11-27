@@ -121,33 +121,51 @@ export function DisplayPairingSettingsCard({
       <div className="p-4 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)]/60 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <span className="text-xs font-semibold text-[var(--admin-text-primary)] block">
-              Display Access Mode
-            </span>
-            <span className="text-[11px] text-[var(--admin-text-muted)]">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-semibold text-[var(--admin-text-primary)]">
+                Display Access Mode
+              </span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                isProtected
+                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
+                  : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+              }`}>
+                {isProtected ? 'Protected' : 'Open LAN'}
+              </span>
+            </div>
+            <span className="text-[11px] text-[var(--admin-text-muted)] block mt-0.5">
               {isProtected
-                ? 'Protection Active — New devices must enter a pairing code.'
-                : 'Open Access — Anyone on the network can view /display.'}
+                ? 'Protection Active: External displays on local network must be authorized with a pairing code.'
+                : 'Open Access: Any screen or browser on the local mosque network can immediately display /display.'}
             </span>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="w-full sm:w-auto grid grid-cols-2 sm:inline-flex items-center p-0.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-card)] shrink-0 shadow-xs">
             <button
               type="button"
               disabled={isUpdating}
-              onClick={() => handleToggleMode(isProtected ? 'open' : 'pairing_required')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer flex items-center space-x-1.5 ${
-                isProtected
-                  ? 'bg-amber-100 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/30 text-amber-900 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-500/20'
-                  : 'bg-[var(--admin-surface)] border-[var(--admin-border)] text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] hover:bg-[var(--admin-card-hover)]'
+              onClick={() => handleToggleMode('open')}
+              className={`min-h-[40px] sm:min-h-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center justify-center space-x-1.5 ${
+                !isProtected
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)]'
               }`}
             >
-              {isProtected ? (
-                <ShieldAlert className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
-              ) : (
-                <ShieldCheck className="w-3.5 h-3.5" />
-              )}
-              <span>{isProtected ? 'Protected Mode' : 'Open Mode'}</span>
+              <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+              <span>Open LAN Mode</span>
+            </button>
+            <button
+              type="button"
+              disabled={isUpdating}
+              onClick={() => handleToggleMode('pairing_required')}
+              className={`min-h-[40px] sm:min-h-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center justify-center space-x-1.5 ${
+                isProtected
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)]'
+              }`}
+            >
+              <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+              <span>Protected Mode</span>
             </button>
           </div>
         </div>

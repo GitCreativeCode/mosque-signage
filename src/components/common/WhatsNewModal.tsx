@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Tag, X, ArrowRight, CheckCircle } from 'lucide-react';
+import { Tag, X, ArrowRight } from 'lucide-react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { APP_VERSION, OFFICIAL_RELEASE_HISTORY } from '@/lib/system/version';
 
@@ -54,11 +54,11 @@ export function WhatsNewModal({ forceOpen = false, onClose }: WhatsNewModalProps
       role="dialog"
       aria-modal="true"
       aria-labelledby="whats-new-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
     >
       <div
         ref={modalRef}
-        className="w-full max-w-md rounded-3xl border border-[var(--admin-border)] bg-[var(--admin-card)] text-[var(--admin-text-primary)] shadow-2xl p-6 sm:p-7 space-y-5"
+        className="w-full max-w-md rounded-2xl sm:rounded-3xl border border-[var(--admin-border)] bg-[var(--admin-card)] text-[var(--admin-text-primary)] shadow-2xl p-5 sm:p-7 space-y-5 max-h-[92dvh] overflow-y-auto"
       >
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-3">
@@ -85,18 +85,13 @@ export function WhatsNewModal({ forceOpen = false, onClose }: WhatsNewModalProps
           </button>
         </div>
 
-        <div className="space-y-3">
-          <p className="text-xs font-semibold text-[var(--admin-text-secondary)]">
+        <div className="space-y-2.5">
+          <p className="text-xs font-semibold text-[var(--admin-text-primary)]">
             {currentRelease.title}
           </p>
-          <ul className="space-y-2 text-xs text-[var(--admin-text-muted)] leading-relaxed">
-            {currentRelease.highlights.map((highlight, idx) => (
-              <li key={idx} className="flex items-start space-x-2.5">
-                <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
-                <span>{highlight}</span>
-              </li>
-            ))}
-          </ul>
+          <p className="text-xs text-[var(--admin-text-secondary)] leading-relaxed">
+            {currentRelease.summary || currentRelease.highlights[0]}
+          </p>
         </div>
 
         <div className="pt-2 flex flex-col sm:flex-row items-center gap-2.5">
@@ -105,7 +100,7 @@ export function WhatsNewModal({ forceOpen = false, onClose }: WhatsNewModalProps
             onClick={handleDismiss}
             className="w-full sm:flex-1 py-2.5 px-4 rounded-xl border border-[var(--admin-btn-secondary-border)] bg-[var(--admin-btn-secondary-bg)] hover:bg-[var(--admin-btn-secondary-hover)] text-[var(--admin-btn-secondary-text)] font-semibold text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer"
           >
-            <span>View Full Timeline</span>
+            <span>View Full Changelog</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
 

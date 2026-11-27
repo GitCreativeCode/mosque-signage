@@ -3,6 +3,7 @@ import { FAQ_HARDWARE_ITEMS } from './faq-hardware-data';
 import { FAQ_PRAYER_ITEMS } from './faq-prayer-data';
 import { FAQ_MEDIA_ITEMS } from './faq-media-data';
 import { FAQ_SECURITY_ITEMS } from './faq-security-data';
+import { FAQ_MOBILE_ITEMS } from './faq-mobile-data';
 
 export const FAQ_CATEGORIES: readonly FaqCategory[] = [
   {
@@ -44,6 +45,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
   ...FAQ_PRAYER_ITEMS,
   ...FAQ_MEDIA_ITEMS,
   ...FAQ_SECURITY_ITEMS,
+  ...FAQ_MOBILE_ITEMS,
 ];
 
 export function getFaqItemBySlug(slug: string): FaqItem | undefined {

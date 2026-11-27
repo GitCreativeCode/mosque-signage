@@ -1,10 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { MultiAssetStudioModalProps } from '@/lib/posters/studio-types';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useIsSmallScreen } from '@/hooks/useIsSmallScreen';
 import { useMultiAssetStudio } from '@/hooks/studio/useMultiAssetStudio';
 import { ConfirmationModal } from '../common/ConfirmationModal';
+import { StudioDeviceRequiredModal } from './StudioDeviceRequiredModal';
 import { StudioHeaderBar } from './studio/StudioHeaderBar';
 import { StudioToolDock } from './studio/StudioToolDock';
 import { StudioInspectorDrawer } from './studio/StudioInspectorDrawer';
@@ -15,27 +18,44 @@ export type { MultiAssetStudioModalProps } from '@/lib/posters/studio-types';
 
 /** Interactive 3-zone Creative Layout Studio modal for composite slides, split screens, and freeform canvases. */
 export function MultiAssetStudioModal(props: MultiAssetStudioModalProps) {
+  const [mounted, setMounted] = useState(false);
+  const { isSmallScreen } = useIsSmallScreen();
   const studio = useMultiAssetStudio(props);
   const { historyState, selection, lifecycle, pointer, layerActions, assetActions } = studio;
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const trapRef = useFocusTrap<HTMLDivElement>({
-    isActive: props.isOpen && !lifecycle.showDiscardConfirm,
+    isActive: props.isOpen && !isSmallScreen && !lifecycle.showDiscardConfirm,
     onEscape: lifecycle.handleRequestClose,
   });
 
-  if (!props.isOpen) return null;
+  if (!props.isOpen || !mounted) return null;
 
-  return (
+  if (isSmallScreen) {
+    return createPortal(
+      <StudioDeviceRequiredModal
+        isOpen={props.isOpen}
+        contextLabel={props.initialPoster?.title}
+        onClose={props.onClose}
+      />,
+      document.body
+    );
+  }
+
+  const content = (
     <>
       <div
-        className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200 overscroll-contain"
+        className="fixed inset-0 z-[100] w-screen h-screen bg-[var(--admin-bg)] flex flex-col overflow-hidden text-[var(--admin-text-primary)]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="studio-modal-title"
       >
         <div
           ref={trapRef}
-          className="relative w-full max-w-[96vw] xl:max-w-7xl h-[94vh] flex flex-col bg-[var(--admin-card)] border border-[var(--admin-border)] rounded-3xl shadow-2xl overflow-hidden text-[var(--admin-text-primary)]"
+          className="relative w-full h-full flex flex-col bg-[var(--admin-card)] overflow-hidden text-[var(--admin-text-primary)]"
         >
           <StudioHeaderBar
             slotCount={historyState.slots.length}
@@ -47,6 +67,7 @@ export function MultiAssetStudioModal(props: MultiAssetStudioModalProps) {
             showPreviewQr={lifecycle.showPreviewQr}
             historyIndex={historyState.historyIndex}
             historyLength={historyState.history.length}
+            history={historyState.history}
             isSubmitting={lifecycle.isSubmitting}
             isUploading={lifecycle.isUploading}
             error={lifecycle.error}
@@ -54,6 +75,7 @@ export function MultiAssetStudioModal(props: MultiAssetStudioModalProps) {
             onTogglePreviewQr={() => lifecycle.setShowPreviewQr((p) => !p)}
             onUndo={studio.handleUndo}
             onRedo={studio.handleRedo}
+            onJumpToHistory={(idx) => historyState.jumpToHistoryIndex(idx, selection.deselectAll)}
             onDuplicateSlide={lifecycle.handleDuplicateSlide}
             onSave={lifecycle.handleSave}
             onClose={lifecycle.handleRequestClose}
@@ -93,6 +115,7 @@ export function MultiAssetStudioModal(props: MultiAssetStudioModalProps) {
               qrUrl={lifecycle.qrUrl}
               qrLabel={lifecycle.qrLabel}
               qrPosition={lifecycle.qrPosition}
+              durationSeconds={lifecycle.duration}
               showPreviewQr={lifecycle.showPreviewQr}
               showSafeZone={lifecycle.showSafeZone}
               selectedSlotIndex={selection.selectedSlotIndex}
@@ -115,6 +138,7 @@ export function MultiAssetStudioModal(props: MultiAssetStudioModalProps) {
               onDeselectAll={selection.deselectAll}
               onSelectSlot={selection.selectSlot}
               onToggleLayerSelection={selection.toggleLayerSelection}
+              onSelectMultipleKeys={selection.selectMultipleKeys}
               onReorderSlot={layerActions.handleReorderSlot}
               onCommitSlots={historyState.commitSlots}
               onRequestReplaceSlot={(idx) => {
@@ -132,18 +156,34 @@ export function MultiAssetStudioModal(props: MultiAssetStudioModalProps) {
               }}
               onCommitText={(id, nextText) => {
                 const s = historyState.scene;
-                const nextOverlays = s.textOverlays.map((t) => (t.id === id ? { ...t, text: nextText } : t));
-                historyState.commitScene({ ...s, textOverlays: nextOverlays });
+                if (!nextText.trim()) {
+                  const nextOverlays = s.textOverlays.filter((t) => t.id !== id);
+                  historyState.commitScene({ ...s, textOverlays: nextOverlays }, 'Delete Empty Text');
+                  selection.deselectAll();
+                } else {
+                  const nextOverlays = s.textOverlays.map((t) => (t.id === id ? { ...t, text: nextText } : t));
+                  historyState.commitScene({ ...s, textOverlays: nextOverlays }, 'Edit Text');
+                }
               }}
               onStartResizing={pointer.handleStartResizing}
               onMultiDragStart={pointer.handleMultiDragStart}
               onStartMultiResizing={pointer.handleStartMultiResizing}
               onGroupIntoFolder={layerActions.handleGroupSelectedIntoFolder}
+              onDuplicateSelected={layerActions.handleDuplicateSelectedLayers}
+              onAlignSelected={layerActions.handleAlignSelectedLayers}
+              onBatchBringToFront={layerActions.handleBatchBringToFront}
+              onBatchSendToBack={layerActions.handleBatchSendToBack}
+              onBatchFlipHorizontal={() => layerActions.handleBatchFlip('h')}
+              onBatchFlipVertical={() => layerActions.handleBatchFlip('v')}
               onMergeIntoCompound={layerActions.handleMergeSelectedIntoCompound}
               onToggleLockSelected={layerActions.handleLockSelectedLayers}
               onDeleteSelected={layerActions.handleDeleteSelectedLayers}
               onMoveUp={layerActions.handleMoveLayerUp}
               onMoveDown={layerActions.handleMoveLayerDown}
+              onBringToFront={layerActions.handleBringToFront}
+              onSendToBack={layerActions.handleSendToBack}
+              onAddTextBanner={assetActions.handleAddTextBanner}
+              onOpenStickersTab={() => lifecycle.setActiveTab('stickers')}
               onToggleLock={layerActions.toggleItemLock}
               onDuplicate={layerActions.handleDuplicateLayer}
               onDelete={layerActions.handleDeleteLayer}
@@ -177,4 +217,6 @@ export function MultiAssetStudioModal(props: MultiAssetStudioModalProps) {
       />
     </>
   );
+
+  return createPortal(content, document.body);
 }

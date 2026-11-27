@@ -22,10 +22,14 @@ export const settingsTable = sqliteTable('settings', {
   show_qr_during_drawer: integer('show_qr_during_drawer', { mode: 'boolean' }).notNull().default(false),
   show_mini_prayer_pill: integer('show_mini_prayer_pill', { mode: 'boolean' }).notNull().default(false),
   show_prayer_silence_overlay: integer('show_prayer_silence_overlay', { mode: 'boolean' }).notNull().default(false),
+  silence_screen_subtitle: text('silence_screen_subtitle').default('Please switch mobile phones to silent'),
+  silence_screen_accent_theme: text('silence_screen_accent_theme').notNull().default('green'), // 'green' | 'amber' | 'teal' | 'white'
   mini_prayer_pill_position: text('mini_prayer_pill_position').notNull().default('bottom-right'), // 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
   show_progress_bar: integer('show_progress_bar', { mode: 'boolean' }).notNull().default(true),
   poster_view_mode: text('poster_view_mode').notNull().default('grid'), // 'grid' | 'table'
   overscan_margin_percent: integer('overscan_margin_percent').notNull().default(0), // 0, 2, 4
+  clock_show_seconds: integer('clock_show_seconds', { mode: 'boolean' }).notNull().default(false),
+  clock_time_format: text('clock_time_format').notNull().default('12h'), // '12h' | '24h'
   latitude: real('latitude'),
   longitude: real('longitude'),
   calculation_method: text('calculation_method').notNull().default('NorthAmerica'),
@@ -63,6 +67,18 @@ export const settingsTable = sqliteTable('settings', {
   initial_setup_completed: integer('initial_setup_completed', { mode: 'boolean' }).notNull().default(false),
   terms_accepted: integer('terms_accepted', { mode: 'boolean' }).notNull().default(false),
   terms_accepted_at: text('terms_accepted_at'),
+  high_latitude_rule: text('high_latitude_rule').notNull().default('seventh_of_night'), // 'seventh_of_night' | 'middle_of_night' | 'twilight_angle' | 'none'
+  ramadan_mode_enabled: integer('ramadan_mode_enabled', { mode: 'boolean' }).notNull().default(false),
+  ramadan_display_start_date: text('ramadan_display_start_date'), // YYYY-MM-DD optional advance display date
+  ramadan_taraweeh_time: text('ramadan_taraweeh_time'),
+  ramadan_taraweeh_rakats: text('ramadan_taraweeh_rakats').default('20'),
+  ramadan_taraweeh_sessions: text('ramadan_taraweeh_sessions'), // JSON serialized TaraweehSession[]
+  ramadan_suhoor_buffer_minutes: integer('ramadan_suhoor_buffer_minutes').notNull().default(10),
+  ramadan_silence_during_taraweeh: integer('ramadan_silence_during_taraweeh', { mode: 'boolean' }).notNull().default(true),
+  active_eid_type: text('active_eid_type').notNull().default('none'), // 'none' | 'eid_ul_fitr' | 'eid_ul_adha'
+  active_eid_date: text('active_eid_date'), // YYYY-MM-DD
+  eid_auto_hide_minutes: integer('eid_auto_hide_minutes').notNull().default(60),
+  eid_friday_note: text('eid_friday_note'),
   updated_at: text('updated_at').notNull(),
 });
 
@@ -80,6 +96,8 @@ export const postersTable = sqliteTable(
     qr_url: text('qr_url'),
     qr_label: text('qr_label'),
     qr_position: text('qr_position').notNull().default('bottom-left'), // 'bottom-left' | 'top-left' | 'top-center' | 'top-right' | 'bottom-center' | 'bottom-right'
+    qr_start_at: text('qr_start_at'), // ISO 8601 or null
+    qr_end_at: text('qr_end_at'), // ISO 8601 or null
     start_at: text('start_at').notNull(), // ISO 8601
     end_at: text('end_at'), // ISO 8601 or null for indefinite
     duration_seconds: integer('duration_seconds').notNull().default(15),
@@ -149,11 +167,47 @@ export const jummahShiftsTable = sqliteTable(
     khateeb_name: text('khateeb_name').notNull(),
     adhan_time: text('adhan_time').notNull(), // HH:mm
     iqamah_time: text('iqamah_time'), // HH:mm (optional)
-    status: text('status').notNull().default('UPCOMING'), // UPCOMING | STARTING_NOW | COMPLETED
+    location: text('location'),
+    language: text('language'),
+    topic: text('topic'),
+    status: text('status').notNull().default('UPCOMING'), // UPCOMING | KHUTBAH_IN_PROGRESS | STARTING_NOW | COMPLETED
     is_active: integer('is_active', { mode: 'boolean' }).notNull().default(true),
   },
   (table) => [
     index('idx_jummah_shifts_number').on(table.shift_number),
+  ]
+);
+
+export const fridayKhateebRosterTable = sqliteTable(
+  'friday_khateeb_roster',
+  {
+    id: text('id').primaryKey(),
+    date: text('date').notNull(), // YYYY-MM-DD
+    shift_id: text('shift_id').notNull(),
+    khateeb_name: text('khateeb_name').notNull(),
+    topic: text('topic'),
+    created_at: text('created_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('idx_friday_khateeb_roster_date_shift').on(table.date, table.shift_id),
+  ]
+);
+
+export const eidShiftsTable = sqliteTable(
+  'eid_shifts',
+  {
+    id: text('id').primaryKey(),
+    eid_type: text('eid_type').notNull(), // 'eid_ul_fitr' | 'eid_ul_adha'
+    shift_number: integer('shift_number').notNull(),
+    takbeerat_time: text('takbeerat_time').notNull(), // HH:mm
+    salah_time: text('salah_time').notNull(), // HH:mm
+    khateeb_name: text('khateeb_name'),
+    location: text('location'),
+    is_active: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+    created_at: text('created_at').notNull(),
+  },
+  (table) => [
+    index('idx_eid_shifts_type_number').on(table.eid_type, table.shift_number),
   ]
 );
 
@@ -189,6 +243,8 @@ export type DbPrayerOverride = typeof prayerOverridesTable.$inferSelect;
 export type DbPrayerRule = typeof prayerRulesTable.$inferSelect;
 export type DbAnnualSchedule = typeof annualSchedulesTable.$inferSelect;
 export type DbJummahShift = typeof jummahShiftsTable.$inferSelect;
+export type DbFridayKhateebRoster = typeof fridayKhateebRosterTable.$inferSelect;
+export type DbEidShift = typeof eidShiftsTable.$inferSelect;
 export type DbTickerMessage = typeof tickerMessagesTable.$inferSelect;
 export type DbDisplayPairingCode = typeof displayPairingCodesTable.$inferSelect;
 export type DbAuthRateLimit = typeof authRateLimitsTable.$inferSelect;

@@ -107,9 +107,14 @@ export function JummahShiftsTable({
 
                 {/* Shift Label */}
                 <td className="py-3 px-3">
-                  <span className="font-semibold text-white text-xs tabular-nums">
-                    Shift {index + 1}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-semibold text-white text-xs tabular-nums">
+                      Shift {index + 1}
+                    </span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                      Active
+                    </span>
+                  </div>
                 </td>
 
                 {/* Khutbah Time */}

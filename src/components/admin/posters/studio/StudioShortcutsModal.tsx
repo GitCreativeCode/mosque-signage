@@ -11,13 +11,19 @@ interface StudioShortcutsModalProps {
 
 const KEYBOARD_SHORTCUTS = [
   { label: 'Select Layer by Number', key: '1 - 9', isBadge: true },
+  { label: 'Nudge Selected Layer (1% / 5%)', key: 'Arrow Keys / Shift+Arrows', isBadge: true },
+  { label: 'Marquee Multi-Select', key: 'Drag on empty canvas', isBadge: false },
+  { label: 'Duplicate Selected Layer', key: 'Ctrl + D', isBadge: true },
+  { label: 'Copy / Paste Selected Layer(s)', key: 'Ctrl + C / Ctrl + V', isBadge: true },
+  { label: 'Toggle Lock on Layer', key: 'Ctrl + L', isBadge: true },
   { label: 'Delete Selected Layer', key: 'Del / Backspace', isBadge: true },
-  { label: 'Undo Last Action', key: 'Ctrl + Z', isBadge: true },
-  { label: 'Redo Last Action', key: 'Ctrl + Y', isBadge: true },
-  { label: 'Move Text Anywhere', key: 'Click & Drag on Canvas', isBadge: false },
+  { label: 'Undo / Redo Last Action', key: 'Ctrl + Z / Ctrl + Y', isBadge: true },
+  { label: 'Zoom Preview Stage', key: 'Ctrl + Scroll', isBadge: true },
+  { label: 'Pan Stage Horizontally', key: 'Alt + Scroll', isBadge: true },
+  { label: 'Right-Click Context Menu', key: 'Right-Click', isBadge: true },
+  { label: 'Move Text or Stickers', key: 'Click & Drag on Canvas', isBadge: false },
   { label: 'Reorder Layers', key: 'Drag rows or canvas slots', isBadge: false },
-  { label: 'Toggle QR Live Preview', key: 'Header toggle or QR tab', isBadge: false },
-  { label: 'Close Studio', key: 'Esc', isBadge: true },
+  { label: 'Deselect / Close', key: 'Esc', isBadge: true },
 ] as const;
 
 /** Modal dialog listing Layout Studio keyboard shortcuts and quick canvas tips. */
@@ -30,7 +36,7 @@ export function StudioShortcutsModal({ isOpen, onClose }: StudioShortcutsModalPr
       role="dialog"
       aria-modal="true"
       aria-labelledby="studio-shortcuts-title"
-      className="fixed inset-0 z-[60] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
+      className="fixed inset-0 z-[70] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div

@@ -17,6 +17,8 @@ export interface MediaPosterMetadataInput {
   readonly qrUrl: string;
   readonly qrLabel: string;
   readonly qrPosition: QrPosition;
+  readonly qrStartAt?: string | null | undefined;
+  readonly qrEndAt?: string | null | undefined;
   readonly recurringSchedule?: string | null | undefined;
 }
 
@@ -35,6 +37,8 @@ export function buildMediaPosterMetadata(input: MediaPosterMetadataInput) {
     qr_url: qrEnabled && input.qrUrl.trim() ? input.qrUrl.trim() : undefined,
     qr_label: qrEnabled && input.qrLabel.trim() ? input.qrLabel.trim() : undefined,
     qr_position: qrEnabled ? input.qrPosition : undefined,
+    qr_start_at: qrEnabled && input.qrStartAt ? input.qrStartAt : null,
+    qr_end_at: qrEnabled && input.qrEndAt ? input.qrEndAt : null,
     recurring_schedule: input.recurringSchedule ?? null,
   };
 }

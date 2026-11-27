@@ -62,19 +62,20 @@ export function PosterScheduleDwellFields({
           </div>
           <input
             type="range"
-            min="5"
-            max="60"
+            min="15"
+            max="120"
             step="5"
-            value={duration}
+            value={Math.max(15, duration)}
             onChange={(e) => onChangeDuration(parseInt(e.target.value, 10))}
             className="w-full accent-[var(--admin-tab-active-border)] cursor-pointer"
           />
-          <div className="relative w-full h-4 text-[10px] text-[var(--admin-text-muted)] font-mono select-none">
-            <span className="absolute left-0 cursor-pointer hover:text-[var(--admin-text-primary)]" onClick={() => onChangeDuration(5)}>5s</span>
-            <span className="absolute left-[18.2%] -translate-x-1/2 cursor-pointer hover:text-[var(--admin-text-primary)]" onClick={() => onChangeDuration(15)}>15s (Standard)</span>
-            <span className="absolute left-[45.5%] -translate-x-1/2 cursor-pointer hover:text-[var(--admin-text-primary)]" onClick={() => onChangeDuration(30)}>30s</span>
-            <span className="absolute left-[72.7%] -translate-x-1/2 cursor-pointer hover:text-[var(--admin-text-primary)]" onClick={() => onChangeDuration(45)}>45s</span>
-            <span className="absolute right-0 cursor-pointer hover:text-[var(--admin-text-primary)]" onClick={() => onChangeDuration(60)}>60s</span>
+          <div className="relative w-full h-4 text-[9px] sm:text-[10px] text-[var(--admin-text-muted)] font-mono select-none">
+            <span className="absolute left-0 cursor-pointer hover:text-[var(--admin-text-primary)]" onClick={() => onChangeDuration(15)}>15s</span>
+            <span className="absolute left-[14.3%] -translate-x-1/2 cursor-pointer hover:text-[var(--admin-text-primary)]" onClick={() => onChangeDuration(30)}>30s</span>
+            <span className="absolute left-[28.6%] -translate-x-1/2 cursor-pointer hover:text-[var(--admin-text-primary)]" onClick={() => onChangeDuration(45)}>45s</span>
+            <span className="absolute left-[42.9%] -translate-x-1/2 cursor-pointer hover:text-[var(--admin-text-primary)]" onClick={() => onChangeDuration(60)}>60s</span>
+            <span className="absolute left-[71.4%] -translate-x-1/2 cursor-pointer hover:text-[var(--admin-text-primary)]" onClick={() => onChangeDuration(90)}>90s</span>
+            <span className="absolute right-0 cursor-pointer hover:text-[var(--admin-text-primary)]" onClick={() => onChangeDuration(120)}>120s</span>
           </div>
         </div>
       )}
@@ -115,19 +116,22 @@ export function PosterScheduleDwellFields({
             <button
               type="button"
               onClick={() => setIsRecurringOpen((prev) => !prev)}
-              className="w-full flex items-center justify-between py-1 text-xs text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] transition select-none cursor-pointer group"
+              aria-expanded={isRecurringOpen}
+              className="w-full min-h-[40px] flex flex-wrap items-center justify-between gap-2 py-1.5 text-xs text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] transition select-none cursor-pointer group"
             >
-              <div className="flex items-center space-x-2">
-                <ChevronDown
-                  className={`w-4 h-4 text-[var(--admin-text-muted)] group-hover:text-[var(--admin-text-primary)] transition-transform duration-200 ${
-                    isRecurringOpen ? 'rotate-180' : ''
-                  }`}
-                />
-                <span className="font-semibold text-xs text-[var(--admin-text-primary)]">
+              <div className="flex items-center space-x-2.5 min-w-0">
+                <span className="w-7 h-7 rounded-lg bg-[var(--admin-card)] border border-[var(--admin-border)] group-hover:border-[var(--admin-tab-active-border)] flex items-center justify-center shrink-0 transition-colors">
+                  <ChevronDown
+                    className={`w-4 h-4 text-[var(--admin-text-primary)] transition-transform duration-200 ${
+                      isRecurringOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </span>
+                <span className="font-semibold text-xs text-[var(--admin-text-primary)] text-left leading-snug">
                   Advanced: Recurring Day &amp; Time Windows
                 </span>
               </div>
-              <span className="px-2 py-0.5 rounded-md bg-[var(--admin-card)] border border-[var(--admin-border)] text-[10px] font-mono text-[var(--admin-text-secondary)]">
+              <span className="px-2.5 py-0.5 rounded-md bg-[var(--admin-card)] border border-[var(--admin-border)] text-[10px] font-mono text-[var(--admin-text-secondary)] shrink-0 ml-auto">
                 {summaryText}
               </span>
             </button>

@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { checkNeedsBuild } from '../scripts/ensure-build.mjs';
 
 describe('checkNeedsBuild (Pre-Start Build & Version Staleness Guard)', () => {
-  const currentVersion = '0.1.3';
+  const currentVersion = '0.2.0';
   const validRoutesManifest = JSON.stringify({ dataRoutes: [] });
-  const validBuildInfo = JSON.stringify({ version: '0.1.3', buildId: 'abc-123' });
+  const validBuildInfo = JSON.stringify({ version: '0.2.0', buildId: 'abc-123' });
 
   it('triggers build when routes-manifest.json or BUILD_ID does not exist', () => {
     const result1 = checkNeedsBuild({
@@ -53,8 +53,8 @@ describe('checkNeedsBuild (Pre-Start Build & Version Staleness Guard)', () => {
     expect(result.reason).toContain('Build version metadata missing');
   });
 
-  it('triggers build when production build version is outdated (e.g. built at v0.1.2 but codebase is v0.1.3)', () => {
-    const outdatedBuildInfo = JSON.stringify({ version: '0.1.2', buildId: 'old-build' });
+  it('triggers build when production build version is outdated (e.g. built at v0.1.3 but codebase is v0.2.0)', () => {
+    const outdatedBuildInfo = JSON.stringify({ version: '0.1.3', buildId: 'old-build' });
     const result = checkNeedsBuild({
       routesManifestExists: true,
       buildIdExists: true,
@@ -63,7 +63,7 @@ describe('checkNeedsBuild (Pre-Start Build & Version Staleness Guard)', () => {
       currentVersion,
     });
     expect(result.needsBuild).toBe(true);
-    expect(result.reason).toContain('Production build version (v0.1.2) is outdated (codebase is v0.1.3)');
+    expect(result.reason).toContain('Production build version (v0.1.3) is outdated (codebase is v0.2.0)');
   });
 
   it('bypasses build when routes manifest, BUILD_ID, and app-build-info version strictly match current version', () => {

@@ -4,39 +4,68 @@
   <rect width="958" height="538" x="1" y="1" fill="none" stroke="#334155" stroke-width="1.5" rx="15"/>
 
   <!-- Technical Header -->
-  <g transform="translate(60, 45)">
+  <g transform="translate(60, 42)">
     <text x="0" y="0" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" letter-spacing="1.5">MEDIA DIMENSION SPECIFICATION</text>
-    <text x="0" y="30" fill="#f8fafc" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700">16:9 Poster Dimensions &amp; Safe Margins</text>
-    <text x="0" y="52" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="13">Native 1920x1080 canvas layout. Keep event details centered to avoid corner display cards.</text>
+    <text x="0" y="28" fill="#f8fafc" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700">16:9 Poster Dimensions &amp; Adaptive Safe Margins</text>
+    <text x="0" y="50" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="13">Native 1920x1080 canvas. Keep event titles centered; dynamic widgets adapt with smart collision offsets.</text>
   </g>
 
   <!-- 16:9 Screen Simulation -->
-  <g transform="translate(140, 130)">
-    <!-- Main 16:9 Canvas (680 x 360) -->
+  <g transform="translate(140, 118)">
+    <!-- Main 16:9 Canvas (680 x 340) -->
     <rect width="680" height="340" rx="10" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
 
     <!-- Top Broadcast Bar Zone -->
     <rect x="0" y="0" width="680" height="32" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1"/>
-    <text x="20" y="21" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Top Broadcast Bar (Clock, Date, Ticker Marquee)</text>
+    <text x="20" y="21" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Top Broadcast Bar (Live Clock, Hijri Date, Continuous Marquee Ticker)</text>
 
     <!-- Safe Text Area (Dashed Box) -->
-    <rect x="35" y="45" width="610" height="275" rx="6" fill="#0f172a" stroke="#15803d" stroke-width="1.5" stroke-dasharray="6 4"/>
-    <text x="340" y="150" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="16" font-weight="700">SAFE CONTENT AREA</text>
-    <text x="340" y="175" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="12">Headlines, Event Dates, Speaker Names &amp; Primary Flyer Artwork</text>
-    <text x="340" y="198" text-anchor="middle" fill="#64748b" font-family="monospace" font-size="11">Recommended: 1920 x 1080 Native WebP / PNG / JPG</text>
+    <rect x="35" y="44" width="490" height="282" rx="6" fill="#0f172a" stroke="#15803d" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="280" y="145" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="16" font-weight="700">SAFE CONTENT AREA</text>
+    <text x="280" y="170" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="12">Headlines, Event Dates, Speaker Names &amp; Primary Flyer Artwork</text>
+    <text x="280" y="194" text-anchor="middle" fill="#64748b" font-family="monospace" font-size="11">Recommended: 1920 x 1080 Native WebP / PNG / JPG (16:9)</text>
+
+    <!-- Right-Edge Timetable Drawer Zone & Dynamic Squeeze -->
+    <rect x="535" y="44" width="135" height="282" rx="6" fill="#14532d" fill-opacity="0.35" stroke="#15803d" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <text x="602" y="130" text-anchor="middle" fill="#4ade80" font-family="system-ui, sans-serif" font-size="11" font-weight="800">TIMETABLE</text>
+    <text x="602" y="146" text-anchor="middle" fill="#4ade80" font-family="system-ui, sans-serif" font-size="11" font-weight="800">DRAWER ZONE</text>
+    <text x="602" y="175" text-anchor="middle" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="9.5">Periodic or Pinned</text>
+    <rect x="545" y="195" width="115" height="42" rx="6" fill="#0f172a" stroke="#15803d" stroke-width="1"/>
+    <text x="602" y="212" text-anchor="middle" fill="#86efac" font-family="system-ui, sans-serif" font-size="8.5" font-weight="700">500ms Dynamic</text>
+    <text x="602" y="226" text-anchor="middle" fill="#86efac" font-family="system-ui, sans-serif" font-size="8.5" font-weight="700">Stage Squeeze</text>
+    <text x="602" y="260" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="8.5">Poster shifts aside</text>
+    <text x="602" y="274" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="8.5">Never covers content</text>
 
     <!-- Bottom-Left: Dynamic QR Card Exclusion Area -->
-    <rect x="15" y="235" width="130" height="95" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
-    <rect x="25" y="245" width="30" height="30" fill="#f8fafc" rx="2"/>
-    <rect x="29" y="249" width="22" height="22" fill="#0f172a"/>
-    <text x="65" y="260" fill="#fbbf24" font-family="system-ui, sans-serif" font-size="10" font-weight="700">QR CODE CARD</text>
-    <text x="65" y="274" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9">Dynamic Popout</text>
-    <text x="25" y="315" fill="#f59e0b" font-family="system-ui, sans-serif" font-size="9" font-weight="600">Avoid critical text here</text>
+    <rect x="15" y="240" width="125" height="88" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect x="25" y="250" width="28" height="28" fill="#f8fafc" rx="2"/>
+    <rect x="29" y="254" width="20" height="20" fill="#0f172a"/>
+    <text x="60" y="263" fill="#fbbf24" font-family="system-ui, sans-serif" font-size="9.5" font-weight="700">QR CARD</text>
+    <text x="60" y="276" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="8.5">Dynamic Popout</text>
+    <text x="25" y="312" fill="#f59e0b" font-family="system-ui, sans-serif" font-size="8" font-weight="600">Smart collision offset</text>
 
-    <!-- Bottom-Right: Mini Prayer Countdown Pill Exclusion Area -->
-    <rect x="515" y="265" width="150" height="65" rx="8" fill="#1e293b" stroke="#15803d" stroke-width="1.5"/>
-    <rect x="525" y="278" width="130" height="38" rx="19" fill="#14532d" stroke="#15803d" stroke-width="1"/>
-    <text x="590" y="296" text-anchor="middle" fill="#4ade80" font-family="system-ui, sans-serif" font-size="10" font-weight="700">MINI PRAYER PILL</text>
-    <text x="590" y="308" text-anchor="middle" fill="#86efac" font-family="system-ui, sans-serif" font-size="8">Next: Asr in 24m</text>
+    <!-- Mini Prayer Pill: 4-Corner Placement Visualization -->
+    <!-- Active Pill in Bottom-Right -->
+    <g transform="translate(385, 275)">
+      <rect width="130" height="48" rx="8" fill="#1e293b" stroke="#15803d" stroke-width="1.5"/>
+      <rect x="8" y="10" width="114" height="28" rx="14" fill="#14532d" stroke="#15803d" stroke-width="1"/>
+      <text x="65" y="24" text-anchor="middle" fill="#4ade80" font-family="system-ui, sans-serif" font-size="9" font-weight="700">MINI PRAYER PILL</text>
+      <text x="65" y="34" text-anchor="middle" fill="#86efac" font-family="system-ui, sans-serif" font-size="8">Next: Asr in 24m</text>
+    </g>
+
+    <!-- Subtle Ghost Indicators for other 3 corners -->
+    <rect x="15" y="42" width="70" height="22" rx="4" fill="none" stroke="#64748b" stroke-width="1" stroke-dasharray="3 3"/>
+    <text x="50" y="56" text-anchor="middle" fill="#64748b" font-family="system-ui, sans-serif" font-size="7.5">Top-Left Slot</text>
+
+    <rect x="445" y="42" width="75" height="22" rx="4" fill="none" stroke="#64748b" stroke-width="1" stroke-dasharray="3 3"/>
+    <text x="482" y="56" text-anchor="middle" fill="#64748b" font-family="system-ui, sans-serif" font-size="7.5">Top-Right Slot</text>
+
+    <text x="280" y="315" text-anchor="middle" fill="#64748b" font-family="system-ui, sans-serif" font-size="9.5">Mini Pill: 4-corner placement or toggle off | QR Card: Auto-repositions if sharing same corner</text>
+  </g>
+
+  <!-- Technical Spec Footer -->
+  <g transform="translate(60, 480)">
+    <rect width="840" height="42" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="25" y="26" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="11">Dynamic UI Protection: <tspan fill="#4ade80" font-weight="600">500ms Stage Squeeze</tspan> protects flyer text when timetable opens. <tspan fill="#fbbf24" font-weight="600">Smart Collision Detection</tspan> lifts QR card if sharing corner with Mini Pill.</text>
   </g>
 </svg>

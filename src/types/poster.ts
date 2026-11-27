@@ -65,6 +65,8 @@ export interface Poster {
   readonly qr_url?: string | undefined;
   readonly qr_label?: string | undefined;
   readonly qr_position?: QrPosition | null | undefined;
+  readonly qr_start_at?: string | null | undefined;
+  readonly qr_end_at?: string | null | undefined;
   readonly start_at: string;
   readonly end_at: string | null;
   readonly duration_seconds: number;

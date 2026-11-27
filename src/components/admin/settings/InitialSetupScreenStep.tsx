@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { ExternalLink, HelpCircle, KeyRound, ShieldCheck } from 'lucide-react';
 
 export interface InitialSetupScreenStepProps {
@@ -60,15 +59,17 @@ export function InitialSetupScreenStep({
             type="checkbox"
             checked={termsAccepted}
             onChange={(e) => onChangeTermsAccepted(e.target.checked)}
-            className="mt-0.5 w-4 h-4 rounded border-[var(--admin-border)] text-neutral-900 dark:text-neutral-100 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--admin-tab-active-border)] focus-visible:ring-offset-0 cursor-pointer accent-neutral-900 dark:accent-neutral-100"
+            className="mt-0.5 w-4 h-4 rounded border-[var(--admin-border)] text-neutral-900 dark:text-neutral-100 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--admin-tab-active-border)] focus-visible:ring-offset-0 cursor-pointer accent-neutral-900 dark:accent-neutral-100 shrink-0"
           />
           <div className="space-y-1.5 text-xs">
-            <label
-              htmlFor="initial-setup-terms-checkbox"
-              className="font-semibold text-[var(--admin-text-primary)] cursor-pointer select-none leading-relaxed block"
-            >
-              I agree to the{' '}
-              <Link
+            <div className="font-semibold text-[var(--admin-text-primary)] leading-relaxed">
+              <label
+                htmlFor="initial-setup-terms-checkbox"
+                className="cursor-pointer select-none"
+              >
+                I agree to the{' '}
+              </label>
+              <a
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -77,9 +78,14 @@ export function InitialSetupScreenStep({
               >
                 <span>Privacy Policy</span>
                 <ExternalLink className="w-3 h-3 inline ml-0.5" />
-              </Link>{' '}
-              and{' '}
-              <Link
+              </a>
+              <label
+                htmlFor="initial-setup-terms-checkbox"
+                className="cursor-pointer select-none"
+              >
+                {' '}and{' '}
+              </label>
+              <a
                 href="/terms"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -88,8 +94,14 @@ export function InitialSetupScreenStep({
               >
                 <span>Terms of Use</span>
                 <ExternalLink className="w-3 h-3 inline ml-0.5" />
-              </Link>.
-            </label>
+              </a>
+              <label
+                htmlFor="initial-setup-terms-checkbox"
+                className="cursor-pointer select-none"
+              >
+                .
+              </label>
+            </div>
             <p className="text-[11px] text-[var(--admin-text-muted)] leading-relaxed">
               Required to launch and operate the signage software. MosqueSignage operates local-first and does not collect or transmit your community announcements or private data to external cloud servers.
             </p>

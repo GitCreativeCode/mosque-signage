@@ -16,6 +16,7 @@ export interface MiniCompositeThumbnailProps {
   readonly posterTitle?: string | undefined;
   readonly fallbackImagePath?: string | undefined;
   readonly className?: string | undefined;
+  readonly compact?: boolean | undefined;
 }
 
 export function MiniCompositeThumbnail({
@@ -23,6 +24,7 @@ export function MiniCompositeThumbnail({
   posterTitle,
   fallbackImagePath,
   className = '',
+  compact = false,
 }: MiniCompositeThumbnailProps) {
   const parsed = useMemo<PosterLayoutConfig | null>(() => {
     if (!layoutConfig) return null;
@@ -45,8 +47,14 @@ export function MiniCompositeThumbnail({
   const gridStyle = isFreeform ? undefined : getArchetypeGridStyle(parsed.archetype, parsed.split_ratio, parsed.slots.length);
   const bgProps = getCanvasBackgroundProps(parsed.canvas_background, parsed.canvas_background_custom);
 
-  return (
-    <div className={`relative isolate w-full h-full aspect-video overflow-hidden select-none pointer-events-none ${bgProps.className} ${className}`} style={bgProps.style} aria-hidden="true">
+  const content = (
+    <div
+      className={`relative isolate overflow-hidden select-none pointer-events-none ${bgProps.className} ${
+        compact ? 'w-[384px] h-[216px]' : 'w-full h-full aspect-video'
+      } ${className}`}
+      style={{ ...bgProps.style, containerType: 'inline-size' }}
+      aria-hidden="true"
+    >
       {isFreeform ? (
         <div className="relative w-full h-full overflow-hidden select-none">
           {parsed.slots.map((slot, idx) => {
@@ -101,4 +109,16 @@ export function MiniCompositeThumbnail({
       )}
     </div>
   );
+
+  if (compact) {
+    return (
+      <div className="relative w-24 h-[54px] aspect-video overflow-hidden shrink-0 select-none pointer-events-none">
+        <div className="w-[384px] h-[216px] origin-top-left shrink-0" style={{ transform: 'scale(0.25)' }}>
+          {content}
+        </div>
+      </div>
+    );
+  }
+
+  return content;
 }

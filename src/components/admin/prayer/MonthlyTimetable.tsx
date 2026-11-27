@@ -1,21 +1,36 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  AlertCircle, Calendar, CheckCircle2, ChevronLeft, ChevronRight,
-  Download, Loader2, Settings2, SlidersHorizontal, UploadCloud,
+  AlertCircle, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
+  Download, Loader2, RotateCcw, Settings2, SlidersHorizontal, UploadCloud,
 } from 'lucide-react';
 import type { MonthPrayerDay, PrayerName } from '@/types/index';
-import { bulkSetIqamahRange, saveDayIqamahSchedule } from '@/lib/actions/prayer-schedules';
+import dynamic from 'next/dynamic';
+import { bulkSetIqamahRange, resetMonthToAstronomical, saveDayIqamahSchedule } from '@/lib/actions/prayer-schedules';
 import { getMonthPrayerSchedule } from '@/lib/actions/prayer-exports';
 import { format12h, timeToMinutes } from '@/lib/utils/time';
 import { getMaxAllowedOffsetMinutes, TIMETABLE_MONTH_NAMES } from '@/lib/prayer/timetable-constraints';
-import { CalculationRulesModal } from './CalculationRulesModal';
-import { CsvImportModal } from './CsvImportModal';
-import { ScheduleExportModal } from './ScheduleExportModal';
 import { MonthlyTimetableGrid } from './MonthlyTimetableGrid';
 import { MonthlyEditDayModal, type DailyEditTimesState } from './MonthlyEditDayModal';
 import { MonthlyBulkApplyModal } from './MonthlyBulkApplyModal';
+import { ConfirmationModal } from '../common/ConfirmationModal';
+import { AdminLoadingFallback } from '../common/AdminLoadingFallback';
+
+const DynamicCalculationRulesModal = dynamic(
+  () => import('./CalculationRulesModal').then((m) => m.CalculationRulesModal),
+  { loading: () => <AdminLoadingFallback label="Loading calculation rules..." /> }
+);
+
+const DynamicCsvImportModal = dynamic(
+  () => import('./CsvImportModal').then((m) => m.CsvImportModal),
+  { loading: () => <AdminLoadingFallback label="Loading CSV importer..." /> }
+);
+
+const DynamicScheduleExportModal = dynamic(
+  () => import('./ScheduleExportModal').then((m) => m.ScheduleExportModal),
+  { loading: () => <AdminLoadingFallback label="Loading schedule exporter..." /> }
+);
 
 export interface MonthlyTimetableProps {
   readonly onScheduleChanged?: (() => void) | undefined;
@@ -39,6 +54,9 @@ export function MonthlyTimetable({ onScheduleChanged, onOpenCsvModal }: MonthlyT
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const actionsRef = useRef<HTMLDivElement>(null);
   const [bulkTimingMode, setBulkTimingMode] = useState<'FIXED' | 'OFFSET'>('FIXED');
   const [bulkPrayer, setBulkPrayer] = useState<PrayerName>('maghrib');
   const [bulkTime, setBulkTime] = useState('17:00');
@@ -64,9 +82,16 @@ export function MonthlyTimetable({ onScheduleChanged, onOpenCsvModal }: MonthlyT
 
   useEffect(() => { void loadSchedule(currentYear, currentMonth); }, [currentYear, currentMonth, loadSchedule]);
   useEffect(() => {
-    const onEscape = (e: KeyboardEvent) => { if (e.key === 'Escape') { if (editingDay) setEditingDay(null); if (isBulkOpen) setIsBulkOpen(false); } };
+    const onEscape = (e: KeyboardEvent) => { if (e.key === 'Escape') { if (editingDay) setEditingDay(null); if (isBulkOpen) setIsBulkOpen(false); setIsActionsOpen(false); } };
+    const onOutside = (e: MouseEvent) => {
+      if (actionsRef.current && !actionsRef.current.contains(e.target as Node)) setIsActionsOpen(false);
+    };
     window.addEventListener('keydown', onEscape);
-    return () => window.removeEventListener('keydown', onEscape);
+    document.addEventListener('mousedown', onOutside);
+    return () => {
+      window.removeEventListener('keydown', onEscape);
+      document.removeEventListener('mousedown', onOutside);
+    };
   }, [editingDay, isBulkOpen]);
 
   const sampleDay = schedule.find((d) => d.isToday) ?? schedule[0];
@@ -123,29 +148,76 @@ export function MonthlyTimetable({ onScheduleChanged, onOpenCsvModal }: MonthlyT
   return (
     <div className="space-y-4 no-print">
       {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 flex items-center space-x-2 px-4 py-2.5 rounded-xl shadow-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-primary)] text-xs font-medium animate-fadeIn">
-          {toastMessage.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-[var(--admin-text-primary)]" /> : <AlertCircle className="w-4 h-4 text-rose-400" />}
+        <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:bottom-auto sm:top-5 sm:right-5 z-50 flex items-center space-x-2 px-4 py-2.5 rounded-xl shadow-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-primary)] text-xs font-medium animate-fadeIn">
+          {toastMessage.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-[var(--admin-text-primary)] shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />}
           <span>{toastMessage.text}</span>
         </div>
       )}
 
-      <div className="p-4 rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-card)] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-1 bg-[var(--admin-surface)] p-1 rounded-xl border border-[var(--admin-border)]">
-            <button type="button" onClick={() => { if (currentMonth === 1) { setCurrentMonth(12); setCurrentYear((y) => y - 1); } else setCurrentMonth((m) => m - 1); }} className="p-1.5 rounded-lg text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)] hover:bg-[var(--admin-card)] transition cursor-pointer" title="Previous month"><ChevronLeft className="w-4 h-4" /></button>
-            <div className="px-3 py-1 text-sm font-bold text-[var(--admin-text-primary)] min-w-[150px] text-center">{TIMETABLE_MONTH_NAMES[currentMonth - 1]} {currentYear}</div>
-            <button type="button" onClick={() => { if (currentMonth === 12) { setCurrentMonth(1); setCurrentYear((y) => y + 1); } else setCurrentMonth((m) => m + 1); }} className="p-1.5 rounded-lg text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)] hover:bg-[var(--admin-card)] transition cursor-pointer" title="Next month"><ChevronRight className="w-4 h-4" /></button>
+      <div className="p-3 sm:p-4 rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-card)] shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div className="flex items-center justify-between sm:justify-start gap-2 w-full lg:w-auto min-w-0">
+          <div className="flex items-center space-x-0.5 sm:space-x-1 bg-[var(--admin-surface)] p-1 rounded-xl border border-[var(--admin-border)] flex-1 sm:flex-none min-w-0 justify-between">
+            <button type="button" onClick={() => { if (currentMonth === 1) { setCurrentMonth(12); setCurrentYear((y) => y - 1); } else setCurrentMonth((m) => m - 1); }} className="min-h-[36px] min-w-[36px] shrink-0 flex items-center justify-center rounded-lg text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)] hover:bg-[var(--admin-card)] transition cursor-pointer" title="Previous month" aria-label="Previous month"><ChevronLeft className="w-4 h-4" /></button>
+            <div className="px-1.5 sm:px-3 py-1 text-xs sm:text-sm font-bold text-[var(--admin-text-primary)] min-w-0 sm:min-w-[140px] text-center truncate">{TIMETABLE_MONTH_NAMES[currentMonth - 1]} {currentYear}</div>
+            <button type="button" onClick={() => { if (currentMonth === 12) { setCurrentMonth(1); setCurrentYear((y) => y + 1); } else setCurrentMonth((m) => m + 1); }} className="min-h-[36px] min-w-[36px] shrink-0 flex items-center justify-center rounded-lg text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)] hover:bg-[var(--admin-card)] transition cursor-pointer" title="Next month" aria-label="Next month"><ChevronRight className="w-4 h-4" /></button>
           </div>
-          <button type="button" onClick={() => { const n = new Date(); setCurrentYear(n.getFullYear()); setCurrentMonth(n.getMonth() + 1); }} className="px-2.5 py-1.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] hover:bg-[var(--admin-card)] text-xs font-medium text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)] transition cursor-pointer flex items-center space-x-1.5" title="Jump to current month">
-            <Calendar className="w-3.5 h-3.5" /><span>Today</span>
+          <button type="button" onClick={() => { const n = new Date(); setCurrentYear(n.getFullYear()); setCurrentMonth(n.getMonth() + 1); }} className="min-h-[40px] sm:min-h-0 px-2.5 sm:px-3 py-1.5 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] hover:bg-[var(--admin-card)] text-xs font-medium text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)] transition cursor-pointer flex items-center space-x-1.5 shrink-0" title="Jump to current month">
+            <Calendar className="w-3.5 h-3.5 shrink-0" /><span>Today</span>
           </button>
         </div>
 
-        <div className="flex items-center flex-wrap gap-2">
-          <button type="button" onClick={() => setIsRulesModalOpen(true)} className="px-3.5 py-1.5 rounded-xl border border-[var(--admin-btn-secondary-border)] bg-[var(--admin-btn-secondary-bg)] hover:bg-[var(--admin-btn-secondary-hover)] text-[var(--admin-btn-secondary-text)] font-medium text-xs flex items-center space-x-1.5 transition active:scale-95 cursor-pointer shadow-sm"><Settings2 className="w-3.5 h-3.5 opacity-70" /><span>Calculation Rules &amp; Adhan Offsets</span></button>
-          <button type="button" onClick={() => { const mStr = String(currentMonth).padStart(2, '0'); const last = new Date(currentYear, currentMonth, 0).getDate(); setBulkStartDate(`${currentYear}-${mStr}-01`); setBulkEndDate(`${currentYear}-${mStr}-${String(last).padStart(2, '0')}`); setBulkError(null); setIsBulkOpen(true); }} className="px-3.5 py-1.5 rounded-xl border border-[var(--admin-btn-secondary-border)] bg-[var(--admin-btn-secondary-bg)] hover:bg-[var(--admin-btn-secondary-hover)] text-[var(--admin-btn-secondary-text)] font-medium text-xs flex items-center space-x-1.5 transition active:scale-95 cursor-pointer shadow-sm"><SlidersHorizontal className="w-3.5 h-3.5 opacity-70" /><span>Bulk Range Apply</span></button>
-          <button type="button" onClick={() => (onOpenCsvModal ? onOpenCsvModal() : setIsCsvModalOpen(true))} className="px-3.5 py-1.5 rounded-xl border border-[var(--admin-btn-secondary-border)] bg-[var(--admin-btn-secondary-bg)] hover:bg-[var(--admin-btn-secondary-hover)] text-[var(--admin-btn-secondary-text)] font-medium text-xs flex items-center space-x-1.5 transition active:scale-95 cursor-pointer shadow-sm"><UploadCloud className="w-3.5 h-3.5 opacity-70" /><span>Import CSV</span></button>
-          <button type="button" onClick={() => setIsExportModalOpen(true)} className="px-3.5 py-1.5 rounded-xl border border-[var(--admin-btn-secondary-border)] bg-[var(--admin-btn-secondary-bg)] hover:bg-[var(--admin-btn-secondary-hover)] text-[var(--admin-btn-secondary-text)] font-medium text-xs flex items-center space-x-1.5 transition active:scale-95 cursor-pointer shadow-sm"><Download className="w-3.5 h-3.5 opacity-70" /><span>Export &amp; Print</span></button>
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          <button type="button" onClick={() => setIsRulesModalOpen(true)} className="min-h-[40px] sm:min-h-0 px-3 sm:px-3.5 py-1.5 rounded-xl border border-[var(--admin-btn-secondary-border)] bg-[var(--admin-btn-secondary-bg)] hover:bg-[var(--admin-btn-secondary-hover)] text-[var(--admin-btn-secondary-text)] font-medium text-xs flex items-center space-x-1.5 transition active:scale-95 cursor-pointer shadow-sm whitespace-nowrap"><Settings2 className="w-3.5 h-3.5 opacity-70" /><span>Rules &amp; Adhan Offsets</span></button>
+          <button type="button" onClick={() => { const mStr = String(currentMonth).padStart(2, '0'); const last = new Date(currentYear, currentMonth, 0).getDate(); setBulkStartDate(`${currentYear}-${mStr}-01`); setBulkEndDate(`${currentYear}-${mStr}-${String(last).padStart(2, '0')}`); setBulkError(null); setIsBulkOpen(true); }} className="min-h-[40px] sm:min-h-0 px-3 sm:px-3.5 py-1.5 rounded-xl border border-[var(--admin-btn-secondary-border)] bg-[var(--admin-btn-secondary-bg)] hover:bg-[var(--admin-btn-secondary-hover)] text-[var(--admin-btn-secondary-text)] font-medium text-xs flex items-center space-x-1.5 transition active:scale-95 cursor-pointer shadow-sm whitespace-nowrap"><SlidersHorizontal className="w-3.5 h-3.5 opacity-70" /><span>Bulk Apply</span></button>
+
+          <div ref={actionsRef} className="relative ml-auto sm:ml-0">
+            <button
+              type="button"
+              onClick={() => setIsActionsOpen((prev) => !prev)}
+              aria-expanded={isActionsOpen}
+              aria-haspopup="menu"
+              className="min-h-[40px] sm:min-h-0 px-3 sm:px-3.5 py-1.5 rounded-xl border border-[var(--admin-btn-secondary-border)] bg-[var(--admin-btn-secondary-bg)] hover:bg-[var(--admin-btn-secondary-hover)] text-[var(--admin-btn-secondary-text)] font-medium text-xs flex items-center space-x-1.5 transition active:scale-95 cursor-pointer shadow-sm whitespace-nowrap"
+            >
+              <span>Actions</span>
+              <ChevronDown className={`w-3.5 h-3.5 opacity-70 transition-transform ${isActionsOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isActionsOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 mt-1.5 w-[min(14rem,calc(100vw-2rem))] rounded-xl border border-[var(--admin-border)] bg-[var(--admin-card)] shadow-2xl py-1.5 z-30 animate-fadeIn"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { setIsActionsOpen(false); if (onOpenCsvModal) onOpenCsvModal(); else setIsCsvModalOpen(true); }}
+                  className="w-full px-3.5 py-2 text-left text-xs font-medium text-[var(--admin-text-primary)] hover:bg-[var(--admin-surface)] flex items-center space-x-2.5 transition cursor-pointer"
+                >
+                  <UploadCloud className="w-3.5 h-3.5 text-[var(--admin-text-muted)]" />
+                  <span>Import CSV</span>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { setIsActionsOpen(false); setIsExportModalOpen(true); }}
+                  className="w-full px-3.5 py-2 text-left text-xs font-medium text-[var(--admin-text-primary)] hover:bg-[var(--admin-surface)] flex items-center space-x-2.5 transition cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-[var(--admin-text-muted)]" />
+                  <span>Export &amp; Print</span>
+                </button>
+                <div className="my-1 border-t border-[var(--admin-border)]" />
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { setIsActionsOpen(false); setIsResetModalOpen(true); }}
+                  className="w-full px-3.5 py-2 text-left text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 flex items-center space-x-2.5 transition cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 opacity-80" />
+                  <span>Reset to Pure Astronomical</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -187,9 +259,30 @@ export function MonthlyTimetable({ onScheduleChanged, onOpenCsvModal }: MonthlyT
         onPrayerChange={(p) => { setBulkPrayer(p); const info = getMaxAllowedOffsetMinutes(p, sampleDay); if (bulkOffsetMinutes > info.max) setBulkOffsetMinutes(info.max); }}
       />
 
-      <CalculationRulesModal isOpen={isRulesModalOpen} onClose={() => setIsRulesModalOpen(false)} onRulesSaved={() => { showToast('Default calculation rules saved.'); void loadSchedule(currentYear, currentMonth); onScheduleChanged?.(); }} />
-      <CsvImportModal isOpen={isCsvModalOpen} onClose={() => setIsCsvModalOpen(false)} onImportSuccess={async (c) => { showToast(`Successfully imported ${c} timetable records!`); await loadSchedule(currentYear, currentMonth); onScheduleChanged?.(); }} />
-      <ScheduleExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} initialYear={currentYear} initialMonth={currentMonth} />
+      {isRulesModalOpen && <DynamicCalculationRulesModal isOpen={isRulesModalOpen} onClose={() => setIsRulesModalOpen(false)} onRulesSaved={() => { showToast('Default calculation rules saved.'); void loadSchedule(currentYear, currentMonth); onScheduleChanged?.(); }} />}
+      {isCsvModalOpen && <DynamicCsvImportModal isOpen={isCsvModalOpen} onClose={() => setIsCsvModalOpen(false)} onImportSuccess={async (c) => { showToast(`Successfully imported ${c} timetable records!`); await loadSchedule(currentYear, currentMonth); onScheduleChanged?.(); }} />}
+      {isExportModalOpen && <DynamicScheduleExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} initialYear={currentYear} initialMonth={currentMonth} />}
+
+      <ConfirmationModal
+        isOpen={isResetModalOpen}
+        title={`Reset ${TIMETABLE_MONTH_NAMES[currentMonth - 1]} ${currentYear} to Pure Astronomical?`}
+        message="This will immediately remove all manual day overrides and uploaded CSV timetable records for this month, reverting the schedule to pure astronomical calculations."
+        confirmLabel="Reset Month"
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={async () => {
+          setIsResetModalOpen(false);
+          try {
+            await resetMonthToAstronomical(currentYear, currentMonth);
+            showToast(`Reset ${TIMETABLE_MONTH_NAMES[currentMonth - 1]} ${currentYear} to astronomical.`);
+            await loadSchedule(currentYear, currentMonth);
+            onScheduleChanged?.();
+          } catch {
+            showToast('Failed to reset month schedule.', 'error');
+          }
+        }}
+        onCancel={() => setIsResetModalOpen(false)}
+      />
     </div>
   );
 }

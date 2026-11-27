@@ -17,6 +17,8 @@ export interface PosterDbRow {
   readonly qr_url: string | null;
   readonly qr_label: string | null;
   readonly qr_position: string;
+  readonly qr_start_at?: string | null | undefined;
+  readonly qr_end_at?: string | null | undefined;
   readonly start_at: string;
   readonly end_at: string | null;
   readonly duration_seconds: number;
@@ -42,6 +44,8 @@ export interface UploadPosterInput {
   readonly qr_url?: string | undefined;
   readonly qr_label?: string | undefined;
   readonly qr_position?: QrPosition | undefined;
+  readonly qr_start_at?: string | null | undefined;
+  readonly qr_end_at?: string | null | undefined;
   readonly recurring_schedule?: string | null | undefined;
 }
 
@@ -58,6 +62,8 @@ export interface UpdatePosterInput {
   readonly qr_url?: string | undefined;
   readonly qr_label?: string | undefined;
   readonly qr_position?: QrPosition | undefined;
+  readonly qr_start_at?: string | null | undefined;
+  readonly qr_end_at?: string | null | undefined;
   readonly is_active?: boolean | undefined;
   readonly recurring_schedule?: string | null | undefined;
   readonly fileBuffer?: (Buffer | Uint8Array | ArrayBuffer) | undefined;
@@ -78,6 +84,8 @@ export function mapPosterRowToDomain(row: PosterDbRow): Poster {
     qr_url: row.qr_url ?? undefined,
     qr_label: row.qr_label ?? undefined,
     qr_position: (row.qr_position as QrPosition) ?? 'bottom-left',
+    qr_start_at: row.qr_start_at ?? null,
+    qr_end_at: row.qr_end_at ?? null,
     start_at: row.start_at,
     end_at: row.end_at ?? null,
     duration_seconds: row.duration_seconds,

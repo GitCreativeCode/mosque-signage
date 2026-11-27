@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Columns, FileText, Plus, Upload } from 'lucide-react';
+import { useIsSmallScreen } from '@/hooks/useIsSmallScreen';
 
 export interface AddContentDropdownProps {
   readonly onCreateNotice?: (() => void) | undefined;
@@ -14,6 +15,7 @@ interface CreationOption {
   readonly label: string;
   readonly icon: React.ComponentType<{ readonly className?: string; readonly 'aria-hidden'?: boolean | 'true' | 'false' }>;
   readonly description: string;
+  readonly disabledBadge?: string | undefined;
   readonly action?: (() => void) | undefined;
 }
 
@@ -22,6 +24,7 @@ export function AddContentDropdown({
   onUploadPoster,
   onOpenStudio,
 }: AddContentDropdownProps) {
+  const { isSmallScreen } = useIsSmallScreen();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTooltipId, setActiveTooltipId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -131,8 +134,11 @@ export function AddContentDropdown({
       id: 'studio',
       label: 'Multi-Asset Studio',
       icon: Columns,
-      description: 'Compose custom split-screen layouts, stickers, and ribbon overlays.',
-      action: onOpenStudio,
+      description: isSmallScreen
+        ? 'Requires a tablet or computer screen to compose split-screen layouts.'
+        : 'Compose custom split-screen layouts, stickers, and ribbon overlays.',
+      disabledBadge: isSmallScreen ? 'Tablet / PC' : undefined,
+      action: isSmallScreen ? undefined : onOpenStudio,
     },
   ];
 
@@ -150,7 +156,7 @@ export function AddContentDropdown({
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-label="Add Content"
-        className="px-3.5 py-1.5 rounded-lg bg-[var(--admin-btn-primary-bg)] hover:bg-[var(--admin-btn-primary-hover)] text-[var(--admin-btn-primary-text)] text-xs font-semibold flex items-center space-x-1.5 transition active:scale-95 cursor-pointer shadow-sm whitespace-nowrap"
+        className="h-9 px-3.5 rounded-lg bg-[var(--admin-btn-primary-bg)] hover:bg-[var(--admin-btn-primary-hover)] text-[var(--admin-btn-primary-text)] text-xs font-semibold flex items-center space-x-1.5 transition active:scale-95 cursor-pointer shadow-sm whitespace-nowrap"
       >
         <Plus className="w-3.5 h-3.5" aria-hidden="true" />
         <span>Add Content</span>
@@ -167,30 +173,40 @@ export function AddContentDropdown({
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="btn-add-content"
-          className="absolute right-0 top-full mt-1.5 min-w-[190px] rounded-xl border border-[var(--admin-border)] bg-[var(--admin-card)] shadow-2xl p-1 z-50 animate-in fade-in zoom-in-95 duration-100"
+          className="absolute right-0 top-full mt-1.5 w-[min(228px,calc(100vw-2rem))] rounded-xl border border-[var(--admin-border)] bg-[var(--admin-card)] shadow-2xl p-1 z-50 animate-in fade-in zoom-in-95 duration-100"
         >
           <div className="space-y-0.5">
             {options.map((opt) => {
               const Icon = opt.icon;
               const isTooltipVisible = activeTooltipId === opt.id;
+              const isDisabled = !opt.action;
 
               return (
                 <div key={opt.id} className="relative group">
                   <button
                     type="button"
                     role="menuitem"
-                    disabled={!opt.action}
+                    aria-disabled={isDisabled || undefined}
+                    disabled={isDisabled}
                     onClick={() => handleSelectItem(opt.action)}
                     onMouseEnter={() => handleMouseEnterItem(opt.id)}
                     onMouseLeave={handleMouseLeaveItem}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-xs transition flex items-center space-x-2.5 border ${
-                      !opt.action
-                        ? 'opacity-40 cursor-not-allowed border-transparent text-[var(--admin-text-muted)] pointer-events-none'
+                    title={isDisabled && opt.disabledBadge ? opt.description : undefined}
+                    className={`w-full text-left px-3 py-2.5 sm:py-2 rounded-lg text-xs transition flex items-center justify-between gap-2 border ${
+                      isDisabled
+                        ? 'opacity-50 cursor-not-allowed border-transparent text-[var(--admin-text-muted)]'
                         : 'cursor-pointer border-transparent text-[var(--admin-text-primary)] hover:bg-[var(--admin-menu-hover-bg)] hover:text-[var(--admin-menu-hover-text)] focus:outline-none focus:bg-[var(--admin-menu-hover-bg)]'
                     }`}
                   >
-                    <Icon className="w-3.5 h-3.5 text-green-700 dark:text-green-400 group-hover:text-green-800 dark:group-hover:text-green-300 transition-colors shrink-0" aria-hidden="true" />
-                    <span className="font-medium truncate">{opt.label}</span>
+                    <span className="flex items-center space-x-2.5 min-w-0">
+                      <Icon className="w-3.5 h-3.5 text-green-700 dark:text-green-400 group-hover:text-green-800 dark:group-hover:text-green-300 transition-colors shrink-0" aria-hidden="true" />
+                      <span className="font-medium truncate">{opt.label}</span>
+                    </span>
+                    {opt.disabledBadge && (
+                      <span className="px-1.5 py-0.5 rounded bg-[var(--admin-surface)] border border-[var(--admin-border)] text-[9px] font-bold uppercase tracking-wider text-[var(--admin-text-muted)] shrink-0">
+                        {opt.disabledBadge}
+                      </span>
+                    )}
                   </button>
 
                   {isTooltipVisible && (

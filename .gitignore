@@ -49,6 +49,7 @@ Thumbs.db
 *.sw?
 
 # Release Scratch Artifacts
+scripts/release-notes.md
 scripts/release-notes-*.md
 
 

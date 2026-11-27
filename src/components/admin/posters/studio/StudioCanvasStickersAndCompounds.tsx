@@ -3,6 +3,7 @@
 import React from 'react';
 import type { PosterCanvasSticker, PosterCompoundLayer } from '@/types/index';
 import type { ResizeHandle, ResizeSession, SelectedEntity } from '@/lib/posters/studio-types';
+import { clampTextScale, resolveTextFontSizeCss } from '@/lib/posters/overlay-styles';
 import { IslamicStickerGraphic } from '@/components/common/IslamicStickerGraphic';
 import { StudioTransformHandles } from './StudioTransformHandles';
 
@@ -26,6 +27,18 @@ interface StudioCanvasStickersAndCompoundsProps {
   ) => void;
 }
 
+export function getStickerAspectRatio(type: string): string {
+  if (type === 'fanous') return '64 / 140';
+  if (type === 'mihrab_arch') return '84 / 112';
+  if (type === 'bismillah') return '240 / 36';
+  if (type === 'alhamdulillah') return '170 / 42';
+  if (type === 'mashaallah') return '160 / 42';
+  if (type === 'subhanallah') return '150 / 42';
+  if (type === 'tasbih') return '72 / 96';
+  if (type === 'badge_custom') return '220 / 48';
+  return '1 / 1';
+}
+
 /** Renders interactive Islamic stickers/ribbons and merged compound layer containers on the Stage canvas. */
 export function StudioCanvasStickersAndCompounds({
   stickers,
@@ -44,19 +57,30 @@ export function StudioCanvasStickersAndCompounds({
     <>
       {stickers.map((stk, idx) => {
         if (stk.is_hidden) return null;
-        const isSelected = (selectedEntity?.type === 'sticker' && selectedEntity.id === stk.id) || selectedLayerKeys.includes(`sticker:${stk.id}`);
+        const isSelected = selectedLayerKeys.length > 0
+          ? selectedLayerKeys.includes(`sticker:${stk.id}`)
+          : selectedEntity?.type === 'sticker' && selectedEntity.id === stk.id;
+        const showSingleRing = isSelected && selectedLayerKeys.length <= 1;
         const locked = isItemLocked(stk);
         return (
           <div
             key={stk.id}
-            onPointerDown={(e) => onStickerPointerDown(e, stk, idx)}
+            data-studio-layer="true"
+            data-layer-id={stk.id}
+            data-layer-type="sticker"
+            data-layer-index={idx}
+            onPointerDown={(e) => {
+              if (e.button !== 0) return;
+              onStickerPointerDown(e, stk, idx);
+            }}
             style={{
               position: 'absolute', left: `${stk.pos_x}%`, top: `${stk.pos_y}%`,
-              width: `${stk.width_percent}%`, height: `${stk.height_percent}%`,
+              width: `${stk.width_percent}%`,
+              aspectRatio: getStickerAspectRatio(stk.type),
               transform: `translate(-50%, -50%) rotate(${stk.rotation ?? 0}deg)`,
               zIndex: draggingStickerId === stk.id ? 999 : stk.z_index ?? idx + 35,
             }}
-            className={`group select-none transition-shadow ${locked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} ${isSelected ? 'ring-2 ring-amber-400 shadow-2xl' : 'hover:ring-1 hover:ring-amber-400/50'}`}
+            className={`group select-none inline-flex items-center justify-center p-0 m-0 transition-shadow ${locked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} ${showSingleRing ? 'ring-2 ring-amber-400 ring-offset-0 shadow-2xl' : 'hover:ring-1 hover:ring-amber-400/50'}`}
           >
             {isSelected && !locked && selectedLayerKeys.length === 1 && (
               <StudioTransformHandles
@@ -74,23 +98,32 @@ export function StudioCanvasStickersAndCompounds({
 
       {compoundLayers.map((comp) => {
         if (comp.is_hidden) return null;
-        const isSelected = (selectedEntity?.type === 'compound' && selectedEntity.id === comp.id) || selectedLayerKeys.includes(`compound:${comp.id}`);
+        const isSelected = selectedLayerKeys.length > 0
+          ? selectedLayerKeys.includes(`compound:${comp.id}`)
+          : selectedEntity?.type === 'compound' && selectedEntity.id === comp.id;
+        const showCompoundRing = isSelected && selectedLayerKeys.length <= 1;
         const locked = isItemLocked(comp);
         return (
           <div
             key={comp.id}
-            onPointerDown={(e) => onCompoundPointerDown(e, comp.id)}
+            data-studio-layer="true"
+            data-layer-id={comp.id}
+            data-layer-type="compound"
+            onPointerDown={(e) => {
+              if (e.button !== 0) return;
+              onCompoundPointerDown(e, comp.id);
+            }}
             style={{
               position: 'absolute', left: `${comp.pos_x}%`, top: `${comp.pos_y}%`,
               width: `${comp.width_percent}%`, height: `${comp.height_percent}%`,
               transform: `translate(-50%, -50%) rotate(${comp.rotation ?? 0}deg)`,
               zIndex: draggingCompoundId === comp.id ? 999 : comp.z_index ?? 30,
             }}
-            className={`group select-none transition-shadow ${locked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} ${isSelected ? 'ring-2 ring-indigo-400 shadow-2xl' : 'hover:ring-1 hover:ring-indigo-400/50'}`}
+            className={`group select-none transition-shadow ${locked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} ${showCompoundRing ? 'ring-2 ring-amber-400 ring-offset-0 shadow-2xl' : 'hover:ring-1 hover:ring-amber-400/50'}`}
           >
             {isSelected && !locked && selectedLayerKeys.length === 1 && (
               <StudioTransformHandles
-                accent="cyan"
+                accent="amber"
                 isAspectLocked={isAspectLocked}
                 onResizeStart={(e, h) => onStartResizing(e, 'compound', comp.id, h, { pos_x: comp.pos_x, pos_y: comp.pos_y, width_percent: comp.width_percent, height_percent: comp.height_percent })}
               />
@@ -111,17 +144,25 @@ export function StudioCanvasStickersAndCompounds({
               {comp.merged_children.text_overlays?.filter((t) => !t.is_hidden).map((t) => {
                 const isTrans = t.bg_color === 'transparent' || t.bg_style === 'transparent';
                 const ff = t.font_family === 'serif' ? 'font-serif' : t.font_family === 'mono' ? 'font-mono' : 'font-sans';
-                const fs = t.font_size === 'sm' ? 'text-xs' : t.font_size === 'lg' ? 'text-lg' : t.font_size === 'xl' ? 'text-xl' : 'text-sm';
-                const ta = t.text_align === 'left' ? 'text-left pl-2 pr-6' : t.text_align === 'right' ? 'text-right pr-2 pl-6' : 'text-center px-4';
+                const ta = t.text_align === 'left' ? 'text-left' : t.text_align === 'right' ? 'text-right' : 'text-center';
+                const sx = clampTextScale(t.scale_x);
+                const sy = clampTextScale(t.scale_y);
                 return (
                   <div
                     key={t.id}
                     style={{
-                      position: 'absolute', left: `${t.pos_x ?? 50}%`, top: `${t.pos_y ?? 50}%`, width: t.width_percent ? `${t.width_percent}%` : 'auto',
-                      transform: `translate(-50%, -50%) rotate(${t.rotation ?? 0}deg)`, color: t.text_color || '#ffffff',
+                      position: 'absolute',
+                      left: `${t.pos_x ?? 50}%`,
+                      top: `${t.pos_y ?? 50}%`,
+                      width: t.width_percent ? `${t.width_percent}%` : 'fit-content',
+                      transform: `translate(-50%, -50%) rotate(${t.rotation ?? 0}deg) scale(${sx}, ${sy})`,
+                      color: t.text_color || '#ffffff',
+                      fontSize: resolveTextFontSizeCss(t.font_size),
+                      lineHeight: 1.15,
+                      padding: '0.22em 0.6em',
                       backgroundColor: isTrans ? 'transparent' : t.bg_color || (t.bg_style === 'emerald' ? '#064e3b' : t.bg_style === 'gold' ? '#78350f' : '#000000ee'),
                     }}
-                    className={`inline-block py-1 rounded shadow-md ${ff} ${fs} ${t.is_bold ?? true ? 'font-bold' : 'font-normal'} ${t.is_italic ? 'italic' : ''} ${t.is_underline ? 'underline' : ''} ${ta}`}
+                    className={`inline-block shadow-md ${ff} ${t.is_bold ?? true ? 'font-bold' : 'font-normal'} ${t.is_italic ? 'italic' : ''} ${t.is_underline ? 'underline' : ''} ${ta}`}
                   >
                     {t.text}
                   </div>

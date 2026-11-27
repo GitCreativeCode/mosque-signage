@@ -4,6 +4,7 @@ import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import type { QrPosition } from '@/types/index';
 import { QrPositionSelector } from './QrPositionSelector';
+import { PosterQrScheduleSection } from './PosterQrScheduleSection';
 
 export interface PosterQrConfigSectionProps {
   readonly subtitle?: string | undefined;
@@ -18,6 +19,11 @@ export interface PosterQrConfigSectionProps {
   readonly onChangeQrLabel: (val: string) => void;
   readonly qrPosition: QrPosition;
   readonly onChangeQrPosition: (pos: QrPosition) => void;
+  readonly qrStartAt?: string | null | undefined;
+  readonly onChangeQrStartAt?: ((val: string | null) => void) | undefined;
+  readonly qrEndAt?: string | null | undefined;
+  readonly onChangeQrEndAt?: ((val: string | null) => void) | undefined;
+  readonly venueTimezone?: string | undefined;
   readonly isEligibleForQr?: boolean | undefined;
   readonly isVideo?: boolean | undefined;
   readonly activeTotalDwell?: number | undefined;
@@ -38,6 +44,11 @@ export function PosterQrConfigSection({
   onChangeQrLabel,
   qrPosition,
   onChangeQrPosition,
+  qrStartAt,
+  onChangeQrStartAt,
+  qrEndAt,
+  onChangeQrEndAt,
+  venueTimezone,
   isEligibleForQr = true,
   isVideo = false,
   activeTotalDwell = 0,
@@ -82,6 +93,16 @@ export function PosterQrConfigSection({
           <div className="pt-2 border-t border-[var(--admin-border)]">
             <QrPositionSelector value={qrPosition} onChange={onChangeQrPosition} disabled={disabled} />
           </div>
+          {onChangeQrStartAt && onChangeQrEndAt && (
+            <PosterQrScheduleSection
+              qrUrl={qrUrl}
+              qrStartAt={qrStartAt}
+              onChangeQrStartAt={onChangeQrStartAt}
+              qrEndAt={qrEndAt}
+              onChangeQrEndAt={onChangeQrEndAt}
+              venueTimezone={venueTimezone}
+            />
+          )}
         </div>
       )}
     </div>

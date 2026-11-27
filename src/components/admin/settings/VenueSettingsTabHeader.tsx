@@ -30,7 +30,7 @@ export function VenueSettingsTabHeader({
       </div>
 
       <div className="border-b border-[var(--admin-border)]">
-        <nav className="flex space-x-6 -mb-px overflow-x-auto">
+        <nav className="flex space-x-5 sm:space-x-6 -mb-px overflow-x-auto scrollbar-none">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.key}

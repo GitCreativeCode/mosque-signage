@@ -1,15 +1,29 @@
 import type { FaqItem } from './faq-types';
+import { FAQ_DISPLAY_MODES_ITEMS } from './faq-display-modes-data';
 
-export const FAQ_HARDWARE_ITEMS: readonly FaqItem[] = [
+const BASE_HARDWARE_ITEMS: readonly FaqItem[] = [
   {
     slug: 'kiosk-dual-monitor-setup',
     categoryId: 'hardware',
-    question: 'How do I configure Windows Extended Desktop and Microsoft Edge Kiosk Mode?',
+    question: 'How do I configure display screens and locked fullscreen kiosk mode across Windows, Linux, and macOS?',
     shortAnswer:
-      'Set Windows Display to Extend mode with Monitor 2 at 1920x1080 100% scaling, then run scripts/setup-autostart.ps1 to automatically launch Edge in locked fullscreen kiosk mode on PC startup.',
+      'MosqueSignage works on any modern browser (Edge or Chrome recommended for kiosk flags). On Windows, configure Extended Desktop and run "npm run autostart -- --display". On Linux/Raspberry Pi, use Chromium autostart desktop entries. On macOS, use Chrome kiosk flags and Login Items.',
     isAccordion: true,
     isFeatured: true,
-    tags: ['kiosk', 'windows', 'edge', 'dual monitor', 'hardware', 'autostart', 'display'],
+    tags: [
+      'kiosk',
+      'windows',
+      'linux',
+      'macos',
+      'raspberry pi',
+      'chrome',
+      'edge',
+      'dual monitor',
+      'hardware',
+      'autostart',
+      'display',
+      'lan',
+    ],
     relatedSlugs: [
       'display-pairing-and-screen-security',
       'screen-burn-in-sleep-timers',
@@ -17,55 +31,46 @@ export const FAQ_HARDWARE_ITEMS: readonly FaqItem[] = [
       'developer-kiosk-simulator',
     ],
     article: {
-      title: 'Windows Extended Desktop & Microsoft Edge Locked Kiosk Setup',
-      lastUpdated: '2026-11-03',
+      title: 'Multi-Platform Display Setup & Fullscreen Kiosk Mode (Windows, Linux, macOS)',
+      lastUpdated: '2026-11-23',
       summary:
-        'A comprehensive guide for mosques operating MosqueSignage from an office desktop PC while driving a dedicated 1080p prayer hall TV over HDMI.',
+        'A comprehensive guide for mosques operating MosqueSignage via direct HDMI or dedicated networked devices across Windows, Linux (Raspberry Pi), and macOS.',
       sections: [
         {
-          heading: '1. Architecture & Cabling Overview',
+          heading: '1. Architecture & Deployment Topologies',
           paragraphs: [
-            'In typical community centers and mosques, a single desktop PC in the administrative office powers both the admin workflow and the prayer hall TV. Windows Extended Desktop mode enables Monitor 1 (Desk) to remain on the management dashboard while Monitor 2 (Prayer Hall) runs the locked signage canvas.',
+            'MosqueSignage supports two primary physical deployment architectures for community centers and mosques:',
+            'Topology A (Direct HDMI): A single desktop or laptop powers both the admin desk workflow (Monitor 1) and drives the prayer hall TV (Monitor 2) over an HDMI or DisplayPort cable using Extended Desktop mode.',
+            'Topology B (Network Mini-PC or Smart TV): The MosqueSignage server runs on an office desktop, while dedicated micro-PCs (Intel N100, Raspberry Pi 4/5) or Smart TVs mount directly behind prayer hall screens, streaming the display over local Wi-Fi or LAN.',
           ],
           image: {
             src: '/faq/kiosk-hardware-setup.svg',
-            alt: 'Windows Extended Desktop & HDMI Cabling Schematic',
-            caption: 'Hardware topology: Monitor 1 (Office Desk) and Monitor 2 (Prayer Hall TV) over high-speed HDMI/DP.',
+            alt: 'Hardware Deployment Topology: Direct HDMI and LAN Network Display',
+            caption: 'Hardware deployment topologies: Direct HDMI extended desktop vs. dedicated micro-PC / Smart TV connected over local LAN.',
             width: 960,
             height: 540,
           },
         },
         {
-          heading: '2. Windows Display Settings Configuration',
+          heading: '2. Browser Compatibility & Fullscreen Kiosk Flags',
           paragraphs: [
-            'Before launching the kiosk script, Windows display topology must be configured accurately:',
+            'MosqueSignage works with any modern web browser: Microsoft Edge, Google Chrome, Chromium, Mozilla Firefox, and Apple Safari.',
+            'Microsoft Edge and Google Chrome/Chromium are recommended for unattended prayer hall displays because they natively support locked fullscreen kiosk flags (--kiosk --no-first-run --disable-pinch). These flags hide the address bar, window frames, and cursor popups while preventing visitors from closing or minimizing the signage.',
           ],
-          steps: [
-            'Connect the prayer hall TV to your computer via HDMI or DisplayPort.',
-            'Press Win + P on your keyboard and select "Extend".',
-            'Right-click the Desktop and choose "Display settings".',
-            'Select Monitor 1 (Desk) and check "Make this my main display".',
-            'Select Monitor 2 (Prayer Hall TV), set Display Resolution to 1920 x 1080, and set Scale to 100%.',
-          ],
-          callout: {
-            type: 'warning',
-            text: 'Setting the scale to anything other than 100% (e.g. 125% or 150%) on Monitor 2 will cause subpixel font blurring and layout overflow.',
-          },
         },
         {
-          heading: '3. One-Click Windows Autostart Setup',
+          heading: '3. Operating System Setup & Autostart Automation',
           paragraphs: [
-            'MosqueSignage includes an automated PowerShell script that installs an autostart shortcut in your Windows Startup directory. Upon machine reboot (such as after a power outage or Windows update), the script polls the local Next.js server until healthy and opens Microsoft Edge on Monitor 2 in locked kiosk mode.',
+            'Follow the instructions below for your venue operating system to ensure the display launches automatically on computer boot:',
           ],
           steps: [
-            'Open PowerShell as Administrator in the project directory.',
-            'Execute: powershell -ExecutionPolicy Bypass -File scripts\\setup-autostart.ps1',
-            'The script registers "MosqueSignage-Kiosk.lnk" in your Windows Startup directory.',
-            'To test immediately without rebooting, run: scripts\\launch-kiosk.bat',
+            'Windows: Press Win + P, select "Extend", and ensure Monitor 2 is set to 1920x1080 at 100% scaling. In your project terminal, run "npm run autostart -- --display" to register an automated startup shortcut that boots the local server and opens your browser in locked kiosk mode on Monitor 2. (Use "npm run autostart -- --server" for headless background server mode).',
+            'Linux / Raspberry Pi OS: For a dedicated display client, create ~/.config/autostart/mosque-signage-display.desktop containing: Exec=chromium-browser --kiosk --noerrdialogs --disable-infobars http://<SERVER-IP>:3000/display. On host servers, launch via ./start-signage.sh or a systemd service.',
+            'macOS: Open System Settings > Displays, set the prayer hall TV to "Extended Display" at 1080p, and launch Chrome via: open -a "Google Chrome" --args --kiosk http://localhost:3000/display. Add start-signage.sh to System Settings > General > Login Items.',
           ],
           callout: {
             type: 'tip',
-            text: 'Microsoft Edge runs with flags --kiosk --edge-kiosk-type=fullscreen --no-first-run --disable-pinch to prevent congregants from interacting with or closing the window.',
+            text: 'You can check your Windows autostart configuration anytime by running "npm run autostart -- --status" or disable it with "npm run autostart -- --remove".',
           },
         },
       ],
@@ -107,4 +112,10 @@ export const FAQ_HARDWARE_ITEMS: readonly FaqItem[] = [
     },
   },
 ];
+
+export const FAQ_HARDWARE_ITEMS: readonly FaqItem[] = [
+  ...BASE_HARDWARE_ITEMS,
+  ...FAQ_DISPLAY_MODES_ITEMS,
+];
+
 

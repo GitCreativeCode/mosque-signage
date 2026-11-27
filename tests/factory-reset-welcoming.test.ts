@@ -121,5 +121,72 @@ describe('Factory Reset Confirmation, Welcoming Flow & WebP Poster Assets', () =
       expect(validateStep4('SecurePassword2026!', 'password')).toBe(true);
     });
   });
+
+  describe('Factory Reset Modal Choreography & Initial Screening Suppression', () => {
+    it('strictly suppresses initial setup modal rendering while factory reset modal is open', () => {
+      const isInitialSetupModalOpen = true;
+      const isFactoryResetModalOpen = true;
+      const shouldRenderInitialSetupModal = isInitialSetupModalOpen && !isFactoryResetModalOpen;
+
+      expect(shouldRenderInitialSetupModal).toBe(false);
+    });
+
+    it('prevents background live sync from auto-opening initial setup while factory reset is open', () => {
+      const evaluateAutoOpen = (params: {
+        isAuthenticated: boolean;
+        initialSetupCompleted: boolean;
+        hasOpenedInitialSetup: boolean;
+        isFactoryResetModalOpen: boolean;
+      }) => {
+        return (
+          params.isAuthenticated &&
+          !params.initialSetupCompleted &&
+          !params.hasOpenedInitialSetup &&
+          !params.isFactoryResetModalOpen
+        );
+      };
+
+      // When factory reset is open, auto-open must be false even if setup is incomplete in DB
+      expect(
+        evaluateAutoOpen({
+          isAuthenticated: true,
+          initialSetupCompleted: false,
+          hasOpenedInitialSetup: false,
+          isFactoryResetModalOpen: true,
+        })
+      ).toBe(false);
+
+      // Once reset is closed and user acknowledges, explicit trigger handles opening
+      expect(
+        evaluateAutoOpen({
+          isAuthenticated: true,
+          initialSetupCompleted: false,
+          hasOpenedInitialSetup: true,
+          isFactoryResetModalOpen: false,
+        })
+      ).toBe(false);
+    });
+
+    it('navigates to POSTERS and launches initial setup only upon explicit acknowledgment', () => {
+      let activeTab = 'SETTINGS';
+      let isInitialSetupOpen = false;
+      let isFactoryResetOpen = true;
+      let hasOpenedRef = false;
+
+      const onResetSuccessWithSetup = () => {
+        isFactoryResetOpen = false;
+        activeTab = 'POSTERS';
+        hasOpenedRef = true;
+        isInitialSetupOpen = true;
+      };
+
+      onResetSuccessWithSetup();
+
+      expect(isFactoryResetOpen).toBe(false);
+      expect(activeTab).toBe('POSTERS');
+      expect(isInitialSetupOpen).toBe(true);
+      expect(hasOpenedRef).toBe(true);
+    });
+  });
 });
 

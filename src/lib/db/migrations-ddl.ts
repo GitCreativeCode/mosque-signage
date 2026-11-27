@@ -61,9 +61,23 @@ export const BASE_TABLES_DDL = `
     show_progress_bar INTEGER NOT NULL DEFAULT 1,
     poster_view_mode TEXT NOT NULL DEFAULT 'grid',
     overscan_margin_percent INTEGER NOT NULL DEFAULT 0,
+    clock_show_seconds INTEGER NOT NULL DEFAULT 0,
+    clock_time_format TEXT NOT NULL DEFAULT '12h',
     initial_setup_completed INTEGER NOT NULL DEFAULT 0,
     terms_accepted INTEGER NOT NULL DEFAULT 0,
     terms_accepted_at TEXT,
+    high_latitude_rule TEXT NOT NULL DEFAULT 'seventh_of_night',
+    ramadan_mode_enabled INTEGER NOT NULL DEFAULT 0,
+    ramadan_display_start_date TEXT,
+    ramadan_taraweeh_time TEXT,
+    ramadan_taraweeh_rakats TEXT DEFAULT '20',
+    ramadan_taraweeh_sessions TEXT,
+    ramadan_suhoor_buffer_minutes INTEGER NOT NULL DEFAULT 10,
+    ramadan_silence_during_taraweeh INTEGER NOT NULL DEFAULT 1,
+    active_eid_type TEXT NOT NULL DEFAULT 'none',
+    active_eid_date TEXT,
+    eid_auto_hide_minutes INTEGER NOT NULL DEFAULT 60,
+    eid_friday_note TEXT,
     updated_at TEXT NOT NULL
   );
 
@@ -79,6 +93,8 @@ export const BASE_TABLES_DDL = `
     qr_url TEXT,
     qr_label TEXT,
     qr_position TEXT NOT NULL DEFAULT 'bottom-left',
+    qr_start_at TEXT,
+    qr_end_at TEXT,
     start_at TEXT NOT NULL,
     end_at TEXT,
     duration_seconds INTEGER NOT NULL DEFAULT 15,
@@ -129,8 +145,32 @@ export const BASE_TABLES_DDL = `
     khateeb_name TEXT NOT NULL,
     adhan_time TEXT NOT NULL,
     iqamah_time TEXT,
+    location TEXT,
+    language TEXT,
+    topic TEXT,
     status TEXT NOT NULL DEFAULT 'UPCOMING',
     is_active INTEGER NOT NULL DEFAULT 1
+  );
+
+  CREATE TABLE IF NOT EXISTS friday_khateeb_roster (
+    id TEXT PRIMARY KEY,
+    date TEXT NOT NULL,
+    shift_id TEXT NOT NULL,
+    khateeb_name TEXT NOT NULL,
+    topic TEXT,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS eid_shifts (
+    id TEXT PRIMARY KEY,
+    eid_type TEXT NOT NULL,
+    shift_number INTEGER NOT NULL,
+    takbeerat_time TEXT NOT NULL,
+    salah_time TEXT NOT NULL,
+    khateeb_name TEXT,
+    location TEXT,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL
   );
 
   CREATE TABLE IF NOT EXISTS ticker_messages (

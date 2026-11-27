@@ -16,6 +16,7 @@ import { uploadLayoutAsset } from '@/lib/actions/multi-asset-posters';
 interface UseStudioAssetActionsParams {
   readonly scene: StudioSceneState;
   readonly selectedSlotIndex: number | null;
+  readonly selectedLayerKeys?: readonly string[] | undefined;
   readonly frameApplyScope: 'selected' | 'all';
   readonly fileInputRef: React.RefObject<HTMLInputElement | null>;
   readonly canvasDropInputRef: React.RefObject<HTMLInputElement | null>;
@@ -34,7 +35,7 @@ interface UseStudioAssetActionsParams {
 /** Handles media asset uploads, frame styling, notice slots, stickers, badges, banners, and color pickers. */
 export function useStudioAssetActions(params: UseStudioAssetActionsParams) {
   const {
-    scene, selectedSlotIndex, frameApplyScope, fileInputRef, canvasDropInputRef,
+    scene, selectedSlotIndex, selectedLayerKeys, frameApplyScope, fileInputRef, canvasDropInputRef,
     setIsUploading, setError, setSelectedSlotIndex, setSelectedTextIndex,
     setActiveTab, selectSticker, commitScene, commitSlots, setTextOverlays, isDirtyRef,
   } = params;
@@ -111,6 +112,17 @@ export function useStudioAssetActions(params: UseStudioAssetActionsParams) {
       commitSlots(scene.slots.map((s) => ({ ...s, frame_style, custom_frame_url: customUrl ?? s.custom_frame_url })));
       return;
     }
+    const selectedSlotIds = (selectedLayerKeys || []).filter((k) => k.startsWith('slot:')).map((k) => k.slice(5));
+    if (selectedSlotIds.length > 0) {
+      commitSlots(
+        scene.slots.map((s) =>
+          selectedSlotIds.includes(s.id)
+            ? { ...s, frame_style, custom_frame_url: customUrl ?? s.custom_frame_url }
+            : s,
+        ),
+      );
+      return;
+    }
     if (selectedSlotIndex === null || !scene.slots[selectedSlotIndex]) return;
     const updated = [...scene.slots];
     updated[selectedSlotIndex] = { ...scene.slots[selectedSlotIndex]!, frame_style, custom_frame_url: customUrl ?? scene.slots[selectedSlotIndex]!.custom_frame_url };
@@ -145,9 +157,9 @@ export function useStudioAssetActions(params: UseStudioAssetActionsParams) {
   const handleAddTextBanner = () => {
     const banner: PosterTextOverlay = {
       id: `banner-${Date.now()}`, text: 'Special Announcement', position: 'custom', z_index: 20,
-      font_family: 'sans', font_size: 'lg', text_color: '#ffffff', bg_style: 'dark', bg_color: '#0f172a',
+      font_family: 'sans', font_size: 40, scale_x: 1, scale_y: 1, text_color: '#ffffff', bg_style: 'dark', bg_color: '#0f172a',
       is_bold: true, is_italic: false, is_underline: false, text_align: 'center',
-      pos_y: 15, pos_x: 50, rotation: 0, width_mode: 'fit',
+      pos_y: 15, pos_x: 50, rotation: 0, width_mode: 'fit', bg_opacity: 100, box_fit: 'block',
     };
     prependItemsAndCommit({ textOverlays: [...scene.textOverlays, banner] }, [`text:${banner.id}`]);
     setSelectedTextIndex(scene.textOverlays.length);

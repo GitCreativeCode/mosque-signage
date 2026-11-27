@@ -48,8 +48,8 @@ function FooterVersionBadge({ version = APP_VERSION }: { readonly version?: stri
 
     checkVersion();
 
-    // Active polling every 2 minutes while tab is open
-    const pollInterval = setInterval(checkVersion, 2 * 60 * 1000);
+    // Active polling every 1 hour (60 minutes) to avoid rate limits
+    const pollInterval = setInterval(checkVersion, 60 * 60 * 1000);
 
     // Re-check immediately whenever user refocuses tab or returns to window
     const handleFocus = () => {
@@ -85,13 +85,14 @@ function FooterVersionBadge({ version = APP_VERSION }: { readonly version?: stri
           <span>v{version} &bull; Update Available (v{latestVersion})</span>
         </button>
       ) : (
-        <Link
-          href="/releases"
+        <button
+          type="button"
+          onClick={() => setIsUpdateModalOpen(true)}
           className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[var(--admin-card)] text-[var(--admin-text-secondary)] hover:text-[var(--admin-text-primary)] border border-[var(--admin-border)] hover:border-[var(--admin-text-muted)] transition shadow-xs cursor-pointer"
-          title={`MosqueSignage Version ${version} - Click to view changelog`}
+          title={`MosqueSignage Version ${version} - Click to check for updates`}
         >
           v{version}
-        </Link>
+        </button>
       )}
 
       {/* Appliance Update Modal */}
@@ -101,6 +102,11 @@ function FooterVersionBadge({ version = APP_VERSION }: { readonly version?: stri
         currentVersion={version}
         targetVersion={latestVersion}
         releaseInfo={releaseInfo}
+        onVersionUpdated={(newTarget, newRelease) => {
+          setHasUpdate(true);
+          setLatestVersion(newTarget);
+          setReleaseInfo(newRelease);
+        }}
       />
 
       {/* Post-Update "What's New" Popup */}
@@ -119,11 +125,11 @@ export function SiteFooter({ className = '', version = APP_VERSION }: SiteFooter
   return (
     <footer
       role="contentinfo"
-      className={`border-t border-[var(--admin-border)] bg-[var(--admin-surface)] px-6 py-5 text-xs text-[var(--admin-text-muted)] transition-colors ${className}`}
+      className={`border-t border-[var(--admin-border)] bg-[var(--admin-surface)] px-4 sm:px-6 py-5 text-xs text-[var(--admin-text-muted)] transition-colors ${className}`}
     >
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
         {/* Left: Copyright & Version / Update Pill */}
-        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 text-center sm:text-left">
           <p className="font-medium text-[var(--admin-text-secondary)]">
             &copy; {currentYear} MosqueSignage. All rights reserved.
           </p>
@@ -132,7 +138,7 @@ export function SiteFooter({ className = '', version = APP_VERSION }: SiteFooter
         </div>
 
         {/* Right: Policy & Documentation Links */}
-        <nav aria-label="Legal and Documentation Links" className="flex items-center space-x-5 text-xs">
+        <nav aria-label="Legal and Documentation Links" className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 sm:gap-x-5 gap-y-2 text-xs">
           <Link
             href="/faq"
             className="hover:text-[var(--admin-text-primary)] transition cursor-pointer"

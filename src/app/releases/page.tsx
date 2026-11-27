@@ -16,10 +16,10 @@ export default function ReleasesPage() {
   const pastReleases = OFFICIAL_RELEASE_HISTORY.slice(1);
 
   return (
-    <div className="min-h-screen bg-[var(--admin-bg)] text-[var(--admin-text-primary)] flex flex-col font-sans selection:bg-[var(--admin-accent)]/20">
+    <div className="min-h-screen overflow-x-hidden bg-[var(--admin-bg)] text-[var(--admin-text-primary)] flex flex-col font-sans selection:bg-[var(--admin-accent)]/20">
       <PublicHeader subtitle="Releases & Changelog" />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-10 space-y-12">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8 sm:space-y-12">
         <div className="space-y-3 border-b border-[var(--admin-border)] pb-8">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--admin-text-primary)]">Releases &amp; Changelog</h1>
           <p className="text-xs sm:text-sm text-[var(--admin-text-secondary)] max-w-2xl leading-relaxed">
@@ -29,7 +29,7 @@ export default function ReleasesPage() {
 
         {latestRelease && (
           <section className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-[var(--admin-text-muted)]">Latest Release</span>
               <span className="text-xs text-[var(--admin-text-muted)] font-mono">Current Installed: v{APP_VERSION}</span>
             </div>
@@ -42,8 +42,8 @@ export default function ReleasesPage() {
             <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--admin-text-muted)]">Previous Releases</h2>
             <div className="space-y-6">
               {pastReleases.map((rel) => (
-                <article key={rel.version} className="rounded-3xl border border-[var(--admin-border)] bg-[var(--admin-card)] p-6 space-y-4">
-                  <div className="flex items-center justify-between">
+                <article key={rel.version} className="rounded-2xl sm:rounded-3xl border border-[var(--admin-border)] bg-[var(--admin-card)] p-4 sm:p-6 space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="font-mono font-bold text-sm text-[var(--admin-text-primary)]">v{rel.version}</span>
                     <span className="text-xs text-[var(--admin-text-muted)]">{rel.date}</span>
                   </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import type { MultiAssetStudioModalProps, SelectedEntity } from '@/lib/posters/studio-types';
 import type { PosterCanvasSticker, PosterTextOverlay, SlotFitMode } from '@/types/index';
 import { deleteLayerKeysFromScene } from '@/lib/posters/studio-layers';
@@ -11,6 +11,7 @@ import { useStudioPointerEngine } from './useStudioPointerEngine';
 import { useStudioLayerActions } from './useStudioLayerActions';
 import { useStudioAssetActions } from './useStudioAssetActions';
 import { useStudioKeyboardShortcuts } from './useStudioKeyboardShortcuts';
+import { useStudioClipboard } from './useStudioClipboard';
 
 /** Composes all Multi-Asset Studio state, selection, history, pointer, layer, and persistence hooks. */
 export function useMultiAssetStudio(props: MultiAssetStudioModalProps) {
@@ -61,12 +62,14 @@ export function useMultiAssetStudio(props: MultiAssetStudioModalProps) {
 
   const layerActions = useStudioLayerActions({
     scene: historyState.scene,
+    archetype: lifecycle.archetype,
     selectedLayerKeys: selection.selectedLayerKeys,
     setSelectedLayerKeys: selection.setSelectedLayerKeys,
     setSelectedSlotIndex: selection.setSelectedSlotIndex,
     selectSticker: selection.selectSticker,
     selectText: selection.selectText,
     selectCompound: selection.selectCompound,
+    selectSingleEntity: selection.selectSingleEntity,
     deselectAll: selection.deselectAll,
     commitScene: historyState.commitScene,
     commitSlots: historyState.commitSlots,
@@ -81,6 +84,7 @@ export function useMultiAssetStudio(props: MultiAssetStudioModalProps) {
   const assetActions = useStudioAssetActions({
     scene: historyState.scene,
     selectedSlotIndex: selection.selectedSlotIndex,
+    selectedLayerKeys: selection.selectedLayerKeys,
     frameApplyScope: lifecycle.frameApplyScope,
     fileInputRef: lifecycle.fileInputRef,
     canvasDropInputRef: lifecycle.canvasDropInputRef,
@@ -96,6 +100,18 @@ export function useMultiAssetStudio(props: MultiAssetStudioModalProps) {
     isDirtyRef: historyState.isDirtyRef,
   });
 
+  const clipboard = useStudioClipboard({
+    scene: historyState.scene,
+    selectedLayerKeys: selection.selectedLayerKeys,
+    selectedEntity: selection.selectedEntity,
+    selectedSlotIndex: selection.selectedSlotIndex,
+    commitScene: historyState.commitScene,
+    selectMultipleKeys: selection.selectMultipleKeys,
+    setSelectedLayerKeys: selection.setSelectedLayerKeys,
+    selectSingleEntity: selection.selectSingleEntity,
+    isDirtyRef: historyState.isDirtyRef,
+  });
+
   useStudioKeyboardShortcuts({
     isOpen, showDiscardConfirm: lifecycle.showDiscardConfirm, scene: historyState.scene,
     selectedSlotIndex: selection.selectedSlotIndex,
@@ -105,11 +121,40 @@ export function useMultiAssetStudio(props: MultiAssetStudioModalProps) {
     setSelectedSlotIndex: selection.setSelectedSlotIndex,
     commitScene: historyState.commitScene,
     deselectAll: selection.deselectAll, handleUndo, handleRedo,
+    onDuplicateSelected: () => {
+      if (selection.selectedLayerKeys.length > 0) {
+        layerActions.handleDuplicateSelectedLayers();
+      } else if (selection.selectedEntity) {
+        layerActions.handleDuplicateLayer(selection.selectedEntity);
+      } else if (selection.selectedSlotIndex !== null && historyState.scene.slots[selection.selectedSlotIndex]) {
+        const s = historyState.scene.slots[selection.selectedSlotIndex]!;
+        layerActions.handleDuplicateLayer({ type: 'slot', id: s.id, itemIdx: selection.selectedSlotIndex });
+      }
+    },
+    onCopySelected: clipboard.copySelected,
+    onPasteSelected: clipboard.pasteSelected,
+    onToggleLockSelected: () => {
+      if (selection.selectedLayerKeys.length > 1) {
+        layerActions.handleLockSelectedLayers();
+      } else if (selection.selectedEntity) {
+        layerActions.toggleItemLock(selection.selectedEntity);
+      }
+    },
   });
+
+  const prevSelectedCountRef = useRef(selection.selectedLayerKeys.length);
+  useEffect(() => {
+    const prev = prevSelectedCountRef.current;
+    const curr = selection.selectedLayerKeys.length;
+    prevSelectedCountRef.current = curr;
+    if (curr > 1 && prev <= 1) {
+      lifecycle.setActiveTab('layers');
+    }
+  }, [selection.selectedLayerKeys.length, lifecycle.setActiveTab]);
 
   const handlePatchEntity = (
     entity: SelectedEntity,
-    patch: { flip_x?: boolean; flip_y?: boolean; rotation?: number; fit_mode?: SlotFitMode },
+    patch: { flip_x?: boolean; flip_y?: boolean; rotation?: number; fit_mode?: SlotFitMode; pos_x?: number; pos_y?: number },
   ) => {
     const s = historyState.scene;
     if (entity.type === 'slot') {
@@ -126,10 +171,8 @@ export function useMultiAssetStudio(props: MultiAssetStudioModalProps) {
       historyState.commitScene({ ...s, compoundLayers: next });
       return;
     }
-    if (patch.rotation !== undefined) {
-      const next = s.textOverlays.map((t) => (t.id === entity.id ? { ...t, rotation: patch.rotation } : t));
-      historyState.commitScene({ ...s, textOverlays: next });
-    }
+    const next = s.textOverlays.map((t) => (t.id === entity.id ? { ...t, ...patch } : t));
+    historyState.commitScene({ ...s, textOverlays: next });
   };
 
   const handleUpdateSticker = (index: number, next: PosterCanvasSticker) => {
@@ -151,7 +194,7 @@ export function useMultiAssetStudio(props: MultiAssetStudioModalProps) {
 
   return {
     historyState, selection, lifecycle, pointer, layerActions, assetActions,
-    handleUndo, handleRedo, handlePatchEntity, handleUpdateSticker,
+    clipboard, handleUndo, handleRedo, handlePatchEntity, handleUpdateSticker,
     handleDeleteSticker, handlePatchTextOverlay,
   };
 }

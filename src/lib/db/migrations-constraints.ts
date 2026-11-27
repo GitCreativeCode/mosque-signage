@@ -76,6 +76,8 @@ export function migrateLegacyTableConstraints(driver: SqliteDriver): void {
           show_progress_bar INTEGER NOT NULL DEFAULT 1,
           poster_view_mode TEXT NOT NULL DEFAULT 'grid',
           overscan_margin_percent INTEGER NOT NULL DEFAULT 0,
+          clock_show_seconds INTEGER NOT NULL DEFAULT 0,
+          clock_time_format TEXT NOT NULL DEFAULT '12h',
           initial_setup_completed INTEGER NOT NULL DEFAULT 0,
           terms_accepted INTEGER NOT NULL DEFAULT 0,
           terms_accepted_at TEXT,

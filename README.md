@@ -1,9 +1,9 @@
 # MosqueSignage
 
 ![License: GPLv3](https://img.shields.io/badge/license-GPLv3-emerald.svg)
-![Version: 0.1.3](https://img.shields.io/badge/version-v0.1.3-blue.svg)
-![Node.js](https://img.shields.io/badge/node-%3E%3D22.0-blue.svg)
-![Tests](https://img.shields.io/badge/tests-557%2F557%20passing-brightgreen.svg)
+![Version: 0.2.0](https://img.shields.io/badge/version-v0.2.0-blue.svg)
+![Node.js](https://img.shields.io/badge/node-22+-blue.svg)
+![Tests](https://img.shields.io/badge/tests-659_passing-brightgreen.svg)
 
 **MosqueSignage** is an open-source, local-first digital signage appliance engineered for mosques, Islamic schools, community centers, and public venues. It turns any television or monitor into a clean, 24/7 informational display showing accurate prayer times, Friday Jummah schedules, announcements, event flyers, and videos.
 
@@ -24,7 +24,7 @@ Designed for 24/7 reliability, MosqueSignage runs on almost any hardware (such a
 - **24/7 Unattended Reliability**: Built-in Screen Wake Lock prevents displays from sleeping, automatic Do-Not-Disturb silences the screen during congregational prayer, and midnight date rollover automatically calculates tomorrow's schedule without refreshing.
 - **TV Auto-Power & Audio Muting**: Automatically put the TV screen into low-power standby at night, and optionally mute prayer hall audio receivers (Denon, Yamaha, or HTTP webhook) during Iqamah.
 - **Multi-Browser & PWA Kiosk**: Works on Google Chrome, Chromium, Firefox, Microsoft Edge, and Safari. Can also be installed in 1 click as a standalone Progressive Web App (PWA) with zero browser toolbars or address bars.
-- **Easy Administration & Security**: User-friendly admin dashboard with an on-screen tactile keypad for lobby touchscreens, username/password support for remote access, and an emergency terminal recovery command if credentials are forgotten.
+- **Easy Administration & Multi-Screen Support**: User-friendly admin dashboard with an on-screen tactile keypad for lobby touchscreens, username/password support for remote access, responsive mobile/tablet hamburger navigation and stacked schedules on phones (`< 1024px`), Mobile Companion view on `/display` (`< 768px` with 1-tap `16:9 TV Preview`), and an emergency terminal recovery command if credentials are forgotten.
 - **100% Offline & Private**: All data is stored in an embedded SQLite database on the local machine. No third-party servers, tracking, or recurring monthly bills.
 
 ---
@@ -262,7 +262,7 @@ docker compose up -d --build
 
 MosqueSignage includes a comprehensive automated verification suite:
 ```bash
-npm test                # Runs all 51 test suites (516 tests)
+npm test                # Runs all 61 test suites (659 tests)
 npx tsc --noEmit        # Strict TypeScript type safety verification
 npm run test:security   # Runs targeted security, auth, and penetration test checks
 ```

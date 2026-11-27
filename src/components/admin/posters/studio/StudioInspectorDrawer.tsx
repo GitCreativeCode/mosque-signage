@@ -33,6 +33,7 @@ export function StudioInspectorDrawer({ studio, venueTimezone }: StudioInspector
           onChangeArchetype={(a) => { lifecycle.setArchetype(a); historyState.isDirtyRef.current = true; }}
           onEnableFreeform={(updated) => { lifecycle.setArchetype('freeform'); historyState.commitSlots(updated); }}
           onChangeBackground={(bg) => { lifecycle.setCanvasBackground(bg); historyState.isDirtyRef.current = true; }}
+          onChangeBackgroundCustom={(custom) => { lifecycle.setCanvasBackgroundCustom(custom); historyState.isDirtyRef.current = true; }}
           onChangeGridGap={(g) => { lifecycle.setGridGap(g); historyState.isDirtyRef.current = true; }}
           onToggleAllFitCover={assetActions.handleToggleAllFitCover}
           onChangeSplitRatio={(r) => { lifecycle.setSplitRatio(r); historyState.isDirtyRef.current = true; }}
@@ -42,6 +43,7 @@ export function StudioInspectorDrawer({ studio, venueTimezone }: StudioInspector
       {lifecycle.activeTab === 'layers' && (
         <StudioLayersTab
           scene={historyState.scene}
+          archetype={lifecycle.archetype}
           isUploading={lifecycle.isUploading}
           selectedEntity={selection.selectedEntity}
           selectedSlotIndex={selection.selectedSlotIndex}
@@ -70,6 +72,8 @@ export function StudioInspectorDrawer({ studio, venueTimezone }: StudioInspector
           onMergeSelected={layerActions.handleMergeSelectedIntoCompound}
           onLockSelected={layerActions.handleLockSelectedLayers}
           onDeleteSelected={layerActions.handleDeleteSelectedLayers}
+          onBatchRotateDelta={layerActions.handleBatchRotateDelta}
+          onBatchResetRotation={layerActions.handleBatchResetRotation}
           onReorderLayers={layerActions.handleReorderLayers}
           onUnmergeCompound={layerActions.handleUnmergeCompound}
           onMoveUp={layerActions.handleMoveLayerUp}
@@ -89,6 +93,10 @@ export function StudioInspectorDrawer({ studio, venueTimezone }: StudioInspector
         <StudioFramesTab
           activeSlot={activeSlot}
           selectedSlotIndex={selection.selectedSlotIndex}
+          selectedSlotCount={
+            selection.selectedLayerKeys.filter((k) => k.startsWith('slot:')).length ||
+            (selection.selectedSlotIndex !== null ? 1 : 0)
+          }
           totalSlots={historyState.slots.length}
           frameApplyScope={lifecycle.frameApplyScope}
           onChangeScope={lifecycle.setFrameApplyScope}
@@ -100,6 +108,7 @@ export function StudioInspectorDrawer({ studio, venueTimezone }: StudioInspector
         <StudioStickersTab
           stickers={historyState.stickers}
           selectedStickerIndex={selection.selectedStickerIndex}
+          selectedLayerKeys={selection.selectedLayerKeys}
           customBadgeText={lifecycle.customBadgeText}
           customBadgeVariant={lifecycle.customBadgeVariant}
           setCustomBadgeText={lifecycle.setCustomBadgeText}
@@ -114,6 +123,11 @@ export function StudioInspectorDrawer({ studio, venueTimezone }: StudioInspector
       {lifecycle.activeTab === 'text' && (
         <StudioTextTab
           textOverlays={historyState.textOverlays}
+          selectedTextId={selection.selectedEntity?.type === 'text' ? selection.selectedEntity.id : null}
+          onSelectText={(id) => {
+            const idx = historyState.textOverlays.findIndex((t) => t.id === id);
+            if (idx !== -1) selection.selectText(idx);
+          }}
           onAddBanner={assetActions.handleAddTextBanner}
           onDeleteBanner={(idx) => {
             historyState.setTextOverlays((p) => p.filter((_, i) => i !== idx));
@@ -131,11 +145,16 @@ export function StudioInspectorDrawer({ studio, venueTimezone }: StudioInspector
           qrUrl={lifecycle.qrUrl}
           qrLabel={lifecycle.qrLabel}
           qrPosition={lifecycle.qrPosition}
+          qrStartAt={lifecycle.qrStartAt}
+          qrEndAt={lifecycle.qrEndAt}
+          venueTimezone={venueTimezone}
           showPreviewQr={lifecycle.showPreviewQr}
           onChangeHasQr={(v) => { lifecycle.setHasQr(v); historyState.isDirtyRef.current = true; }}
           onChangeQrUrl={(v) => { lifecycle.setQrUrl(v); historyState.isDirtyRef.current = true; }}
           onChangeQrLabel={(v) => { lifecycle.setQrLabel(v); historyState.isDirtyRef.current = true; }}
           onChangeQrPosition={(p) => { lifecycle.setQrPosition(p); historyState.isDirtyRef.current = true; }}
+          onChangeQrStartAt={(v) => { lifecycle.setQrStartAt(v); historyState.isDirtyRef.current = true; }}
+          onChangeQrEndAt={(v) => { lifecycle.setQrEndAt(v); historyState.isDirtyRef.current = true; }}
           onTogglePreviewQr={() => lifecycle.setShowPreviewQr((p) => !p)}
         />
       )}

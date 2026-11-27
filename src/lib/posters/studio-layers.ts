@@ -16,15 +16,15 @@ function insertKeyAfterInHierarchy(
         if (f.id !== folderId) return f;
         const keys = [...(f.child_keys ?? [])];
         const idx = keys.indexOf(oldKey);
-        if (idx !== -1) keys.splice(idx + 1, 0, newKey);
-        else keys.push(newKey);
+        if (idx !== -1) keys.splice(idx, 0, newKey);
+        else keys.unshift(newKey);
         return { ...f, child_keys: keys };
       }),
     };
   }
   const nextRoot = [...root];
   const idx = nextRoot.indexOf(oldKey);
-  if (idx !== -1) nextRoot.splice(idx + 1, 0, newKey);
+  if (idx !== -1) nextRoot.splice(idx, 0, newKey);
   else nextRoot.unshift(newKey);
   return { folders, root: nextRoot };
 }
@@ -62,8 +62,10 @@ export function duplicateLayerInScene(
   const randId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
   const rootBase = ensureRootOrder(scene.rootOrder, scene.folders, scene.slots, scene.stickers, scene.textOverlays, scene.compoundLayers);
 
-  if (item.type === 'slot' && item.itemIdx !== undefined && scene.slots[item.itemIdx]) {
-    const target = scene.slots[item.itemIdx]!;
+  if (item.type === 'slot') {
+    const slotIdx = item.itemIdx !== undefined ? item.itemIdx : scene.slots.findIndex((s) => s.id === item.id);
+    if (slotIdx === -1 || !scene.slots[slotIdx]) return null;
+    const target = scene.slots[slotIdx]!;
     const newId = randId('slot');
     const copy = {
       ...target, id: newId,
@@ -72,29 +74,33 @@ export function duplicateLayerInScene(
       label: target.label ? `${target.label} (Copy)` : undefined,
     };
     const nextSlots = [...scene.slots];
-    nextSlots.splice(item.itemIdx + 1, 0, copy);
+    nextSlots.splice(slotIdx + 1, 0, copy);
     const placed = insertKeyAfterInHierarchy(scene.folders, rootBase, target.layer_folder_id, `slot:${target.id}`, `slot:${newId}`);
-    return { newId, newIndex: item.itemIdx + 1, nextScene: normalizeSceneWithZ({ ...scene, slots: nextSlots, folders: placed.folders, rootOrder: placed.root }) };
+    return { newId, newIndex: slotIdx + 1, nextScene: normalizeSceneWithZ({ ...scene, slots: nextSlots, folders: placed.folders, rootOrder: placed.root }) };
   }
 
-  if (item.type === 'sticker' && item.itemIdx !== undefined && scene.stickers[item.itemIdx]) {
-    const target = scene.stickers[item.itemIdx]!;
+  if (item.type === 'sticker') {
+    const stkIdx = item.itemIdx !== undefined ? item.itemIdx : scene.stickers.findIndex((s) => s.id === item.id);
+    if (stkIdx === -1 || !scene.stickers[stkIdx]) return null;
+    const target = scene.stickers[stkIdx]!;
     const newId = randId('sticker');
     const copy = { ...target, id: newId, pos_x: Math.min(90, target.pos_x + 4), pos_y: Math.min(90, target.pos_y + 4) };
     const nextStickers = [...scene.stickers];
-    nextStickers.splice(item.itemIdx + 1, 0, copy);
+    nextStickers.splice(stkIdx + 1, 0, copy);
     const placed = insertKeyAfterInHierarchy(scene.folders, rootBase, target.layer_folder_id, `sticker:${target.id}`, `sticker:${newId}`);
-    return { newId, newIndex: item.itemIdx + 1, nextScene: normalizeSceneWithZ({ ...scene, stickers: nextStickers, folders: placed.folders, rootOrder: placed.root }) };
+    return { newId, newIndex: stkIdx + 1, nextScene: normalizeSceneWithZ({ ...scene, stickers: nextStickers, folders: placed.folders, rootOrder: placed.root }) };
   }
 
-  if (item.type === 'text' && item.itemIdx !== undefined && scene.textOverlays[item.itemIdx]) {
-    const target = scene.textOverlays[item.itemIdx]!;
+  if (item.type === 'text') {
+    const txtIdx = item.itemIdx !== undefined ? item.itemIdx : scene.textOverlays.findIndex((t) => t.id === item.id);
+    if (txtIdx === -1 || !scene.textOverlays[txtIdx]) return null;
+    const target = scene.textOverlays[txtIdx]!;
     const newId = randId('text');
     const copy = { ...target, id: newId, pos_x: Math.min(90, (target.pos_x ?? 50) + 4), pos_y: Math.min(90, (target.pos_y ?? 50) + 4) };
     const nextTexts = [...scene.textOverlays];
-    nextTexts.splice(item.itemIdx + 1, 0, copy);
+    nextTexts.splice(txtIdx + 1, 0, copy);
     const placed = insertKeyAfterInHierarchy(scene.folders, rootBase, target.layer_folder_id, `text:${target.id}`, `text:${newId}`);
-    return { newId, newIndex: item.itemIdx + 1, nextScene: normalizeSceneWithZ({ ...scene, textOverlays: nextTexts, folders: placed.folders, rootOrder: placed.root }) };
+    return { newId, newIndex: txtIdx + 1, nextScene: normalizeSceneWithZ({ ...scene, textOverlays: nextTexts, folders: placed.folders, rootOrder: placed.root }) };
   }
 
   if (item.type === 'compound') {
@@ -169,4 +175,33 @@ export function toggleLayerVisibilityInScene(
   if (item.type === 'sticker') return { stickers: scene.stickers.map((s, i) => (i === item.itemIdx ? { ...s, is_hidden: !item.isHidden } : s)) };
   if (item.type === 'text') return { textOverlays: scene.textOverlays.map((t, i) => (i === item.itemIdx ? { ...t, is_hidden: !item.isHidden } : t)) };
   return { compoundLayers: scene.compoundLayers.map((c) => (c.id === item.id ? { ...c, is_hidden: !item.isHidden } : c)) };
+}
+
+/** Moves a layer item directly to the top (front) or bottom (back) of its hierarchy band. */
+export function moveLayerToExtreme(
+  scene: StudioSceneState,
+  item: LayerItemTarget,
+  destination: 'front' | 'back',
+): StudioSceneState | null {
+  const key = `${item.type}:${item.id}`;
+  if (isLayerKeyLocked(key, scene)) return null;
+  const folderId = findLayerParentFolderId(key, scene);
+  let folders = [...scene.folders];
+  const root = ensureRootOrder(scene.rootOrder, folders, scene.slots, scene.stickers, scene.textOverlays, scene.compoundLayers);
+
+  const moveToExtreme = (arr: readonly string[]) => {
+    const idx = arr.indexOf(key);
+    if (idx === -1) return [...arr];
+    const copy = [...arr];
+    const [moved] = copy.splice(idx, 1);
+    if (destination === 'front') copy.unshift(moved!);
+    else copy.push(moved!);
+    return copy;
+  };
+
+  if (folderId) {
+    folders = folders.map((f) => (f.id === folderId ? { ...f, child_keys: moveToExtreme(f.child_keys ?? []) } : f));
+    return normalizeSceneWithZ({ ...scene, folders, rootOrder: root });
+  }
+  return normalizeSceneWithZ({ ...scene, folders, rootOrder: moveToExtreme(root) });
 }

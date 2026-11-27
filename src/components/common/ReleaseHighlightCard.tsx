@@ -23,9 +23,9 @@ function ReleaseBulletSection({ title, items }: { title: string; items?: readonl
 
 export function ReleaseHighlightCard({ release, repoSlug }: ReleaseHighlightCardProps) {
   return (
-    <article className="rounded-3xl border border-[var(--admin-border)] bg-[var(--admin-card)] p-6 sm:p-8 shadow-xs space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--admin-border)]/60 pb-5">
-        <div className="flex items-center space-x-3">
+    <article className="rounded-2xl sm:rounded-3xl border border-[var(--admin-border)] bg-[var(--admin-card)] p-4 sm:p-8 shadow-xs space-y-5 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--admin-border)]/60 pb-4 sm:pb-5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <span className="px-3 py-1 rounded-xl bg-green-600/10 border border-green-600/25 text-green-700 dark:text-green-400 font-mono font-bold text-sm">
             v{release.version}
           </span>

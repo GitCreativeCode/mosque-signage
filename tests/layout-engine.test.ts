@@ -282,17 +282,23 @@ describe('Layout Engine & Divider Clamping', () => {
     expect(res.valid).toBe(true);
   });
 
-  it('provides 7 sacred Islamic sticker presets in ISLAMIC_STICKERS_REGISTRY', async () => {
+  it('provides 9 sacred Islamic sticker presets in ISLAMIC_STICKERS_REGISTRY', async () => {
     const { ISLAMIC_STICKERS_REGISTRY } = await import('@/lib/posters/layout-engine');
-    expect(ISLAMIC_STICKERS_REGISTRY.length).toBe(7);
+    expect(ISLAMIC_STICKERS_REGISTRY.length).toBe(9);
     const ids = ISLAMIC_STICKERS_REGISTRY.map((s) => s.id);
+    expect(ids).toContain('alhamdulillah');
+    expect(ids).toContain('mashaallah');
+    expect(ids).toContain('subhanallah');
+    expect(ids).toContain('mihrab_arch');
     expect(ids).toContain('fanous');
     expect(ids).toContain('crescent_moon');
-    expect(ids).toContain('mosque');
-    expect(ids).toContain('islamic_star');
     expect(ids).toContain('bismillah');
     expect(ids).toContain('kaaba');
     expect(ids).toContain('tasbih');
+    expect(ids).not.toContain('quran_rehal');
+    expect(ids).not.toContain('dates_dallah');
+    expect(ids).not.toContain('mosque');
+    expect(ids).not.toContain('islamic_star');
     expect(ids).not.toContain('badge_custom');
   });
 
@@ -355,7 +361,7 @@ describe('Layout Engine & Divider Clamping', () => {
     const { CANVAS_BACKGROUNDS_REGISTRY, getCanvasBackgroundProps } = await import(
       '@/lib/posters/layout-engine'
     );
-    expect(CANVAS_BACKGROUNDS_REGISTRY.length).toBeGreaterThanOrEqual(9);
+    expect(CANVAS_BACKGROUNDS_REGISTRY.length).toBeGreaterThanOrEqual(6);
 
     for (const bg of CANVAS_BACKGROUNDS_REGISTRY) {
       expect(bg.previewBackground).toBeDefined();
@@ -451,7 +457,57 @@ describe('Layout Engine & Divider Clamping', () => {
       path.resolve(process.cwd(), 'src/components/admin/posters/PosterSequenceRow.tsx'),
       'utf8'
     );
-    expect(sequenceRowSource).toContain('relative isolate w-20 h-12');
+    expect(sequenceRowSource).toContain('relative isolate w-24 aspect-video');
+  });
+
+  it('supports multi-layer block reordering, batch alignment, and custom canvas backgrounds', async () => {
+    const { alignSelectedLayersState } = await import('@/lib/posters/studio-bounds');
+    const { reorderLayerInScene } = await import('@/lib/posters/studio-reorder');
+    const { getCanvasBackgroundProps } = await import('@/lib/posters/layout-background');
+
+    // 1. Test getCanvasBackgroundProps with custom solid and gradient
+    const solidProps = getCanvasBackgroundProps('custom', '#1e293b');
+    expect(solidProps.style.backgroundColor).toBe('#1e293b');
+
+    const gradProps = getCanvasBackgroundProps('custom', 'linear-gradient(135deg, #064e3b, #0f172a)');
+    expect(gradProps.style.backgroundImage).toBe('linear-gradient(135deg, #064e3b, #0f172a)');
+
+    // 2. Test alignSelectedLayersState
+    const initialScene = {
+      slots: [
+        { id: 's1', type: 'image' as const, asset_path: '', fit_mode: 'contain' as const, frame_style: 'none' as const, pos_x: 20, pos_y: 20, width_percent: 20, height_percent: 20 },
+        { id: 's2', type: 'image' as const, asset_path: '', fit_mode: 'contain' as const, frame_style: 'none' as const, pos_x: 60, pos_y: 60, width_percent: 20, height_percent: 20 },
+      ],
+      stickers: [],
+      textOverlays: [],
+      compoundLayers: [],
+      folders: [],
+      rootOrder: ['slot:s1', 'slot:s2'],
+    };
+
+    const alignedLeft = alignSelectedLayersState(initialScene, ['slot:s1', 'slot:s2'], 'freeform', 'left');
+    expect(alignedLeft.slots[0]!.pos_x).toBe(alignedLeft.slots[1]!.pos_x);
+
+    const alignedCenter = alignSelectedLayersState(initialScene, ['slot:s1', 'slot:s2'], 'freeform', 'center');
+    expect(alignedCenter.slots[0]!.pos_x).toBe(alignedCenter.slots[1]!.pos_x);
+
+    // 3. Test reorderLayerInScene with multiple keys moving as a contiguous block
+    const sceneForReorder = {
+      slots: [
+        { id: 's1', type: 'image' as const, asset_path: '', fit_mode: 'contain' as const, frame_style: 'none' as const },
+        { id: 's2', type: 'image' as const, asset_path: '', fit_mode: 'contain' as const, frame_style: 'none' as const },
+        { id: 's3', type: 'image' as const, asset_path: '', fit_mode: 'contain' as const, frame_style: 'none' as const },
+      ],
+      stickers: [],
+      textOverlays: [],
+      compoundLayers: [],
+      folders: [],
+      rootOrder: ['slot:s1', 'slot:s2', 'slot:s3'],
+    };
+
+    const reordered = reorderLayerInScene(sceneForReorder, ['slot:s1', 'slot:s2'], 'slot:s3', 'after');
+    expect(reordered).not.toBeNull();
+    expect(reordered!.rootOrder).toEqual(['slot:s3', 'slot:s1', 'slot:s2']);
   });
 });
 

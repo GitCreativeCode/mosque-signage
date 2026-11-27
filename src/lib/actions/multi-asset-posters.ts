@@ -37,6 +37,8 @@ export interface SaveMultiAssetPosterInput {
   readonly qr_url?: string | undefined;
   readonly qr_label?: string | undefined;
   readonly qr_position?: QrPosition | undefined;
+  readonly qr_start_at?: string | null | undefined;
+  readonly qr_end_at?: string | null | undefined;
   readonly allow_audio?: boolean | undefined;
   readonly recurring_schedule?: string | null | undefined;
 }
@@ -91,6 +93,8 @@ export async function saveMultiAssetPoster(input: SaveMultiAssetPosterInput): Pr
         qr_url: safeQrUrl,
         qr_label: input.qr_label?.trim() || null,
         qr_position: input.qr_position ?? 'bottom-left',
+        qr_start_at: input.qr_start_at !== undefined ? (input.qr_start_at || null) : undefined,
+        qr_end_at: input.qr_end_at !== undefined ? (input.qr_end_at || null) : undefined,
         allow_audio: Boolean(input.allow_audio),
         ...(input.recurring_schedule !== undefined ? { recurring_schedule: input.recurring_schedule } : {}),
       })
@@ -121,6 +125,8 @@ export async function saveMultiAssetPoster(input: SaveMultiAssetPosterInput): Pr
       qr_url: safeQrUrl,
       qr_label: input.qr_label?.trim() || null,
       qr_position: input.qr_position ?? 'bottom-left',
+      qr_start_at: input.qr_start_at || null,
+      qr_end_at: input.qr_end_at || null,
       start_at: input.start_at,
       end_at: resolvedEndAt,
       duration_seconds: input.duration_seconds,

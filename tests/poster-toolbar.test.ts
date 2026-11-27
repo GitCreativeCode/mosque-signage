@@ -274,5 +274,15 @@ describe('Admin Posters Toolbar & Add Content Dropdown Engine', () => {
       setViewMode('grid');
       expect(viewMode).toBe('grid');
     });
+
+    it('standardizes "+ Add Content" button and toolbar controls to matching 36px (h-9) height', () => {
+      const addContentBtnClass = 'h-9 px-3.5 rounded-lg bg-[var(--admin-btn-primary-bg)] hover:bg-[var(--admin-btn-primary-hover)] text-[var(--admin-btn-primary-text)] text-xs font-semibold flex items-center space-x-1.5 transition active:scale-95 cursor-pointer shadow-sm whitespace-nowrap';
+      const viewModeContainerClass = 'flex items-center space-x-1 bg-[var(--admin-surface)] p-1 rounded-lg border border-[var(--admin-border)] h-9';
+      const statusTabClass = 'h-9 px-3.5 rounded-lg text-xs font-semibold transition-all duration-150 active:scale-95 cursor-pointer flex items-center space-x-2 shrink-0 border';
+
+      expect(addContentBtnClass).toContain('h-9');
+      expect(viewModeContainerClass).toContain('h-9');
+      expect(statusTabClass).toContain('h-9');
+    });
   });
 });

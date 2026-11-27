@@ -10,6 +10,7 @@ import type {
   SidebarAccentTheme,
   SidebarMode,
   SidebarPosition,
+  SilenceScreenAccentTheme,
   StandbyAppearance,
   TvControlProtocol,
   UpdateVenueSettingsInput,
@@ -26,6 +27,8 @@ export interface VenueSettingsDraft {
   posterFit: PosterFitMode;
   displayResolution: DisplayResolution;
   overscanMarginPercent: number;
+  clockShowSeconds: boolean;
+  clockTimeFormat: '12h' | '24h';
   hijriOffset: number;
   drawerInterval: number;
   drawerDuration: number;
@@ -38,6 +41,8 @@ export interface VenueSettingsDraft {
   showProgressBar: boolean;
   showMiniPrayerPill: boolean;
   showPrayerSilenceOverlay: boolean;
+  silenceScreenSubtitle: string;
+  silenceScreenAccentTheme: SilenceScreenAccentTheme;
   miniPrayerPillPosition: MiniPrayerPillPosition;
   sidebarPosition: SidebarPosition;
   sidebarAccentTheme: SidebarAccentTheme;
@@ -80,6 +85,8 @@ export function buildDraftFromSettings(s: Settings): VenueSettingsDraft {
     posterFit: s.poster_fit ?? 'contain',
     displayResolution: s.display_resolution ?? '1080p',
     overscanMarginPercent: s.overscan_margin_percent ?? 0,
+    clockShowSeconds: Boolean(s.clock_show_seconds),
+    clockTimeFormat: (s.clock_time_format as '12h' | '24h') ?? '12h',
     hijriOffset: s.hijri_offset_days,
     drawerInterval: s.drawer_interval_minutes || 3,
     drawerDuration: s.drawer_display_seconds || 15,
@@ -92,6 +99,8 @@ export function buildDraftFromSettings(s: Settings): VenueSettingsDraft {
     showProgressBar: s.show_progress_bar ?? true,
     showMiniPrayerPill: Boolean(s.show_mini_prayer_pill),
     showPrayerSilenceOverlay: Boolean(s.show_prayer_silence_overlay),
+    silenceScreenSubtitle: s.silence_screen_subtitle ?? 'Please switch mobile phones to silent',
+    silenceScreenAccentTheme: s.silence_screen_accent_theme ?? 'green',
     miniPrayerPillPosition: s.mini_prayer_pill_position ?? 'bottom-right',
     sidebarPosition: s.sidebar_position ?? 'right',
     sidebarAccentTheme: s.sidebar_accent_theme ?? 'teal',
@@ -131,10 +140,14 @@ export function buildUpdatePayloadFromDraft(draft: VenueSettingsDraft): UpdateVe
     poster_fit: draft.posterFit,
     display_resolution: draft.displayResolution,
     overscan_margin_percent: draft.overscanMarginPercent,
+    clock_show_seconds: draft.clockShowSeconds,
+    clock_time_format: draft.clockTimeFormat,
     sidebar_mode: draft.sidebarMode,
     show_progress_bar: draft.showProgressBar,
     show_mini_prayer_pill: draft.showMiniPrayerPill,
     show_prayer_silence_overlay: draft.showPrayerSilenceOverlay,
+    silence_screen_subtitle: draft.silenceScreenSubtitle,
+    silence_screen_accent_theme: draft.silenceScreenAccentTheme,
     mini_prayer_pill_position: draft.miniPrayerPillPosition,
     sidebar_position: draft.sidebarPosition,
     sidebar_accent_theme: draft.sidebarAccentTheme,

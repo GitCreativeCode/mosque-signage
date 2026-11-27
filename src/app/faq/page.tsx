@@ -15,12 +15,12 @@ export const metadata: Metadata = {
 
 export default function FaqPage() {
   return (
-    <div className="min-h-screen bg-[var(--admin-bg)] text-[var(--admin-text-primary)] flex flex-col font-sans selection:bg-[var(--admin-accent)]/20">
+    <div className="min-h-screen overflow-x-hidden bg-[var(--admin-bg)] text-[var(--admin-text-primary)] flex flex-col font-sans selection:bg-[var(--admin-accent)]/20">
       {/* Top Application Header with Theme Switcher */}
       <PublicHeader subtitle="Frequently Asked Questions" />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-10 space-y-12">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8 sm:space-y-12">
         {/* Page Hero */}
         <div className="space-y-4 border-b border-[var(--admin-border)] pb-8 text-center sm:text-left">
           <div className="space-y-2 max-w-2xl">

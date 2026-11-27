@@ -5,6 +5,7 @@
 
 import type { Poster, PowerScheduleConfig, Settings } from '@/types/index';
 import { parseTimeToDate } from '@/lib/prayer/prayer-engine';
+import { isPosterQrActive } from '@/lib/posters/qr-schedule';
 
 export function buildPowerConfigFromSettings(settings: Settings): PowerScheduleConfig {
   return {
@@ -62,10 +63,12 @@ export function evaluateQrVisibilityOnTick(
   isAlwaysOpen: boolean,
   isDrawerOpen: boolean,
   settings: Settings,
-  currentlyVisible: boolean = false
+  currentlyVisible: boolean,
+  now: Date
 ): boolean {
   if (!isAlwaysOpen && isDrawerOpen && !settings.show_qr_during_drawer) return false;
   if (!activePoster?.qr_url || activePoster.qr_url.trim().length === 0) return false;
+  if (!isPosterQrActive(activePoster, now)) return false;
 
   const entranceDelay = isAlwaysOpen ? 0 : Math.max(0, settings.qr_entrance_delay_seconds ?? 3);
   const isMultiSlide = activeCount > 1;

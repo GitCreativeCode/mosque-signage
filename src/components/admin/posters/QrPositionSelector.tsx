@@ -80,7 +80,7 @@ export function QrPositionSelector({
         Choose where the QR code appears on your slide so it doesn&apos;t cover essential artwork or text.
       </p>
 
-      <div className="grid grid-cols-3 gap-2 pt-1">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
         {SPOTS.map((spot) => {
           const isSelected = value === spot.id;
           return (

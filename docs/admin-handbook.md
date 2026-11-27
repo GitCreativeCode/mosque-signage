@@ -16,7 +16,7 @@ This guide is a practical, quick reference for mosque administrators, IT volunte
 | **Reset Auth (Username/Password)** | `npm run reset-auth` | Terminal tool to change passwords or switch back to PIN mode. |
 | **Run Health Check** | `curl http://localhost:3000/api/health` | Checks if the server and database are healthy. |
 | **Docker Start** | `docker compose up -d` | Runs the appliance inside a Docker container. |
-| **Run Test Suite** | `npm test` | Runs all 499 automated tests across 49 suites to verify stability. |
+| **Run Test Suite** | `npm test` | Runs all 640 automated tests across 59 suites to verify stability. |
 
 > **Host vs Local Network (LAN) Access**:
 > - **On the Host PC**: Use `http://localhost:3000/display` and `http://localhost:3000/admin`.
@@ -173,7 +173,28 @@ The display will now operate as a dedicated full-screen digital signage screen, 
 
 ---
 
-## 11. Help & Support
+## 11. Managing Prayer, Jummah & Seasonal Schedules
 
-- Open the searchable offline **Knowledge Base** anytime at `http://localhost:3000/faq`.
+The **Prayer & Jummah** tab (`/admin?tab=prayers`) is organized into three operational sub-tabs:
+
+### A. Prayer Timetable
+- **Monthly Astronomical & Iqamah Grid**: View and adjust Adhan and Iqamah times for every day of the month using consistent time inputs.
+- **Smart Solar Drift Clamping (`[Adj]` Badge)**: If a fixed Iqamah rule (e.g. Asr fixed at 3:30 PM) is configured, and astronomical Adhan drifts later than or within 5 minutes of it, MosqueSignage automatically clamps Iqamah to `Adhan + 5 min` and highlights the cell with an amber `[Adj]` badge so Salah never commences before Adhan.
+- **Actions Dropdown (CSV & Reset to Pure Astronomical)**: Keep daily tools clean on a single toolbar row—open the **Actions** menu to import annual CSV timetables, export printable PDF-ready sheets, or click **Reset to Pure Astronomical** to wipe manual month overrides and recalculate from solar coordinates.
+
+### B. Friday Jummah
+- **Weekly Repeating Schedule & Unified Override Modal**: Configure repeating every-Friday shifts (Khutbah time, Salah time, hall location, language, Khateeb, and topic). Inside **Add / Edit Khutbah**, switch Schedule Scope between **Every Friday (Weekly)** and **Specific Friday Date** to override a guest speaker and topic for a single Friday without altering weekly defaults.
+- **Turnover Collision Guard**: Enforces minimum prayer duration and clearing buffers between shifts, rendering visual turnover status rows in the admin table.
+- **Upcoming Friday Khateeb Roster**: Review, assign, edit, or remove date-specific guest Khateebs and topics; the live TV display automatically shows scheduled guest overrides on that Friday.
+- **Reverence Mode on TV**: When "Congregation Silence Screen" is active, the display pauses slides during sermon delivery showing *"Khutbah [N] in Progress — Please switch mobile phones to silent and listen attentively"*, transitioning to *"Jummah Prayer in Progress"* at Salah time.
+
+### C. Seasonal Schedules (Eid & Ramadan)
+- **Ramadan Sacred Mode**: Toggle Ramadan mode on or off (persists immediately) to display optional Suhoor cutoff times under Fajr (set buffer to `0` to omit), Maghrib Iftar markers, and a **Multi-Session Taraweeh & Witr Builder** supporting 1 or multiple nightly sessions with offset/fixed times, Rakats (`8`, `12`, `20`, `Qiyam`), and Witr modes (`2+1`, continuous `3`, `1`, or none).
+- **Eid Multi-Shift Scheduler & Auto-Hide**: Configure multi-shift Eid al-Fitr and Eid al-Adha Takbeerat and Salah times, set **Active Eid** + **Target Eid Date**, and set a post-Salah **Auto-Hide** grace period (e.g. 60 min). On Eid morning, the TV displays Eid shifts with a compact footer showing afternoon Jummah or Dhuhr (plus any Eid-on-Friday note) and automatically switches to Friday Jummah / daily prayers once the grace timer expires. Use `F2` &rarr; **Force Eid** on `/display` to preview anytime.
+
+---
+
+## 12. Help & Support
+
+- Open the searchable offline **Knowledge Base** anytime at `http://localhost:3000/faq`, or read the complete guide at `http://localhost:3000/faq/prayer-and-jummah-schedule-guide`.
 - For help or bug reports, email `helpdesk.guidance@gmail.com` or use the **Report a Problem** link in the admin footer.

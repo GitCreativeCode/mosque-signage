@@ -2,7 +2,8 @@
 
 import React from 'react';
 import type { PosterCanvasSticker } from '@/types/index';
-import { FlipHorizontal, FlipVertical, Star, Tag, Trash2 } from 'lucide-react';
+import { FlipHorizontal, FlipVertical, RotateCw, Star, Tag, Trash2 } from 'lucide-react';
+import { StudioNumericInput } from './StudioNumericInput';
 
 interface StudioSelectedStickerEditorProps {
   readonly sticker: PosterCanvasSticker;
@@ -139,6 +140,42 @@ export function StudioSelectedStickerEditor({
           </div>
         </div>
       )}
+
+      <div className="space-y-1 pt-2 border-t border-[var(--admin-border)]/50">
+        <div className="flex items-center justify-between text-[10px] text-[var(--admin-text-secondary)]">
+          <span className="flex items-center gap-1 font-semibold">
+            <RotateCw className="w-3 h-3 opacity-70" />
+            <span>Rotation</span>
+          </span>
+          <div className="flex items-center gap-1 font-mono">
+            <StudioNumericInput
+              min={-180}
+              max={180}
+              value={sticker.rotation ?? 0}
+              onChange={(val) => onUpdateSticker(stickerIndex, { ...sticker, rotation: val })}
+              className="w-10 text-center font-bold bg-[var(--admin-card)] border border-[var(--admin-border)] rounded py-0.5 px-1 text-[10px] text-[var(--admin-text-primary)]"
+            />
+            <span className="text-[10px] text-[var(--admin-text-muted)]">°</span>
+            {(sticker.rotation ?? 0) !== 0 && (
+              <button
+                type="button"
+                onClick={() => onUpdateSticker(stickerIndex, { ...sticker, rotation: 0 })}
+                className="text-[9px] text-amber-400 hover:text-amber-300 font-semibold underline cursor-pointer ml-1"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+        </div>
+        <input
+          type="range"
+          min={-180}
+          max={180}
+          value={sticker.rotation ?? 0}
+          onChange={(e) => onUpdateSticker(stickerIndex, { ...sticker, rotation: parseInt(e.target.value, 10) })}
+          className="w-full accent-amber-400 cursor-pointer"
+        />
+      </div>
     </div>
   );
 }

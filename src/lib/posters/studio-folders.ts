@@ -59,8 +59,8 @@ export function duplicateFolderInScene(scene: StudioSceneState, folderId: string
   const currentRoot = ensureRootOrder(scene.rootOrder, scene.folders, scene.slots, scene.stickers, scene.textOverlays, scene.compoundLayers);
   const origIdx = currentRoot.indexOf(`folder:${folderId}`);
   const newRoot = [...currentRoot];
-  if (origIdx !== -1) newRoot.splice(origIdx + 1, 0, `folder:${newFolderId}`);
-  else newRoot.push(`folder:${newFolderId}`);
+  if (origIdx !== -1) newRoot.splice(origIdx, 0, `folder:${newFolderId}`);
+  else newRoot.unshift(`folder:${newFolderId}`);
 
   return normalizeSceneWithZ({
     slots: [...scene.slots, ...clonedSlots], stickers: [...scene.stickers, ...clonedStickers],

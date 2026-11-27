@@ -27,12 +27,13 @@ export function StudioSlotMediaContent({ slot }: { readonly slot: PosterSlotMedi
       : slot.notice_font === 'traditional'
       ? 'font-serif tracking-wider'
       : 'font-sans';
-  const noticeAlignClass =
-    slot.notice_align === 'left'
-      ? 'items-start text-left'
-      : slot.notice_align === 'right'
-      ? 'items-end text-right'
-      : 'items-center text-center';
+  const hAlign = slot.notice_headline_align || 'center';
+  const hAlignClass = hAlign === 'left' ? 'text-left self-start' : hAlign === 'right' ? 'text-right self-end' : 'text-center self-center';
+  const dAlign = slot.notice_align || 'center';
+  const dAlignClass = dAlign === 'left' ? 'text-left self-start' : dAlign === 'right' ? 'text-right self-end' : 'text-center self-center';
+  const dividerAlign = hAlign === 'left' ? 'self-start' : hAlign === 'right' ? 'self-end' : 'self-center';
+  const italicClass = slot.notice_headline_italic ? 'italic' : '';
+  const underlineClass = slot.notice_headline_underline ? 'underline' : '';
 
   return (
     <div className={`relative w-full h-full flex flex-col ${frameMeta.containerClasses}`}>
@@ -46,28 +47,26 @@ export function StudioSlotMediaContent({ slot }: { readonly slot: PosterSlotMedi
           />
         )}
 
-        {slot.badge_text && (
-          <div className="absolute top-2 right-2 z-20 pointer-events-none">
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase shadow-lg border ${BADGE_CLASSES[slot.badge_variant ?? 'emerald'] ?? BADGE_CLASSES.emerald}`}>
-              {slot.badge_text}
-            </span>
-          </div>
-        )}
-
         {slot.type === 'badge' ? (
           <div className="w-full h-full flex items-center justify-center p-2">
             <IslamicStickerGraphic type="badge_custom" badgeText={slot.badge_text || slot.label} badgeVariant={slot.badge_variant} />
           </div>
         ) : slot.type === 'notice' ? (
           <div
-            className={`w-full h-full p-4 flex flex-col justify-center ${noticeAlignClass} ${noticeFontClass} overflow-hidden`}
+            className={`w-full h-full p-4 flex flex-col justify-center items-stretch ${noticeFontClass} overflow-hidden`}
             style={{ background: `linear-gradient(to bottom, ${noticePalette.gradStart}, ${noticePalette.gradMid}, ${noticePalette.gradEnd})` }}
           >
-            <h4 className="text-base sm:text-lg font-black line-clamp-2 leading-tight drop-shadow-md max-w-xl" style={{ color: noticePalette.headlineColor }}>
+            <h4
+              className={`text-base sm:text-lg font-black line-clamp-2 leading-tight drop-shadow-md max-w-xl ${hAlignClass} ${italicClass} ${underlineClass}`}
+              style={{ color: noticePalette.headlineColor }}
+            >
               {slot.notice_headline || 'Community Announcement'}
             </h4>
-            <div className="w-16 h-1 rounded-full my-2 shadow-sm" style={{ backgroundColor: noticePalette.borderAccent }} />
-            <p className="text-xs line-clamp-2 font-medium leading-relaxed max-w-md drop-shadow-sm" style={{ color: noticePalette.textColor }}>
+            <div className={`w-16 h-1 rounded-full my-2 shadow-sm ${dividerAlign}`} style={{ backgroundColor: noticePalette.borderAccent }} />
+            <p
+              className={`text-xs line-clamp-2 font-medium leading-relaxed max-w-md drop-shadow-sm ${dAlignClass}`}
+              style={{ color: noticePalette.textColor }}
+            >
               {slot.notice_description || 'Program timings and details...'}
             </p>
           </div>

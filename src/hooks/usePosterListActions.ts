@@ -16,6 +16,10 @@ function moveArrayItem<T>(items: readonly T[], fromIndex: number, toIndex: numbe
 /** Manages filtering, view mode persistence, drag/drop sequence reordering, and CRUD actions. */
 export function usePosterListActions(posters: readonly PosterWithStatus[], onRefresh: () => void) {
   const [filter, setFilter] = useState<'ALL' | PosterStatus>('ALL');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkLoading, setIsBulkLoading] = useState<boolean>(false);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
@@ -24,6 +28,7 @@ export function usePosterListActions(posters: readonly PosterWithStatus[], onRef
   const [editingPoster, setEditingPoster] = useState<PosterWithStatus | null>(null);
   const [studioPoster, setStudioPoster] = useState<PosterWithStatus | null>(null);
   const [showStudioModal, setShowStudioModal] = useState(false);
+  const [studioBlockedLabel, setStudioBlockedLabel] = useState<string | null>(null);
   const [isReordering, setIsReordering] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -47,7 +52,67 @@ export function usePosterListActions(posters: readonly PosterWithStatus[], onRef
     } catch {}
   }, []);
 
-  const filteredPosters = posters.filter((p) => filter === 'ALL' || p.status === filter);
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredPosters = posters.filter((p) => {
+    if (filter !== 'ALL' && p.status !== filter) return false;
+    if (!normalizedQuery) return true;
+    const matchTitle = p.title.toLowerCase().includes(normalizedQuery);
+    const matchLabel = p.qr_label ? p.qr_label.toLowerCase().includes(normalizedQuery) : false;
+    const matchUrl = p.qr_url ? p.qr_url.toLowerCase().includes(normalizedQuery) : false;
+    return matchTitle || matchLabel || matchUrl;
+  });
+
+  const toggleSelectId = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredPosters.length && filteredPosters.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredPosters.map((p) => p.id)));
+    }
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleBulkArchive = async (archive: boolean) => {
+    if (selectedIds.size === 0) return;
+    setIsBulkLoading(true);
+    try {
+      const { bulkArchivePosters } = await import('@/lib/actions/poster-batch');
+      await bulkArchivePosters(Array.from(selectedIds), archive);
+      clearSelection();
+      onRefresh();
+      broadcastSignageEvent({ type: 'POSTERS_UPDATED', action: 'refresh' });
+    } catch (err) {
+      console.error('Failed to bulk archive:', err);
+    } finally {
+      setIsBulkLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setIsBulkLoading(true);
+    try {
+      const { bulkDeletePosters } = await import('@/lib/actions/poster-batch');
+      await bulkDeletePosters(Array.from(selectedIds));
+      clearSelection();
+      setConfirmBulkDelete(false);
+      onRefresh();
+      broadcastSignageEvent({ type: 'POSTERS_UPDATED', action: 'delete' });
+    } catch (err) {
+      console.error('Failed to bulk delete:', err);
+    } finally {
+      setIsBulkLoading(false);
+    }
+  };
 
   const handleViewModeChange = (mode: 'grid' | 'table') => {
     setViewMode(mode);
@@ -87,8 +152,12 @@ export function usePosterListActions(posters: readonly PosterWithStatus[], onRef
     }
   };
 
-  const handleOpenEdit = (poster: PosterWithStatus) => {
+  const handleOpenEdit = (poster: PosterWithStatus, isSmallScreen = false) => {
     if (poster.layout_config || poster.media_type === 'composite') {
+      if (isSmallScreen) {
+        setStudioBlockedLabel(poster.title);
+        return;
+      }
       setStudioPoster(poster);
       setShowStudioModal(true);
     } else {
@@ -157,10 +226,14 @@ export function usePosterListActions(posters: readonly PosterWithStatus[], onRef
   };
 
   return {
-    filter, setFilter, viewMode, handleViewModeChange, filteredPosters,
+    filter, setFilter, searchQuery, setSearchQuery, selectedIds, toggleSelectId,
+    toggleSelectAll, clearSelection, isBulkLoading, confirmBulkDelete, setConfirmBulkDelete,
+    handleBulkArchive, handleBulkDelete,
+    viewMode, handleViewModeChange, filteredPosters,
     deletingId, archivingId, duplicatingId, confirmDeleteId, setConfirmDeleteId,
     editingPoster, setEditingPoster, studioPoster, setStudioPoster,
-    showStudioModal, setShowStudioModal, isReordering, draggedIndex, dragOverIndex,
+    showStudioModal, setShowStudioModal, studioBlockedLabel, setStudioBlockedLabel,
+    isReordering, draggedIndex, dragOverIndex,
     handleDuplicate, handleOpenEdit, handleToggleArchive, handleDelete,
     handleMovePoster, handleDragStart, handleDragOver, handleDrop, handleDragEnd,
   };

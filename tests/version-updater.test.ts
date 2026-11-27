@@ -79,20 +79,20 @@ describe('checkLatestRelease Remote Queries', () => {
         status: 200,
         json: async () => [
           {
-            tag_name: 'v0.1.4',
-            name: 'MosqueSignage v0.1.4 Pre-Release',
-            published_at: '2026-11-20T12:00:00Z',
+            tag_name: 'v0.2.1',
+            name: 'MosqueSignage v0.2.1 Pre-Release',
+            published_at: '2026-11-28T12:00:00Z',
             body: 'Pre-release patch.',
-            html_url: 'https://github.com/GitCreativeCode/mosque-signage/releases/tag/v0.1.4',
-            zipball_url: 'https://github.com/GitCreativeCode/mosque-signage/archive/refs/tags/v0.1.4.zip',
+            html_url: 'https://github.com/GitCreativeCode/mosque-signage/releases/tag/v0.2.1',
+            zipball_url: 'https://github.com/GitCreativeCode/mosque-signage/archive/refs/tags/v0.2.1.zip',
           },
         ],
       } as unknown as Response);
 
     const result = await checkLatestRelease('GitCreativeCode/mosque-signage', true);
     expect(result.hasUpdate).toBe(true);
-    expect(result.latestVersion).toBe('0.1.4');
-    expect(result.release?.title).toBe('MosqueSignage v0.1.4 Pre-Release');
+    expect(result.latestVersion).toBe('0.2.1');
+    expect(result.release?.title).toBe('MosqueSignage v0.2.1 Pre-Release');
   });
 
   it('detects a newer version from GitHub release payload', async () => {
@@ -100,19 +100,19 @@ describe('checkLatestRelease Remote Queries', () => {
       ok: true,
       status: 200,
       json: async () => ({
-        tag_name: 'v0.2.0',
-        name: 'MosqueSignage v0.2.0 - Big Update',
-        published_at: '2026-11-04T12:00:00Z',
+        tag_name: 'v0.3.0',
+        name: 'MosqueSignage v0.3.0 - Big Update',
+        published_at: '2026-12-01T12:00:00Z',
         body: 'Exciting new features for prayer halls.',
-        html_url: 'https://github.com/GitCreativeCode/mosque-signage/releases/tag/v0.2.0',
-        zipball_url: 'https://github.com/GitCreativeCode/mosque-signage/archive/refs/tags/v0.2.0.zip',
+        html_url: 'https://github.com/GitCreativeCode/mosque-signage/releases/tag/v0.3.0',
+        zipball_url: 'https://github.com/GitCreativeCode/mosque-signage/archive/refs/tags/v0.3.0.zip',
       }),
     } as unknown as Response);
 
     const result = await checkLatestRelease('GitCreativeCode/mosque-signage', true);
     expect(result.hasUpdate).toBe(true);
-    expect(result.latestVersion).toBe('0.2.0');
-    expect(result.release?.title).toBe('MosqueSignage v0.2.0 - Big Update');
+    expect(result.latestVersion).toBe('0.3.0');
+    expect(result.release?.title).toBe('MosqueSignage v0.3.0 - Big Update');
     expect(result.release?.body).toBe('Exciting new features for prayer halls.');
   });
 

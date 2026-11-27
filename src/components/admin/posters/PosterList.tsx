@@ -1,16 +1,29 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import type { PosterWithStatus } from '@/types/index';
 import { Calendar, Loader2 } from 'lucide-react';
-import { EditPosterModal } from './EditPosterModal';
-import { MultiAssetStudioModal } from './MultiAssetStudioModal';
 import { PosterSequenceTable } from './PosterSequenceTable';
 import { ConfirmationModal } from '../common/ConfirmationModal';
 import { PosterListToolbar } from './PosterListToolbar';
+import { PosterBulkActionBar } from './PosterBulkActionBar';
 import { PosterGridCard } from './PosterGridCard';
+import { AdminLoadingFallback } from '../common/AdminLoadingFallback';
+import { StudioDeviceRequiredModal } from './StudioDeviceRequiredModal';
+import { useIsSmallScreen } from '@/hooks/useIsSmallScreen';
 import { usePosterListActions } from '@/hooks/usePosterListActions';
 import { broadcastSignageEvent } from '@/lib/events/broadcast-channel';
+
+const DynamicEditPosterModal = dynamic(
+  () => import('./EditPosterModal').then((m) => m.EditPosterModal),
+  { loading: () => <AdminLoadingFallback label="Loading poster editor..." /> }
+);
+
+const DynamicMultiAssetStudioModal = dynamic(
+  () => import('./MultiAssetStudioModal').then((m) => m.MultiAssetStudioModal),
+  { loading: () => <AdminLoadingFallback label="Opening layout studio..." /> }
+);
 
 export interface PosterListProps {
   readonly posters: readonly PosterWithStatus[];
@@ -29,22 +42,45 @@ export function PosterList({
   onUploadPoster,
   venueTimezone,
 }: PosterListProps) {
+  const { isSmallScreen } = useIsSmallScreen();
   const list = usePosterListActions(posters, onRefresh);
+
+  const visibleSelectedCount = useMemo(
+    () => list.filteredPosters.filter((p) => list.selectedIds.has(p.id)).length,
+    [list.filteredPosters, list.selectedIds]
+  );
 
   return (
     <div className="space-y-6">
       <PosterListToolbar
         posters={posters}
         filter={list.filter}
+        searchQuery={list.searchQuery}
+        onChangeSearchQuery={list.setSearchQuery}
         viewMode={list.viewMode}
         onChangeFilter={list.setFilter}
         onChangeViewMode={list.handleViewModeChange}
         onCreateNotice={onCreateNotice}
         onUploadPoster={onUploadPoster}
         onOpenStudio={() => {
+          if (isSmallScreen) {
+            list.setStudioBlockedLabel('');
+            return;
+          }
           list.setStudioPoster(null);
           list.setShowStudioModal(true);
         }}
+      />
+
+      <PosterBulkActionBar
+        selectedCount={list.selectedIds.size}
+        visibleSelectedCount={visibleSelectedCount}
+        totalFilteredCount={list.filteredPosters.length}
+        onClearSelection={list.clearSelection}
+        onToggleSelectAll={list.toggleSelectAll}
+        onBulkArchive={list.handleBulkArchive}
+        onRequestBulkDelete={() => list.setConfirmBulkDelete(true)}
+        isLoading={list.isBulkLoading}
       />
 
       {list.isReordering && (
@@ -73,6 +109,9 @@ export function PosterList({
         <PosterSequenceTable
           posters={list.filteredPosters}
           venueTimezone={venueTimezone}
+          selectedIds={list.selectedIds}
+          onToggleSelect={list.toggleSelectId}
+          onToggleSelectAll={list.toggleSelectAll}
           draggedIndex={list.draggedIndex}
           dragOverIndex={list.dragOverIndex}
           onDragStart={list.handleDragStart}
@@ -80,7 +119,7 @@ export function PosterList({
           onDrop={list.handleDrop}
           onDragEnd={list.handleDragEnd}
           onMovePoster={list.handleMovePoster}
-          onEditPoster={list.handleOpenEdit}
+          onEditPoster={(p) => list.handleOpenEdit(p, isSmallScreen)}
           onToggleArchive={list.handleToggleArchive}
           onDeletePoster={(id) => list.setConfirmDeleteId(id)}
           onDuplicatePoster={list.handleDuplicate}
@@ -96,10 +135,13 @@ export function PosterList({
               venueTimezone={venueTimezone}
               index={index}
               totalCount={list.filteredPosters.length}
+              isSelected={list.selectedIds.has(poster.id)}
+              isSelectionMode={list.selectedIds.size > 0}
+              onToggleSelect={list.toggleSelectId}
               archivingId={list.archivingId}
               duplicatingId={list.duplicatingId}
               onMove={list.handleMovePoster}
-              onEdit={list.handleOpenEdit}
+              onEdit={(p) => list.handleOpenEdit(p, isSmallScreen)}
               onToggleArchive={list.handleToggleArchive}
               onDuplicate={list.handleDuplicate}
               onRequestDelete={(id) => list.setConfirmDeleteId(id)}
@@ -108,25 +150,27 @@ export function PosterList({
         </div>
       )}
 
-      <EditPosterModal
-        poster={list.editingPoster}
-        isOpen={list.editingPoster !== null}
-        venueTimezone={venueTimezone}
-        onClose={() => list.setEditingPoster(null)}
-        onUpdated={() => {
-          onRefresh();
-          broadcastSignageEvent({ type: 'POSTERS_UPDATED', action: 'update' });
-          list.setEditingPoster(null);
-        }}
-        onOpenStudio={(p) => {
-          list.setEditingPoster(null);
-          list.setStudioPoster(p);
-          list.setShowStudioModal(true);
-        }}
-      />
+      {list.editingPoster && (
+        <DynamicEditPosterModal
+          poster={list.editingPoster}
+          isOpen={list.editingPoster !== null}
+          venueTimezone={venueTimezone}
+          onClose={() => list.setEditingPoster(null)}
+          onUpdated={() => {
+            onRefresh();
+            broadcastSignageEvent({ type: 'POSTERS_UPDATED', action: 'update' });
+            list.setEditingPoster(null);
+          }}
+          onOpenStudio={(p) => {
+            list.setEditingPoster(null);
+            list.setStudioPoster(p);
+            list.setShowStudioModal(true);
+          }}
+        />
+      )}
 
-      {list.showStudioModal && (
-        <MultiAssetStudioModal
+      {list.showStudioModal && !isSmallScreen && (
+        <DynamicMultiAssetStudioModal
           isOpen={list.showStudioModal}
           initialPoster={list.studioPoster}
           venueTimezone={venueTimezone}
@@ -143,6 +187,12 @@ export function PosterList({
         />
       )}
 
+      <StudioDeviceRequiredModal
+        isOpen={list.studioBlockedLabel !== null}
+        contextLabel={list.studioBlockedLabel || undefined}
+        onClose={() => list.setStudioBlockedLabel(null)}
+      />
+
       <ConfirmationModal
         isOpen={list.confirmDeleteId !== null}
         title="Delete Item?"
@@ -154,6 +204,17 @@ export function PosterList({
           if (list.confirmDeleteId) list.handleDelete(list.confirmDeleteId);
         }}
         onCancel={() => list.setConfirmDeleteId(null)}
+      />
+
+      <ConfirmationModal
+        isOpen={list.confirmBulkDelete}
+        title={`Delete ${list.selectedIds.size} ${list.selectedIds.size === 1 ? 'Poster' : 'Posters'}?`}
+        message="This will permanently remove the selected posters from the database and unlink their associated files. This action cannot be undone."
+        confirmLabel={list.isBulkLoading ? 'Deleting...' : 'Confirm Delete'}
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={list.handleBulkDelete}
+        onCancel={() => list.setConfirmBulkDelete(false)}
       />
     </div>
   );

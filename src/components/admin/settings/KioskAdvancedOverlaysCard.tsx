@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Download } from 'lucide-react';
-import type { DisplayResolution, MiniPrayerPillPosition, SidebarMode } from '@/types/index';
+import type { DisplayResolution, MiniPrayerPillPosition, SidebarMode, SilenceScreenAccentTheme } from '@/types/index';
+import { KioskCalibrationSection } from './KioskCalibrationSection';
 
 const PILL_CORNERS: ReadonlyArray<{ readonly id: MiniPrayerPillPosition; readonly label: string }> = [
   { id: 'bottom-right', label: 'Bottom Right (Default)' },
@@ -11,12 +12,23 @@ const PILL_CORNERS: ReadonlyArray<{ readonly id: MiniPrayerPillPosition; readonl
   { id: 'top-left', label: 'Top Left' },
 ];
 
+const SILENCE_THEMES: ReadonlyArray<{ readonly id: SilenceScreenAccentTheme; readonly label: string; readonly dotClass: string }> = [
+  { id: 'green', label: 'Mosque Green', dotClass: 'bg-green-500' },
+  { id: 'amber', label: 'Warm Amber', dotClass: 'bg-amber-400' },
+  { id: 'teal', label: 'Cyan Teal', dotClass: 'bg-teal-400' },
+  { id: 'white', label: 'Monochrome', dotClass: 'bg-white border border-neutral-400 dark:border-neutral-500 shadow-xs' },
+];
+
 export interface KioskAdvancedOverlaysCardProps {
   readonly sidebarMode: SidebarMode;
   readonly showMiniPrayerPill: boolean;
   readonly setShowMiniPrayerPill: (val: boolean) => void;
   readonly showPrayerSilenceOverlay: boolean;
   readonly setShowPrayerSilenceOverlay: (val: boolean) => void;
+  readonly silenceScreenSubtitle?: string | undefined;
+  readonly setSilenceScreenSubtitle?: ((val: string) => void) | undefined;
+  readonly silenceScreenAccentTheme?: SilenceScreenAccentTheme | undefined;
+  readonly setSilenceScreenAccentTheme?: ((val: SilenceScreenAccentTheme) => void) | undefined;
   readonly miniPrayerPillPosition: MiniPrayerPillPosition;
   readonly setMiniPrayerPillPosition: (val: MiniPrayerPillPosition) => void;
   readonly qrReadDelay: number;
@@ -28,6 +40,10 @@ export interface KioskAdvancedOverlaysCardProps {
   readonly setDisplayResolution: (val: DisplayResolution) => void;
   readonly overscanMarginPercent: number;
   readonly setOverscanMarginPercent?: ((val: number) => void) | undefined;
+  readonly clockShowSeconds?: boolean | undefined;
+  readonly setClockShowSeconds?: ((val: boolean) => void) | undefined;
+  readonly clockTimeFormat?: '12h' | '24h' | undefined;
+  readonly setClockTimeFormat?: ((val: '12h' | '24h') => void) | undefined;
   readonly isPwaInstalled: boolean;
   readonly isPwaStandalone: boolean;
   readonly onOpenPwaModal: () => void;
@@ -100,6 +116,71 @@ export function KioskAdvancedOverlaysCard(props: KioskAdvancedOverlaysCardProps)
                 <div className="w-11 h-6 bg-neutral-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--admin-btn-primary-bg)]" />
               </label>
             </div>
+
+            {props.showPrayerSilenceOverlay && (
+              <div className="pt-3 border-t border-[var(--admin-border)] space-y-4 animate-fadeIn">
+                {/* Accent Color Preset */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-[var(--admin-text-secondary)]">Silence Screen Accent Theme</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {SILENCE_THEMES.map((t) => {
+                      const activeTheme = props.silenceScreenAccentTheme ?? 'green';
+                      const isSelected = activeTheme === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => {
+                            props.setSilenceScreenAccentTheme?.(t.id);
+                            props.markDirty();
+                          }}
+                          className={`py-2 px-2.5 rounded-xl text-xs font-medium border transition cursor-pointer flex items-center justify-center space-x-2 ${
+                            isSelected
+                              ? 'bg-[var(--admin-btn-primary-bg)] text-[var(--admin-btn-primary-text)] border-[var(--admin-btn-primary-bg)] font-semibold shadow-sm'
+                              : 'bg-[var(--admin-surface)] border-[var(--admin-border)] text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)]'
+                          }`}
+                        >
+                          <span className={`w-2.5 h-2.5 rounded-full ${t.dotClass}`} />
+                          <span>{t.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Custom Subtitle / Guidance */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-[var(--admin-text-secondary)]">Reverence Subtitle Guidance</label>
+                    {props.silenceScreenSubtitle && props.silenceScreenSubtitle !== 'Please switch mobile phones to silent' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          props.setSilenceScreenSubtitle?.('Please switch mobile phones to silent');
+                          props.markDirty();
+                        }}
+                        className="text-[10px] text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)] transition cursor-pointer"
+                      >
+                        Reset to default
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    value={props.silenceScreenSubtitle ?? 'Please switch mobile phones to silent'}
+                    onChange={(e) => {
+                      props.setSilenceScreenSubtitle?.(e.target.value);
+                      props.markDirty();
+                    }}
+                    placeholder="Please switch mobile phones to silent"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-primary)] placeholder:text-[var(--admin-text-muted)]/50 focus:outline-none focus:ring-1 focus:ring-[var(--admin-tab-active-border)]"
+                  />
+                  <p className="text-[11px] text-[var(--admin-text-muted)]">
+                    Guidance shown during prayer. (For Friday Khutbah services without Salah time, &ldquo;listen attentively&rdquo; is automatically shown).
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -140,39 +221,19 @@ export function KioskAdvancedOverlaysCard(props: KioskAdvancedOverlaysCardProps)
             </div>
           </div>
 
-          <div className="space-y-3 pt-2 border-t border-[var(--admin-border)]">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--admin-text-secondary)]">Screen Resolution Calibration</label>
-              <div className="max-w-md">
-                <select value={props.displayResolution} onChange={(e) => { props.setDisplayResolution(e.target.value as DisplayResolution); props.markDirty(); }} className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-tab-active-border)]">
-                  <option value="1080p">Standard 1080p (Universal 16:9 Auto-Scale - Recommended)</option>
-                  <option value="4k">4K Ultra HD (3840 × 2160 Auto-Fitted)</option>
-                  <option value="1600x900">HD+ (1600 × 900 Auto-Fitted)</option>
-                  <option value="720p">720p HD (1280 × 720 Auto-Fitted)</option>
-                  <option value="auto">Auto / Dynamic Viewport (Auto-Fitted)</option>
-                </select>
-              </div>
-              <p className="text-[11px] text-[var(--admin-text-muted)]">Standardizes on universal 1080p canvas and automatically scales via GPU matrix to fit any 720p, 1080p, 1440p, 4K, or 8K TV.</p>
-            </div>
+          <KioskCalibrationSection
+            displayResolution={props.displayResolution}
+            setDisplayResolution={props.setDisplayResolution}
+            overscanMarginPercent={props.overscanMarginPercent}
+            setOverscanMarginPercent={props.setOverscanMarginPercent}
+            clockShowSeconds={props.clockShowSeconds}
+            setClockShowSeconds={props.setClockShowSeconds}
+            clockTimeFormat={props.clockTimeFormat}
+            setClockTimeFormat={props.setClockTimeFormat}
+            markDirty={props.markDirty}
+          />
 
-            {props.setOverscanMarginPercent && (
-              <div className="space-y-1.5 pt-1">
-                <div className="flex items-center justify-between max-w-md">
-                  <label className="text-xs font-semibold text-[var(--admin-text-secondary)]">TV Overscan Safe-Zone Margin</label>
-                  <span className="text-[11px] font-mono font-semibold text-[var(--admin-text-muted)]">{props.overscanMarginPercent === 0 ? '0% (Full Bleed)' : `${props.overscanMarginPercent}% Inset`}</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2 max-w-md">
-                  {[{ val: 0, label: '0% (Full Bleed)' }, { val: 2, label: '2% Safe Margin' }, { val: 4, label: '4% Deep Margin' }].map((opt) => (
-                    <button key={opt.val} type="button" onClick={() => { props.setOverscanMarginPercent?.(opt.val); props.markDirty(); }} className={`py-2 px-2 rounded-xl text-xs font-medium border transition cursor-pointer text-center ${props.overscanMarginPercent === opt.val ? 'bg-[var(--admin-btn-primary-bg)] text-[var(--admin-btn-primary-text)] border-[var(--admin-btn-primary-bg)] font-semibold shadow-sm' : 'bg-[var(--admin-surface)] border-[var(--admin-border)] text-[var(--admin-text-muted)] hover:text-[var(--admin-text-primary)]'}`}>
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-                <p className="text-[11px] text-[var(--admin-text-muted)]">Insets the 1080p canvas slightly to prevent television bezels or HDMI overscan from cropping outer edges.</p>
-              </div>
-            )}
-
-            <div className="pt-3 border-t border-[var(--admin-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="pt-3 border-t border-[var(--admin-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="text-xs font-semibold text-[var(--admin-text-secondary)]">Standalone Kiosk Desktop App (PWA)</div>
                 <p className="text-[11px] text-[var(--admin-text-muted)] mt-0.5">
@@ -194,7 +255,6 @@ export function KioskAdvancedOverlaysCard(props: KioskAdvancedOverlaysCardProps)
               </button>
             </div>
           </div>
-        </div>
       )}
     </div>
   );

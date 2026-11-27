@@ -12,6 +12,7 @@ import {
 } from '@/lib/db/schema';
 import { initializeTables, type db as dbClientType } from '@/lib/db/client';
 import { executeFactoryResetCore } from '@/lib/db/reset';
+import { verifyPin } from '@/lib/auth/crypto';
 import { eq } from 'drizzle-orm';
 
 describe('Factory Reset Isolation Engine', () => {
@@ -35,6 +36,13 @@ describe('Factory Reset Isolation Engine', () => {
     // Default WebP posters (should be preserved)
     fs.writeFileSync(path.join(tempUploadsDir, 'Mosque_Signage_Welcome.webp'), 'fake-welcome-image');
     fs.writeFileSync(path.join(tempUploadsDir, 'Mosque_Signage_Ramadan.webp'), 'fake-ramadan-image');
+    // Custom uploaded frame folder and frame metadata (should be deleted upon reset)
+    fs.mkdirSync(path.join(tempUploadsDir, 'frames'), { recursive: true });
+    fs.writeFileSync(path.join(tempUploadsDir, 'frames', 'custom-frame.png'), 'fake-custom-frame');
+    fs.writeFileSync(
+      path.join(tempUploadsDir, 'frames', 'frames.json'),
+      JSON.stringify([{ id: 'frame-1', name: 'Custom Frame', url: '/uploads/frames/custom-frame.png' }])
+    );
 
     // Create isolated SQLite connection
     testSqlite = new DatabaseSync(tempDbPath);
@@ -154,16 +162,21 @@ describe('Factory Reset Isolation Engine', () => {
     // 5. Verify venue settings were restored to clean generic defaults ("Islamic Community Center")
     const resetSettings = await testDrizzleDb.select().from(settingsTable).where(eq(settingsTable.id, 'global'));
     expect(resetSettings[0]?.mosque_name).toBe('Islamic Community Center');
-    // Verify admin PIN credentials were safely preserved
-    expect(resetSettings[0]?.admin_pin_hash).toBe('mock_hashed_pin_1234');
-    expect(resetSettings[0]?.admin_pin_salt).toBe('mock_salt_1234');
+    // Verify admin PIN was reset back to factory default 1234
+    expect(resetSettings[0]?.admin_pin_hash).toBeTruthy();
+    expect(resetSettings[0]?.admin_pin_salt).toBeTruthy();
+    expect(resetSettings[0]?.admin_pin_hash).not.toBe('mock_hashed_pin_1234');
+    expect(
+      verifyPin('1234', resetSettings[0]!.admin_pin_salt!, resetSettings[0]!.admin_pin_hash!)
+    ).toBe(true);
     // Verify initial setup completed is reset to false
     expect(resetSettings[0]?.initial_setup_completed).toBe(false);
     // Verify session_version is incremented to 2 to invalidate stale external sessions
     expect(resetSettings[0]?.session_version).toBe(2);
 
-    // 6. Verify custom upload file was deleted from test uploads directory
+    // 6. Verify custom upload file and custom frames were deleted from test uploads directory
     expect(fs.existsSync(path.join(tempUploadsDir, 'custom_user_flyer.webp'))).toBe(false);
+    expect(fs.existsSync(path.join(tempUploadsDir, 'frames'))).toBe(false);
     // Verify default WebP posters and seed directory were preserved
     expect(fs.existsSync(path.join(tempUploadsDir, 'posters', 'jummah-announcement.webp'))).toBe(true);
     expect(fs.existsSync(path.join(tempUploadsDir, 'Mosque_Signage_Welcome.webp'))).toBe(true);

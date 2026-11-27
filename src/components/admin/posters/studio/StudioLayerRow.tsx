@@ -47,6 +47,9 @@ export function StudioLayerRow(props: StudioLayerRowProps) {
     selectedLayerKeys.includes(item.key) ||
     (selectedEntity?.type === item.type && selectedEntity.id === item.id);
   const target: LayerItemTarget = { type: item.type, id: item.id, itemIdx: item.itemIdx };
+  const isBeingDragged =
+    draggedLayerKey === item.key ||
+    Boolean(draggedLayerKey && selectedLayerKeys.includes(draggedLayerKey) && selectedLayerKeys.includes(item.key));
 
   return (
     <div
@@ -86,7 +89,7 @@ export function StudioLayerRow(props: StudioLayerRowProps) {
       onClick={(e) => props.onRowClick(e, item)}
       onContextMenu={(e) => props.onOpenContextMenu(e, item)}
       className={`relative w-full flex items-center justify-between p-2 rounded-xl border transition-all cursor-pointer ${
-        draggedLayerKey === item.key ? 'opacity-40 border-dashed border-amber-400' : ''
+        isBeingDragged ? 'opacity-40 border-dashed border-amber-400' : ''
       } ${isNested ? 'ml-4 w-[calc(100%-1rem)] border-l-2 border-l-amber-500/50' : ''} ${
         isSelected
           ? 'border-[var(--admin-tab-active-border)] bg-[var(--admin-surface)] text-[var(--admin-text-primary)] ring-1 ring-[var(--admin-tab-active-border)] shadow-sm'

@@ -93,9 +93,7 @@ export function FactoryResetPinStep({
               </button>
             </div>
             <p className="text-[11px] text-[var(--admin-text-muted)] text-center">
-              {isPasswordMode
-                ? 'Upon reset, the appliance restores factory defaults (PIN Mode with PIN 1234).'
-                : 'Default PIN is 1234 if not modified.'}
+              Upon reset, the appliance restores factory defaults (PIN Mode with default PIN 1234).
             </p>
           </div>
 

@@ -127,6 +127,9 @@ export function SlotPresenter({
             theme={slot.notice_theme ?? 'emerald'}
             font={slot.notice_font}
             align={slot.notice_align}
+            headlineAlign={slot.notice_headline_align}
+            headlineItalic={slot.notice_headline_italic}
+            headlineUnderline={slot.notice_headline_underline}
           />
         ) : slot.type === 'video' ? (
           <VideoSlotView slot={slot} isMuted={globalMute || !posterAllowAudio || isDrawerOpen} slideIndex={slideIndex} isPaused={isPaused} />

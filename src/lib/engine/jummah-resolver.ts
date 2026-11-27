@@ -27,35 +27,64 @@ export function resolveJummahShifts(
 ): JummahShift[] {
   const nowMs = now.getTime();
   const durationMs = startingNowDurationMinutes * 60 * 1000;
+  // When no separate Salah time is configured, hold sermon silence at least 25 min unless global window is longer
+  const khutbahOnlyDurationMs = Math.max(startingNowDurationMinutes, 25) * 60 * 1000;
 
   return shifts.map((shift) => {
-    const effectiveTime =
-      shift.iqamah_time && shift.iqamah_time.trim().length > 0
-        ? shift.iqamah_time
-        : shift.adhan_time;
-    const iqamahMs = parseTimeToDate(effectiveTime, now, timezone).getTime();
-    const status =
-      nowMs < iqamahMs
-        ? 'UPCOMING'
-        : nowMs < iqamahMs + durationMs
-          ? 'STARTING_NOW'
-          : 'COMPLETED';
+    const hasSeparateSalahTime = Boolean(shift.iqamah_time && shift.iqamah_time.trim().length > 0);
+    const adhanMs = parseTimeToDate(shift.adhan_time, now, timezone).getTime();
+    const iqamahMs = hasSeparateSalahTime
+      ? parseTimeToDate(shift.iqamah_time!.trim(), now, timezone).getTime()
+      : adhanMs;
+
+    let status: JummahShift['status'] = 'UPCOMING';
+
+    if (hasSeparateSalahTime) {
+      if (nowMs < adhanMs) {
+        status = 'UPCOMING';
+      } else if (nowMs < iqamahMs) {
+        status = 'KHUTBAH_IN_PROGRESS';
+      } else if (nowMs < iqamahMs + durationMs) {
+        status = 'STARTING_NOW';
+      } else {
+        status = 'COMPLETED';
+      }
+    } else {
+      if (nowMs < adhanMs) {
+        status = 'UPCOMING';
+      } else if (nowMs < adhanMs + khutbahOnlyDurationMs) {
+        status = 'STARTING_NOW';
+      } else {
+        status = 'COMPLETED';
+      }
+    }
+
+    const minutesRemaining =
+      status === 'STARTING_NOW' || status === 'COMPLETED'
+        ? 0
+        : Math.max(0, Math.ceil((iqamahMs - nowMs) / 60000));
 
     return {
       ...shift,
       status,
-      minutes_remaining: Math.max(0, Math.ceil((iqamahMs - nowMs) / 60000)),
+      minutes_remaining: minutesRemaining,
     };
   });
 }
 
-export function formatClockTime(date: Date, timezone: string = 'America/Toronto'): string {
+export function formatClockTime(
+  date: Date,
+  timezone: string = 'America/Toronto',
+  options?: { readonly showSeconds?: boolean | undefined; readonly timeFormat?: '12h' | '24h' | undefined }
+): string {
+  const is24h = options?.timeFormat === '24h';
+  const showSec = options?.showSeconds ?? false;
   return new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
-    hour: '2-digit',
+    hour: is24h ? '2-digit' : 'numeric',
     minute: '2-digit',
-    second: '2-digit',
-    hour12: true,
+    second: showSec ? '2-digit' : undefined,
+    hour12: !is24h,
   }).format(date);
 }
 

@@ -3,33 +3,23 @@
 import React from 'react';
 import type { PosterLayoutConfig, PosterTextOverlay } from '@/types/index';
 import { IslamicStickerGraphic } from '@/components/common/IslamicStickerGraphic';
+import { SteppedTextLines } from '@/components/common/SteppedTextLines';
+import {
+  clampTextScale,
+  resolveOverlayBgClass,
+  resolveTextFontSizeCss,
+} from '@/lib/posters/overlay-styles';
 import { MiniCompositeSlotContent } from './MiniCompositeSlotContent';
 
-function resolveOverlayBgClasses(ov: PosterTextOverlay): {
-  isTransparent: boolean;
-  customBg: string | undefined;
-  styleClass: string;
-} {
-  const isTransparent = ov.bg_color === 'transparent' || ov.bg_style === 'transparent';
-  const customBg = isTransparent ? 'transparent' : ov.bg_color;
-  const styleClass = isTransparent
-    ? 'bg-transparent border-0'
-    : customBg
-    ? 'border border-white/20'
-    : ov.bg_style === 'glass'
-    ? 'bg-slate-900/80 border border-white/20'
-    : ov.bg_style === 'emerald'
-    ? 'bg-emerald-950/90 border border-emerald-400/50'
-    : ov.bg_style === 'gold'
-    ? 'bg-black/90 border border-amber-400/60'
-    : 'bg-black/85 border border-white/20';
-  return { isTransparent, customBg, styleClass };
-}
-
-function MiniOverlayPill({ ov, textClass }: { readonly ov: PosterTextOverlay; readonly textClass: string }) {
-  const { isTransparent, customBg, styleClass } = resolveOverlayBgClasses(ov);
+function MiniOverlayPill({ ov }: { readonly ov: PosterTextOverlay }) {
+  const { isTransparent, customBgColor, bgClass } = resolveOverlayBgClass(ov);
   const topPct = ov.pos_y !== undefined ? ov.pos_y : ov.position === 'top_banner' ? 12 : 85;
   const leftPct = ov.pos_x !== undefined ? ov.pos_x : 50;
+  const isHugLines = ov.box_fit === 'hug_lines';
+  const effectiveBg = isTransparent ? 'transparent' : customBgColor || undefined;
+  const scaleX = clampTextScale(ov.scale_x);
+  const scaleY = clampTextScale(ov.scale_y);
+  const fontSizeCss = resolveTextFontSizeCss(ov.font_size);
 
   return (
     <div
@@ -37,20 +27,36 @@ function MiniOverlayPill({ ov, textClass }: { readonly ov: PosterTextOverlay; re
         position: 'absolute',
         top: `${topPct}%`,
         left: `${leftPct}%`,
-        transform: `translate(-50%, -50%) rotate(${ov.rotation || 0}deg)`,
+        transform: `translate(-50%, -50%) rotate(${ov.rotation || 0}deg) scale(${scaleX}, ${scaleY})`,
         color: ov.text_color || '#ffffff',
+        opacity: (ov.bg_opacity ?? 100) / 100,
         zIndex: ov.z_index ?? 30,
+        fontSize: fontSizeCss,
+        lineHeight: 1.15,
       }}
-      className="pointer-events-none max-w-[90%]"
+      className="pointer-events-none max-w-[95%]"
     >
-      <div
-        style={{ backgroundColor: isTransparent ? 'transparent' : customBg || undefined }}
-        className={`rounded truncate text-center leading-tight ${textClass} ${ov.is_bold ?? true ? 'font-bold' : 'font-normal'} ${
-          ov.is_italic ? 'italic' : ''
-        } ${ov.is_underline ? 'underline' : ''} ${styleClass}`}
-      >
-        {ov.text}
-      </div>
+      {isHugLines ? (
+        <SteppedTextLines
+          text={ov.text}
+          align={ov.text_align}
+          backgroundColor={effectiveBg}
+          containerClassName="-space-y-0.5"
+          lineClassName={`inline-block font-inherit whitespace-pre-wrap leading-[1.15] rounded-none ${
+            ov.is_bold ?? true ? 'font-bold' : 'font-normal'
+          } ${ov.is_italic ? 'italic' : ''} ${ov.is_underline ? 'underline' : ''}`}
+          lineStyle={{ padding: '0.14em 0.45em' }}
+        />
+      ) : (
+        <div
+          style={{ backgroundColor: effectiveBg, padding: '0.22em 0.6em' }}
+          className={`whitespace-pre-wrap text-center leading-[1.15] ${
+            ov.is_bold ?? true ? 'font-bold' : 'font-normal'
+          } ${ov.is_italic ? 'italic' : ''} ${ov.is_underline ? 'underline' : ''} ${bgClass}`}
+        >
+          {ov.text}
+        </div>
+      )}
     </div>
   );
 }
@@ -134,14 +140,14 @@ export function MiniCompositeOverlaysLayer({
               </div>
             ))}
             {comp.merged_children.text_overlays?.filter((ov) => !ov.is_hidden).map((ov) => (
-              <MiniOverlayPill key={ov.id} ov={ov} textClass="px-1 py-0.5 shadow-sm text-[6px]" />
+              <MiniOverlayPill key={ov.id} ov={ov} />
             ))}
           </div>
         );
       })}
 
       {layout.text_overlays?.map((ov) =>
-        ov.is_hidden ? null : <MiniOverlayPill key={ov.id} ov={ov} textClass="px-1.5 py-0.5 shadow-md text-[7px]" />
+        ov.is_hidden ? null : <MiniOverlayPill key={ov.id} ov={ov} />
       )}
     </>
   );

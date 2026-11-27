@@ -4,10 +4,10 @@
  */
 
 import type { Poster, QrPosition } from './poster';
-import type { JummahShift } from './prayer';
+import type { JummahShift, EidShift } from './prayer';
 import type { DateDisplayMode } from './settings';
 
-export type DrawerType = 'DAILY_PRAYER' | 'JUMMAH' | null;
+export type DrawerType = 'DAILY_PRAYER' | 'JUMMAH' | 'EID' | null;
 
 export interface MiniPillState {
   readonly prayer_name: string;
@@ -33,6 +33,13 @@ export interface HeaderState {
   readonly is_clock_unsynchronized?: boolean | undefined;
 }
 
+export interface RamadanVisibilityState {
+  readonly showNightPrayers: boolean;
+  readonly showFastingMarkers: boolean;
+  readonly showTaraweehSilence: boolean;
+  readonly hijriMonthNumber: number;
+}
+
 export interface DisplayState {
   readonly active_poster: Poster | null;
   readonly is_drawer_open: boolean;
@@ -42,5 +49,6 @@ export interface DisplayState {
   readonly qr_card: QrCardState | null;
   readonly header: HeaderState;
   readonly resolved_jummah_shifts?: readonly JummahShift[] | undefined;
+  readonly ramadan_visibility?: RamadanVisibilityState | undefined;
 }
 

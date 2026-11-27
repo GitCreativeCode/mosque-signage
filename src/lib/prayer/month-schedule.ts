@@ -55,13 +55,15 @@ function buildDaySlot(
   dayOverrides: readonly PrayerOverride[],
   dayAnnual: AnnualScheduleRecord | undefined,
   rules: readonly PrayerRule[],
-  settings: Settings
+  settings: Settings,
+  isClamped?: boolean | undefined
 ): MonthPrayerDaySlot {
   return {
     adhan,
     iqamah,
     source: getIqamahSource(p, dayOverrides, dayAnnual, rules),
     adhanSource: getAdhanSource(p, dayOverrides, dayAnnual, settings),
+    isClamped: Boolean(isClamped),
   };
 }
 
@@ -89,6 +91,7 @@ export function buildSingleMonthDay(
       timezone: settings.timezone,
       method: settings.calculation_method,
       madhab: settings.madhab ?? 'shafi',
+      highLatitudeRule: settings.high_latitude_rule,
       rules,
       annualSchedule: dayAnnual,
       adhanOffsets: {
@@ -108,12 +111,12 @@ export function buildSingleMonthDay(
     dayName,
     isToday: dateStr === todayStr,
     isFriday: dayName.toLowerCase().startsWith('fri'),
-    fajr: buildDaySlot('fajr', calc.fajr.adhan_time, calc.fajr.iqamah_time, dayOverrides, dayAnnual, rules, settings),
+    fajr: buildDaySlot('fajr', calc.fajr.adhan_time, calc.fajr.iqamah_time, dayOverrides, dayAnnual, rules, settings, calc.fajr.is_clamped),
     sunrise: { adhan: calc.sunrise.adhan_time, adhanSource: getAdhanSource('sunrise', dayOverrides, dayAnnual, settings) },
-    dhuhr: buildDaySlot('dhuhr', calc.dhuhr.adhan_time, calc.dhuhr.iqamah_time, dayOverrides, dayAnnual, rules, settings),
-    asr: buildDaySlot('asr', calc.asr.adhan_time, calc.asr.iqamah_time, dayOverrides, dayAnnual, rules, settings),
-    maghrib: buildDaySlot('maghrib', calc.maghrib.adhan_time, calc.maghrib.iqamah_time, dayOverrides, dayAnnual, rules, settings),
-    isha: buildDaySlot('isha', calc.isha.adhan_time, calc.isha.iqamah_time, dayOverrides, dayAnnual, rules, settings),
+    dhuhr: buildDaySlot('dhuhr', calc.dhuhr.adhan_time, calc.dhuhr.iqamah_time, dayOverrides, dayAnnual, rules, settings, calc.dhuhr.is_clamped),
+    asr: buildDaySlot('asr', calc.asr.adhan_time, calc.asr.iqamah_time, dayOverrides, dayAnnual, rules, settings, calc.asr.is_clamped),
+    maghrib: buildDaySlot('maghrib', calc.maghrib.adhan_time, calc.maghrib.iqamah_time, dayOverrides, dayAnnual, rules, settings, calc.maghrib.is_clamped),
+    isha: buildDaySlot('isha', calc.isha.adhan_time, calc.isha.iqamah_time, dayOverrides, dayAnnual, rules, settings, calc.isha.is_clamped),
   };
 }
 

@@ -40,6 +40,7 @@ export function usePosterUploadModal(
   isOpen: boolean,
   onClose: () => void,
   onUploaded: () => void,
+  isSmallScreen = false,
 ) {
   const [title, setTitle] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -55,6 +56,8 @@ export function usePosterUploadModal(
   const [qrUrl, setQrUrl] = useState<string>('');
   const [qrLabel, setQrLabel] = useState<string>('Scan to Register');
   const [qrPosition, setQrPosition] = useState<QrPosition>('bottom-left');
+  const [qrStartAt, setQrStartAt] = useState<string | null>(null);
+  const [qrEndAt, setQrEndAt] = useState<string | null>(null);
   const [isIndefinite, setIsIndefinite] = useState<boolean>(true);
   const [recurringSchedule, setRecurringSchedule] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -71,7 +74,8 @@ export function usePosterUploadModal(
     setThumbnailBuffer(null); setIsVideo(false); setVideoDuration(0);
     setVideoLoopCount(1); setAllowAudio(false); setDuration(15);
     setHasQr(false); setQrUrl(''); setQrLabel('Scan to Register');
-    setQrPosition('bottom-left'); setIsIndefinite(true);
+    setQrPosition('bottom-left'); setQrStartAt(null); setQrEndAt(null);
+    setIsIndefinite(true);
     setRecurringSchedule(null);
     setStartAt(toLocalDatetimeString(new Date())); setEndAt(getDefaultEndAt());
     setError(null); setIsSubmitting(false); setShowDiscardConfirm(false);
@@ -132,6 +136,10 @@ export function usePosterUploadModal(
   const handleFilesSelected = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     if (files.length > 1) {
+      if (isSmallScreen) {
+        setError('Multi-asset split-screen layouts require a tablet or computer. Please select a single poster or video.');
+        return;
+      }
       setStudioFiles(Array.from(files));
       setShowStudioModal(true);
     } else if (files[0]) {
@@ -166,6 +174,7 @@ export function usePosterUploadModal(
           title, startAt, endAt, isIndefinite, activeTotalDwell, isVideo,
           videoLoopCount, videoDuration, thumbnailBuffer, allowAudio,
           hasQr, isEligibleForQr, qrUrl, qrLabel, qrPosition,
+          qrStartAt, qrEndAt,
           recurringSchedule,
         }),
       });
@@ -183,13 +192,18 @@ export function usePosterUploadModal(
     title, setTitle, file, previewUrl, thumbnailPreviewUrl, duration, setDuration,
     isVideo, videoDuration, videoLoopCount, allowAudio, setAllowAudio,
     hasQr, setHasQr, qrUrl, setQrUrl, qrLabel, setQrLabel, qrPosition, setQrPosition,
+    qrStartAt, setQrStartAt, qrEndAt, setQrEndAt,
     isIndefinite, setIsIndefinite, recurringSchedule, setRecurringSchedule,
     isSubmitting, error, showDiscardConfirm, setShowDiscardConfirm,
     showStudioModal, setShowStudioModal, studioFiles, setStudioFiles,
     startAt, setStartAt, endAt, setEndAt, fileInputRef,
     activeTotalDwell, isEligibleForQr, minLoopsRequiredForQr, maxLoops,
     handleRequestClose, handleForceClose, handleFilesSelected, handleLoopCountChange,
-    openInStudio: () => { setStudioFiles(file ? [file] : []); setShowStudioModal(true); },
+    openInStudio: () => {
+      if (isSmallScreen) return;
+      setStudioFiles(file ? [file] : []);
+      setShowStudioModal(true);
+    },
     handleSubmit,
   };
 }

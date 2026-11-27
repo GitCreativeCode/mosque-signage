@@ -32,6 +32,7 @@ export interface StudioHistorySnapshot {
   readonly compoundLayers: readonly PosterCompoundLayer[];
   readonly folders: readonly PosterLayerFolder[];
   readonly rootOrder: readonly string[];
+  readonly actionLabel?: string | undefined;
 }
 
 export interface StudioSceneState {
@@ -101,6 +102,10 @@ export interface ResizeSession extends DragBoundsStart {
   readonly id: string;
   readonly handle: ResizeHandle;
   readonly aspectRatio: number;
+  readonly initialFontSize?: number | undefined;
+  readonly initialScaleX?: number | undefined;
+  readonly initialScaleY?: number | undefined;
+  readonly rotation?: number | undefined;
 }
 
 export interface DropIndicatorState {

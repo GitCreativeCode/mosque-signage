@@ -4,10 +4,13 @@ import { useState, useEffect, useCallback } from 'react';
 import type { VenueSettingsCategory } from '@/types/index';
 
 export type AdminTabKey = 'POSTERS' | 'PRAYERS' | 'SETTINGS';
-export type PrayerSubTabKey = 'TIMETABLE' | 'JUMMAH';
+export type PrayerSubTabKey = 'TIMETABLE' | 'JUMMAH' | 'SEASONAL';
 
 export function resolveInitialPrayerSub(sub?: string): PrayerSubTabKey {
-  return sub?.toLowerCase() === 'jummah' ? 'JUMMAH' : 'TIMETABLE';
+  const s = sub?.toLowerCase();
+  if (s === 'jummah') return 'JUMMAH';
+  if (s === 'seasonal' || s === 'eid' || s === 'ramadan') return 'SEASONAL';
+  return 'TIMETABLE';
 }
 
 export function resolveInitialSettingsSub(sub?: string): VenueSettingsCategory {
@@ -27,6 +30,7 @@ function syncUrlQueryParams(tab: AdminTabKey, sub?: string): void {
   } else if (tab === 'PRAYERS') {
     url.searchParams.set('tab', 'prayers');
     if (sub?.toLowerCase() === 'jummah') url.searchParams.set('sub', 'jummah');
+    else if (sub?.toLowerCase() === 'seasonal') url.searchParams.set('sub', 'seasonal');
     else url.searchParams.delete('sub');
   } else {
     url.searchParams.set('tab', 'settings');

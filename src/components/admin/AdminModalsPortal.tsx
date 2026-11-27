@@ -1,15 +1,33 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { Check } from 'lucide-react';
 import type { Settings } from '@/types/index';
 import { broadcastSignageEvent } from '@/lib/events/broadcast-channel';
-import { PosterUploadModal } from './posters/PosterUploadModal';
-import { AnnouncementSlideModal } from './posters/AnnouncementSlideModal';
-import { InitialSetupModal } from './settings/InitialSetupModal';
-import { PwaInstallModal } from './settings/PwaInstallModal';
 import { ConfirmationModal } from './common/ConfirmationModal';
+import { AdminLoadingFallback } from './common/AdminLoadingFallback';
 import { BetaNoticeModal, triggerBetaNoticeReset } from '../common/BetaNoticeModal';
+
+const DynamicPosterUploadModal = dynamic(
+  () => import('./posters/PosterUploadModal').then((m) => m.PosterUploadModal),
+  { loading: () => <AdminLoadingFallback label="Loading upload dialog..." /> }
+);
+
+const DynamicAnnouncementSlideModal = dynamic(
+  () => import('./posters/AnnouncementSlideModal').then((m) => m.AnnouncementSlideModal),
+  { loading: () => <AdminLoadingFallback label="Loading notice generator..." /> }
+);
+
+const DynamicInitialSetupModal = dynamic(
+  () => import('./settings/InitialSetupModal').then((m) => m.InitialSetupModal),
+  { loading: () => <AdminLoadingFallback label="Loading initial setup..." /> }
+);
+
+const DynamicPwaInstallModal = dynamic(
+  () => import('./settings/PwaInstallModal').then((m) => m.PwaInstallModal),
+  { loading: () => <AdminLoadingFallback label="Loading app install guide..." /> }
+);
 
 export interface AdminModalsPortalProps {
   readonly settings: Settings;
@@ -52,35 +70,39 @@ export function AdminModalsPortal({
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-6 right-6 z-50 flex items-center space-x-2.5 bg-[var(--admin-surface)] border border-[var(--admin-border)] shadow-2xl px-4 py-2.5 rounded-xl text-xs font-semibold text-[var(--admin-text-primary)] animate-fadeIn"
+          className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:bottom-6 sm:right-6 z-50 flex items-center space-x-2.5 bg-[var(--admin-surface)] border border-[var(--admin-border)] shadow-2xl px-4 py-2.5 rounded-xl text-xs font-semibold text-[var(--admin-text-primary)] animate-fadeIn"
         >
           <Check className="w-4 h-4 text-emerald-500 shrink-0" />
           <span>{quickActionNotice}</span>
         </div>
       )}
 
-      <PosterUploadModal
-        isOpen={isUploadModalOpen}
-        onClose={onCloseUpload}
-        venueTimezone={settings.timezone}
-        onUploaded={() => {
-          onRefreshPosters();
-          broadcastSignageEvent({ type: 'POSTERS_UPDATED', action: 'create' });
-        }}
-      />
+      {isUploadModalOpen && (
+        <DynamicPosterUploadModal
+          isOpen={isUploadModalOpen}
+          onClose={onCloseUpload}
+          venueTimezone={settings.timezone}
+          onUploaded={() => {
+            onRefreshPosters();
+            broadcastSignageEvent({ type: 'POSTERS_UPDATED', action: 'create' });
+          }}
+        />
+      )}
 
-      <AnnouncementSlideModal
-        isOpen={isAnnouncementModalOpen}
-        onClose={onCloseAnnouncement}
-        venueTimezone={settings.timezone}
-        onCreated={() => {
-          onRefreshPosters();
-          broadcastSignageEvent({ type: 'POSTERS_UPDATED', action: 'create' });
-        }}
-      />
+      {isAnnouncementModalOpen && (
+        <DynamicAnnouncementSlideModal
+          isOpen={isAnnouncementModalOpen}
+          onClose={onCloseAnnouncement}
+          venueTimezone={settings.timezone}
+          onCreated={() => {
+            onRefreshPosters();
+            broadcastSignageEvent({ type: 'POSTERS_UPDATED', action: 'create' });
+          }}
+        />
+      )}
 
       {isInitialSetupModalOpen && (
-        <InitialSetupModal
+        <DynamicInitialSetupModal
           isOpen={isInitialSetupModalOpen}
           settings={settings}
           onClose={onCloseInitialSetup}
@@ -95,7 +117,7 @@ export function AdminModalsPortal({
         />
       )}
 
-      <PwaInstallModal isOpen={showPwaModal} onClose={onClosePwaModal} />
+      {showPwaModal && <DynamicPwaInstallModal isOpen={showPwaModal} onClose={onClosePwaModal} />}
 
       <BetaNoticeModal isSuspended={isInitialSetupModalOpen} />
 

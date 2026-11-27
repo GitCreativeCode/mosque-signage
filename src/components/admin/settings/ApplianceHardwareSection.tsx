@@ -6,6 +6,7 @@ import type { PowerScheduleMode, StandbyAppearance, TvControlProtocol, AudioRece
 import { AppliancePowerCard } from './AppliancePowerCard';
 import { ApplianceAudioCard } from './ApplianceAudioCard';
 import { ApplianceDiagnosticsGrid } from './ApplianceDiagnosticsGrid';
+import { ApplianceUpdatesCard } from './ApplianceUpdatesCard';
 
 export interface ApplianceHardwareSectionProps {
   readonly tvAutoPower: boolean;
@@ -130,6 +131,8 @@ export function ApplianceHardwareSection(props: ApplianceHardwareSectionProps) {
         onQuickTestDrawer={props.onQuickTestDrawer}
         onQuickToggleSimulator={props.onQuickToggleSimulator}
       />
+
+      <ApplianceUpdatesCard />
     </div>
   );
 }

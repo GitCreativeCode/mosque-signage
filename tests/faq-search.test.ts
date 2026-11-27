@@ -37,6 +37,31 @@ describe('FAQ Registry Integrity', () => {
     expect(auth).toBeDefined();
     expect(auth?.categoryId).toBe('security');
     expect(auth?.isAccordion).toBe(true);
+
+    const scheduling = getFaqItemBySlug('poster-scheduling-and-recurring-windows');
+    expect(scheduling).toBeDefined();
+    expect(scheduling?.categoryId).toBe('media');
+    expect(scheduling?.isFeatured).toBe(true);
+
+    const layouts = getFaqItemBySlug('screen-layouts-and-tv-overscan');
+    expect(layouts).toBeDefined();
+    expect(layouts?.categoryId).toBe('hardware');
+
+    const pwa = getFaqItemBySlug('pwa-smart-tv-and-kiosk-mode');
+    expect(pwa).toBeDefined();
+    expect(pwa?.categoryId).toBe('hardware');
+
+    const silence = getFaqItemBySlug('congregation-silence-and-audio-muting');
+    expect(silence).toBeDefined();
+    expect(silence?.categoryId).toBe('prayer');
+
+    const updates = getFaqItemBySlug('appliance-software-updates');
+    expect(updates).toBeDefined();
+    expect(updates?.categoryId).toBe('security');
+
+    const mobile = getFaqItemBySlug('mobile-admin-and-companion-display');
+    expect(mobile).toBeDefined();
+    expect(mobile?.categoryId).toBe('hardware');
   });
 
   it('guarantees all relatedSlugs point to valid existing FAQ items', () => {
@@ -116,6 +141,30 @@ describe('FAQ Search & Ranking Algorithm', () => {
     const sessionResults = searchFaqItems('logout all devices session', FAQ_ITEMS);
     expect(sessionResults.length).toBeGreaterThan(0);
     expect(sessionResults.some((r) => r.item.slug === 'dual-mode-admin-authentication')).toBe(true);
+
+    const recurringResults = searchFaqItems('recurring schedule fridays', FAQ_ITEMS);
+    expect(recurringResults.length).toBeGreaterThan(0);
+    expect(recurringResults.some((r) => r.item.slug === 'poster-scheduling-and-recurring-windows')).toBe(true);
+
+    const overscanResults = searchFaqItems('tv overscan margin safe', FAQ_ITEMS);
+    expect(overscanResults.length).toBeGreaterThan(0);
+    expect(overscanResults.some((r) => r.item.slug === 'screen-layouts-and-tv-overscan')).toBe(true);
+
+    const pwaResults = searchFaqItems('pwa smart tv standalone', FAQ_ITEMS);
+    expect(pwaResults.length).toBeGreaterThan(0);
+    expect(pwaResults.some((r) => r.item.slug === 'pwa-smart-tv-and-kiosk-mode')).toBe(true);
+
+    const silenceResults = searchFaqItems('congregation silence receiver muting', FAQ_ITEMS);
+    expect(silenceResults.length).toBeGreaterThan(0);
+    expect(silenceResults.some((r) => r.item.slug === 'congregation-silence-and-audio-muting')).toBe(true);
+
+    const updateResults = searchFaqItems('update appliance latest version', FAQ_ITEMS);
+    expect(updateResults.length).toBeGreaterThan(0);
+    expect(updateResults.some((r) => r.item.slug === 'appliance-software-updates')).toBe(true);
+
+    const mobileResults = searchFaqItems('smartphone mobile companion view', FAQ_ITEMS);
+    expect(mobileResults.length).toBeGreaterThan(0);
+    expect(mobileResults.some((r) => r.item.slug === 'mobile-admin-and-companion-display')).toBe(true);
   });
 
   it('generates match snippets correctly', () => {

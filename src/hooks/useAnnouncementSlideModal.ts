@@ -36,6 +36,8 @@ export function useAnnouncementSlideModal(
   const [qrUrl, setQrUrl] = useState('');
   const [qrLabel, setQrLabel] = useState('Scan to Join');
   const [qrPosition, setQrPosition] = useState<QrPosition>('bottom-left');
+  const [qrStartAt, setQrStartAt] = useState<string | null>(null);
+  const [qrEndAt, setQrEndAt] = useState<string | null>(null);
   const [duration, setDuration] = useState(15);
   const [isIndefinite, setIsIndefinite] = useState(true);
   const [recurringSchedule, setRecurringSchedule] = useState<string | null>(null);
@@ -55,6 +57,8 @@ export function useAnnouncementSlideModal(
     setQrUrl('');
     setQrLabel('Scan to Join');
     setQrPosition('bottom-left');
+    setQrStartAt(null);
+    setQrEndAt(null);
     setDuration(15);
     setIsIndefinite(true);
     setRecurringSchedule(null);
@@ -106,6 +110,8 @@ export function useAnnouncementSlideModal(
         qr_url: hasQr && qrUrl.trim() ? qrUrl.trim() : undefined,
         qr_label: hasQr && qrLabel.trim() ? qrLabel.trim() : undefined,
         qr_position: hasQr ? qrPosition : undefined,
+        qr_start_at: hasQr ? qrStartAt : null,
+        qr_end_at: hasQr ? qrEndAt : null,
         start_at: fromLocalDatetimeString(startAt),
         end_at: isIndefinite ? null : fromLocalDatetimeString(endAt),
         duration_seconds: duration,
@@ -124,6 +130,7 @@ export function useAnnouncementSlideModal(
   return {
     headline, setHeadline, description, setDescription, selectedTheme, setSelectedTheme,
     hasQr, setHasQr, qrUrl, setQrUrl, qrLabel, setQrLabel, qrPosition, setQrPosition,
+    qrStartAt, setQrStartAt, qrEndAt, setQrEndAt,
     duration, setDuration, isIndefinite, setIsIndefinite, recurringSchedule, setRecurringSchedule,
     startAt, setStartAt, endAt, setEndAt, isSubmitting, error, showDiscardConfirm, setShowDiscardConfirm,
     showStudioModal, setShowStudioModal, handleRequestClose, handleForceClose, handleSubmit,

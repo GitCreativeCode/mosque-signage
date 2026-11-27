@@ -4,6 +4,28 @@
  */
 
 /**
+ * Converts minutes from midnight (0–1439) into a 24-hour 'HH:mm' time string.
+ */
+export function minutesToTime(totalMinutes: number): string {
+  const normalized = ((totalMinutes % 1440) + 1440) % 1440;
+  const h = Math.floor(normalized / 60);
+  const m = normalized % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+/**
+ * Subtracts minutes from a 24-hour 'HH:mm' time string, wrapping across midnight if necessary.
+ */
+export function subtractMinutesFromTime(
+  timeStr: string | null | undefined,
+  minutesToSubtract: number
+): string {
+  if (!timeStr) return '--:--';
+  const mins = timeToMinutes(timeStr);
+  return minutesToTime(mins - minutesToSubtract);
+}
+
+/**
  * Converts a 24-hour 'HH:mm' time string into minutes from midnight (0–1439).
  * Returns 0 for empty or invalid inputs.
  */
@@ -181,6 +203,24 @@ export function isSystemClockSynchronized(date: Date = new Date()): boolean {
   }
   const year = date.getFullYear();
   return year >= 2025 && year <= 2099;
+}
+
+/**
+ * Formats an ISO date string into concise human-readable date & time (e.g. 'Nov 23, 1:30 PM').
+ * Gracefully falls back to the original string on parsing error.
+ */
+export function formatIsoDateTime(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  try {
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(new Date(iso));
+  } catch {
+    return iso;
+  }
 }
 
 

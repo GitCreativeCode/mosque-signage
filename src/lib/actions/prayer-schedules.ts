@@ -1,9 +1,9 @@
 'use server';
 
 import crypto from 'node:crypto';
-import { eq } from 'drizzle-orm';
+import { eq, like } from 'drizzle-orm';
 import { db } from '@/lib/db/client';
-import { annualSchedulesTable } from '@/lib/db/schema';
+import { annualSchedulesTable, prayerOverridesTable } from '@/lib/db/schema';
 import { runSerializedTransaction } from '@/lib/db/tx';
 import { eventBus } from '@/lib/events/event-bus';
 import { getVenueSettings } from '@/lib/actions/settings';
@@ -187,5 +187,24 @@ export async function bulkSetIqamahRange(input: BulkSetIqamahRangeInput): Promis
 
   if (affectedDays > 0) eventBus.emitEvent('PRAYERS_UPDATED', { timestamp: nowIso, prayer: input.prayer });
   return { affectedDays };
+}
+
+export async function resetDayToAstronomical(dateStr: string): Promise<void> {
+  await requireAdminAuth();
+  await runSerializedTransaction(db, async (tx) => {
+    await tx.delete(prayerOverridesTable).where(eq(prayerOverridesTable.date, dateStr));
+    await tx.delete(annualSchedulesTable).where(eq(annualSchedulesTable.date, dateStr));
+  });
+  eventBus.emitEvent('PRAYERS_UPDATED', { timestamp: new Date().toISOString() });
+}
+
+export async function resetMonthToAstronomical(year: number, month: number): Promise<void> {
+  await requireAdminAuth();
+  const monthPrefix = `${year}-${String(month).padStart(2, '0')}`;
+  await runSerializedTransaction(db, async (tx) => {
+    await tx.delete(prayerOverridesTable).where(like(prayerOverridesTable.date, `${monthPrefix}%`));
+    await tx.delete(annualSchedulesTable).where(like(annualSchedulesTable.date, `${monthPrefix}%`));
+  });
+  eventBus.emitEvent('PRAYERS_UPDATED', { timestamp: new Date().toISOString() });
 }
 

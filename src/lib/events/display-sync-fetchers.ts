@@ -3,7 +3,7 @@
  * MosqueSignage (TV)
  */
 
-import type { JummahShift, Poster, PrayerTimesToday, PublicDisplaySettings } from '@/types/index';
+import type { EidShift, JummahShift, Poster, PrayerTimesToday, PublicDisplaySettings } from '@/types/index';
 
 export interface FetchPostersLiveResult {
   readonly posters: readonly Poster[];
@@ -47,23 +47,29 @@ export async function fetchSettingsLive(): Promise<PublicDisplaySettings | null>
 export async function fetchPrayersAndShiftsLive(): Promise<{
   prayers: PrayerTimesToday;
   jummahShifts: readonly JummahShift[];
+  eidShifts: readonly EidShift[];
   settings: PublicDisplaySettings;
 } | null> {
   try {
     const { getPrayerOverrides, getPrayerRules, getAnnualScheduleForDate } = await import('@/lib/actions/prayers');
-    const { getJummahShifts } = await import('@/lib/actions/jummah');
+    const { getEffectiveJummahShifts, getEidShifts } = await import('@/lib/actions/jummah');
     const { getPublicDisplaySettings } = await import('@/lib/actions/settings');
     const { calculateDailySchedule } = await import('@/lib/prayer/prayer-engine');
 
     const currentSettings = await getPublicDisplaySettings();
     const today = new Date();
     const todayIsoDate = new Intl.DateTimeFormat('en-CA', { timeZone: currentSettings.timezone }).format(today);
+    const activeEidFilter =
+      currentSettings.active_eid_type && currentSettings.active_eid_type !== 'none'
+        ? currentSettings.active_eid_type
+        : undefined;
 
-    const [overrides, shifts, rules, annualSchedule] = await Promise.all([
+    const [overrides, shifts, rules, annualSchedule, eidShifts] = await Promise.all([
       getPrayerOverrides(todayIsoDate),
-      getJummahShifts(),
+      getEffectiveJummahShifts(todayIsoDate),
       getPrayerRules(),
       getAnnualScheduleForDate(todayIsoDate),
+      getEidShifts(activeEidFilter),
     ]);
     const prayers = calculateDailySchedule(
       { latitude: currentSettings.latitude ?? null, longitude: currentSettings.longitude ?? null },
@@ -73,6 +79,7 @@ export async function fetchPrayersAndShiftsLive(): Promise<{
         timezone: currentSettings.timezone,
         method: currentSettings.calculation_method,
         madhab: currentSettings.madhab ?? 'shafi',
+        highLatitudeRule: currentSettings.high_latitude_rule,
         rules,
         annualSchedule: annualSchedule ?? undefined,
         adhanOffsets: {
@@ -85,7 +92,7 @@ export async function fetchPrayersAndShiftsLive(): Promise<{
         },
       }
     );
-    return { prayers, jummahShifts: shifts, settings: currentSettings };
+    return { prayers, jummahShifts: shifts, eidShifts, settings: currentSettings };
   } catch (err) {
     console.warn('[useDisplaySync] Failed to refresh prayer times:', err);
     return null;

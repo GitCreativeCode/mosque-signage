@@ -5,6 +5,7 @@ import { Pencil } from 'lucide-react';
 import type { MonthPrayerDay } from '@/types/index';
 import { format12h } from '@/lib/utils/time';
 import { ADHAN_SOURCE_COLOR, ADHAN_SOURCE_TOOLTIP } from '@/lib/prayer/timetable-constraints';
+import { MonthlyTimetableMobileList } from './MonthlyTimetableMobileList';
 
 export interface MonthlyTimetableGridProps {
   readonly schedule: readonly MonthPrayerDay[];
@@ -15,7 +16,12 @@ const CONGREGATIONAL_PRAYERS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as co
 
 export function MonthlyTimetableGrid({ schedule, onEditDay }: MonthlyTimetableGridProps) {
   return (
-    <div className="overflow-x-auto max-h-[640px] overflow-y-auto">
+    <>
+      <div className="md:hidden max-h-[68vh] overflow-y-auto">
+        <MonthlyTimetableMobileList schedule={schedule} onEditDay={onEditDay} />
+      </div>
+
+      <div className="hidden md:block overflow-x-auto max-h-[640px] overflow-y-auto">
       <table className="w-full text-left text-xs border-collapse">
         <thead className="sticky top-0 z-10 bg-[var(--admin-surface)] border-b border-[var(--admin-border)] text-[11px] font-semibold uppercase tracking-wider text-[var(--admin-text-muted)]">
           <tr>
@@ -34,7 +40,7 @@ export function MonthlyTimetableGrid({ schedule, onEditDay }: MonthlyTimetableGr
             const isCurrentDay = day.isToday;
             const isFriday = day.isFriday;
             const rowStyle = isCurrentDay
-              ? 'bg-[var(--admin-card-hover)] font-semibold border-l-2 border-l-[var(--admin-tab-active-border)]'
+              ? 'bg-emerald-500/15 dark:bg-emerald-900/30 font-bold border-l-4 border-l-emerald-600'
               : isFriday
               ? 'bg-[var(--admin-surface)]/50 hover:bg-[var(--admin-card-hover)]/60'
               : 'hover:bg-[var(--admin-card-hover)]/40';
@@ -48,7 +54,9 @@ export function MonthlyTimetableGrid({ schedule, onEditDay }: MonthlyTimetableGr
                       {day.dayName}
                     </span>
                     {isCurrentDay && (
-                      <span className="px-1.5 py-0.5 rounded bg-[var(--admin-btn-primary-bg)] text-[var(--admin-btn-primary-text)] text-[9px] uppercase font-bold tracking-wider">Today</span>
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-700 dark:bg-emerald-600 text-white text-[9px] uppercase font-bold tracking-wider">
+                        Today
+                      </span>
                     )}
                     {isFriday && !isCurrentDay && (
                       <span className="px-1.5 py-0.5 rounded bg-[var(--admin-surface)] border border-[var(--admin-border)] text-[var(--admin-text-muted)] text-[9px] font-medium">Jummah</span>
@@ -78,6 +86,14 @@ export function MonthlyTimetableGrid({ schedule, onEditDay }: MonthlyTimetableGr
                           </span>
                           <span className="text-[var(--admin-text-muted)] text-[10px]">|</span>
                           <span className="text-[var(--admin-text-primary)] font-semibold text-xs">{format12h(slot.iqamah)}</span>
+                          {slot.isClamped && (
+                            <span
+                              className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[9px] font-sans font-bold cursor-help"
+                              title="Smart Clamping: Astronomical Adhan moved past configured Iqamah. Automatically adjusted to Adhan + 5 min."
+                            >
+                              Adj
+                            </span>
+                          )}
                         </div>
                       </td>
                     </React.Fragment>
@@ -99,7 +115,8 @@ export function MonthlyTimetableGrid({ schedule, onEditDay }: MonthlyTimetableGr
           })}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }
 

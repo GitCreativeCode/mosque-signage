@@ -1,6 +1,8 @@
 import type { FaqItem } from './faq-types';
+import { FAQ_PRAYER_SCHEDULE_GUIDE_ITEM } from './faq-prayer-schedule-guide-data';
 
 export const FAQ_PRAYER_ITEMS: readonly FaqItem[] = [
+  FAQ_PRAYER_SCHEDULE_GUIDE_ITEM,
   {
     slug: 'prayer-calculation-methods',
     categoryId: 'prayer',
@@ -107,6 +109,64 @@ export const FAQ_PRAYER_ITEMS: readonly FaqItem[] = [
             type: 'note',
             text: 'On Fridays, the display timetable drawer automatically switches its noon slot from standard Dhuhr to the full Friday Jummah schedule 2 hours prior to the first Khutbah.',
           },
+        },
+      ],
+    },
+  },
+  {
+    slug: 'congregation-silence-and-audio-muting',
+    categoryId: 'prayer',
+    question: 'What happens during congregation prayer (Salah), and how does automatic silence and audio muting work?',
+    shortAnswer:
+      'At Iqamah time, MosqueSignage smoothly fades into a pitch-black OLED silence screen with a faint clock and DND indicator. It can also automatically mute PA audio receivers (Denon, Yamaha, Webhook) with a fail-safe background watchdog unmute timer.',
+    isAccordion: true,
+    isFeatured: false,
+    tags: [
+      'silence',
+      'congregation',
+      'dnd',
+      'salah',
+      'iqamah',
+      'audio muting',
+      'denon',
+      'yamaha',
+      'receiver',
+      'hardware',
+    ],
+    relatedSlugs: [
+      'prayer-calculation-methods',
+      'friday-jummah-khutbah-shifts',
+      'screen-burn-in-sleep-timers',
+    ],
+    article: {
+      title: 'Automated Congregation Silence Screen & PA Audio Receiver Muting',
+      lastUpdated: '2026-11-23',
+      summary:
+        'Eliminating prayer hall visual and acoustic distractions during congregation Salah via automated black screen transitions and hardware receiver muting.',
+      sections: [
+        {
+          heading: '1. Autonomous Congregation Silence Transition',
+          paragraphs: [
+            'During sacred congregation prayer, bright flashing flyers and announcements in the prayer hall cause distraction. When the countdown reaches Iqamah time (STARTING_NOW), MosqueSignage executes a smooth fade to a distraction-free pitch-black (#000000) canvas.',
+            'The silence screen renders a faint clock and subtle Do Not Disturb indicator. Flyer dwell timers pause in place, ensuring active slides resume their exact position once prayer concludes.',
+          ],
+        },
+        {
+          heading: '2. Hardware Audio Receiver Protocol Integration',
+          paragraphs: [
+            'Mosque halls equipped with network-connected AV receivers or DSP mixers can automatically silence secondary hall audio during prayers. MosqueSignage supports three hardware protocols configured in Admin > Settings > Hardware:',
+          ],
+          steps: [
+            'Denon / Marantz Telnet: Dispatches raw MUON\\r / MUOFF\\r commands over TCP port 23.',
+            'Yamaha MTX/MRX eCSVP: Connects via Yamaha commercial sound protocol on TCP port 49280.',
+            'Generic HTTP Webhook: Sends JSON POST payloads to any custom automation bridge or smart amplifier.',
+          ],
+        },
+        {
+          heading: '3. Fail-Safe Watchdog Unmute Guard',
+          paragraphs: [
+            'To protect against power outages or unexpected server restarts leaving mosque speakers permanently muted, the audio coordinator arms an asynchronous background watchdog timer upon muting. Even if the server crashes or encounters network interruptions, the fail-safe driver automatically un-mutes the receiver once the designated prayer window expires.',
+          ],
         },
       ],
     },

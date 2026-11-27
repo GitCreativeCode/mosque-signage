@@ -3,7 +3,7 @@
  * MosqueSignage (TV)
  */
 
-import type { AnnualScheduleRecord, AudioReceiverProtocol, JummahShift, PrayerOverride, PrayerRule } from '@/types/index';
+import type { AnnualScheduleRecord, AudioReceiverProtocol, EidShift, JummahShift, PrayerOverride, PrayerRule } from '@/types/index';
 import type { RawSettingsRow } from './settings-mapper';
 import { mapSettingsRowToDomain } from './settings-mapper';
 import { calculateDailySchedule } from '@/lib/prayer/prayer-schedule';
@@ -75,6 +75,7 @@ export function loadPrayerSilenceState(
       timezone: settings.timezone,
       method: settings.calculation_method,
       madhab: settings.madhab ?? 'shafi',
+      highLatitudeRule: settings.high_latitude_rule,
       rules,
       annualSchedule: annualRow,
       adhanOffsets: {
@@ -95,6 +96,27 @@ export function loadPrayerSilenceState(
 
   let isStartingNow = resolved.status === 'STARTING_NOW';
   let prayerName = resolved.prayer_name;
+
+  if (
+    !isStartingNow &&
+    settings.active_eid_type &&
+    settings.active_eid_type !== 'none' &&
+    settings.active_eid_date === todayIsoDate
+  ) {
+    const eidShifts = sqlite
+      .prepare('SELECT * FROM eid_shifts WHERE eid_type = ? ORDER BY shift_number ASC')
+      .all(settings.active_eid_type) as EidShift[];
+    const durationMs = durationMinutes * 60_000;
+    const nowMs = now.getTime();
+    for (const shift of eidShifts) {
+      const salahMs = parseTimeToDate(shift.salah_time, now, settings.timezone).getTime();
+      if (nowMs >= salahMs && nowMs < salahMs + durationMs) {
+        isStartingNow = true;
+        prayerName = 'Eid Salah';
+        break;
+      }
+    }
+  }
 
   if (!isStartingNow && isFriday(now, settings.timezone)) {
     const rawShifts = sqlite
